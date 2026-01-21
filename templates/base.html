@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+</head>
+
+<body>
+    <header>
+    </header>
+    <main>
+        {% block main_content %}
+        {% endblock %}
+    </main>
+    <footer>
+    </footer>
+</body>
+
+</html>

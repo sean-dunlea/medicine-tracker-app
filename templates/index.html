@@ -2,4 +2,13 @@
 
 {% block main_content %}
 
+<!-- The button will only be displayed if the user is logged in -->
+{% if session["username"] %}
+    <!-- This button is needed for push notifications. If the user clicks
+    it, an FCM token will be generated -->
+    <section id="notifications">
+        <button id="enable_notifications">Enable Notifications</button>
+    </section> 
+{% endif %}
+
 {% endblock %}

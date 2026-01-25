@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from flask import Flask, render_template, redirect, url_for, session, g, request
+from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify
 # Server-side session management
 from flask_session import Session
 from forms import RegistrationForm, LoginForm
@@ -13,6 +13,12 @@ app.config["SECRET_KEY"] = "this-is-my-secret-key"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 
+# These are needed to send push notifications
+import firebase_admin
+from firebase_admin import credentials, messaging
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
+
 Session(app)
 
 # Ensures the database connection is closed after each request.
@@ -24,8 +30,7 @@ app.teardown_appcontext(close_db)
 def load_logged_in_user():
     g.user = session.get("username", None)
 
-# This is unused at the moment but we might need it later to protect routes
-# that require a user to be logged in.
+# Protects routes that require a user to be logged in.
 def login_required(view):
     @wraps(view)
     def wrapped_view(*args, **kwargs):
@@ -34,10 +39,94 @@ def login_required(view):
         return view(*args, **kwargs)
     return wrapped_view
 
+# This function will make it easier to send push notifications.
+# It looks up the username provided and finds all FCM tokens associated
+# with that user (they might have multiple tokens if they're logged in on different
+# devices or browsers) and sends the notification to each one.
+# Example:
+# send_notification("Sean", "Reminder", "Take your medication.")
+def send_notification(username, title, body):
+    db = get_db()
+    user = db.execute("""
+                        SELECT *
+                        FROM users
+                        WHERE username = ?;
+                        """, (username,)).fetchone()
+    if user:
+        user_id = user["user_id"]
+        fcm_tokens = db.execute("""
+                        SELECT token
+                        FROM fcm_tokens
+                        WHERE user_id = ?;
+                        """, (user_id,)).fetchall()
+        fcm_tokens = [row["token"] for row in fcm_tokens]
+        for fcm_token in fcm_tokens:
+            try:
+                message = messaging.Message(
+                    notification=messaging.Notification(
+                        title=title,
+                        body=body
+                    ),
+                    token=fcm_token
+                )
+                messaging.send(message)
+            except Exception as e:
+                # If Firebase says the token is no longer valid
+                # this removes it from the database so we don't keep
+                # retrying it
+                if "registration-token-not-registered" in str(e):
+                    db.execute(
+                        """DELETE FROM fcm_tokens
+                        WHERE token = ?;
+                        """, (fcm_token,)
+                    )
+                    db.commit()
+                print(f"Error: {e}")
+
 # This is the home page route.
 @app.route("/")
 def index():
     return render_template("index.html", title="Home")
+
+# This route shows a small preview of what notifications
+# will look like if anyone wants to see. We'll delete this
+# later.
+@app.route("/test_notification")
+@login_required
+def test_notification():
+    send_notification(
+        username=session["username"],
+        title="Test",
+        body="This is a test"
+    )
+    return "Notification was sent successfully."
+
+# This is called if the user gives notification permission and Firebase
+# generates a token. The token is stored in the database so we can
+# later send push notifications to the user. A user can have multiple
+# tokens (e.g. if they are logged in on different browsers/devices).
+@app.route("/save_token", methods=["POST"])
+@login_required
+def save_token():
+    token = request.get_json().get("token")
+    username = session["username"]
+    if token and username:
+        db = get_db()
+        user = db.execute("""
+                          SELECT *
+                          FROM users
+                          WHERE username = ?;
+                          """, (username,)).fetchone()
+        if user:
+            user_id = user["user_id"]
+            db.execute("""
+                       INSERT OR IGNORE INTO fcm_tokens (user_id, token)
+                       VALUES
+                       (?, ?);
+                       """, (user_id, token))
+            db.commit()
+            return jsonify({"success": True, "token": token})
+    return jsonify({"success": False, "error": "Something went wrong"})
 
 # This is the registration route. It displays the registration form,
 # validates the input, checks if the provided username already exists, 

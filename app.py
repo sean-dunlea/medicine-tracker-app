@@ -2,7 +2,7 @@
 from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify
 # Server-side session management
 from flask_session import Session
-from forms import RegistrationForm, LoginForm
+from forms import RegistrationForm, LoginForm, AddMedicationForm
 from database import get_db, close_db
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -184,6 +184,36 @@ def login():
                 next_page = url_for("index")
             return redirect(next_page)
     return render_template("login.html", title="Login", form=form)
+
+@app.route("/add_medication", methods=["GET", "POST"])
+@login_required
+def add_medication():
+    form = AddMedicationForm()
+    if form.validate_on_submit():
+        username = session["username"]
+        medication_name = form.medication_name.data
+        dosage = form.dosage.data
+        frequency = form.frequency.data
+        time_of_day = form.time_of_day.data
+        start_date = form.start_date.data
+        end_date = form.end_date.data
+        instructions = form.instructions.data
+        reminders_enabled = int(form.reminders_enabled.data)
+        db = get_db()
+        user = db.execute("""
+                          SELECT user_id
+                          FROM users
+                          WHERE username = ?;
+                          """, (username,)).fetchone()
+        if user:
+            user_id = user["user_id"]
+            db.execute("""
+                       INSERT INTO medications (user_id, medication_name, dosage, frequency, time_of_day, start_date, end_date, instructions, reminders_enabled)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                       """, (user_id, medication_name, dosage, frequency, time_of_day, start_date, end_date, instructions, reminders_enabled))
+            db.commit()
+            return redirect( url_for("index") )
+    return render_template("add_medication.html", title="Add Medication", form=form)
 
 if __name__ == "__main__":
     app.run(debug=True)

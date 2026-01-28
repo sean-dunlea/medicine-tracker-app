@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify
 # Server-side session management
 from flask_session import Session
-from forms import RegistrationForm, LoginForm, AddMedicationForm
+from forms import RegistrationForm, LoginForm
 from database import get_db, close_db
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -215,7 +214,6 @@ def add_medication():
             return redirect( url_for("index") )
     return render_template("add_medication.html", title="Add Medication", form=form)
 
+
 if __name__ == "__main__":
     app.run(debug=True)
-
-#Please let me do this GitHub

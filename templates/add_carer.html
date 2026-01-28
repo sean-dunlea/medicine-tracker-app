@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<section id="add_carer">
+
+    <form action="" method="POST" novalidate>
+
+        {{ form.hidden_tag() }}
+
+        {{ form.username.label }}
+        {{ form.username() }}
+
+        {% for error in form.username.errors %}
+            {{ error }}
+        {% endfor %}
+
+        <br />
+
+        {{ form.submit() }}
+
+    </form>
+
+</section>
+
+{% endblock %}

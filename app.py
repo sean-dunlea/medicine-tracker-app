@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify
 # Server-side session management
 from flask_session import Session
-from forms import RegistrationForm, LoginForm
+from forms import RegistrationForm, LoginForm, AddMedicationForm
 from database import get_db, close_db
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -90,7 +91,7 @@ def index():
 # This route shows a small preview of what notifications
 # will look like if anyone wants to see. We'll delete this
 # later.
-@app.route("/test_notification")
+@app.route("/test_notification", methods=["GET", "POST"])
 @login_required
 def test_notification():
     send_notification(
@@ -98,7 +99,7 @@ def test_notification():
         title="Test",
         body="This is a test"
     )
-    return "Notification was sent successfully."
+    return render_template("test_notification.html", title="Test Notification")
 
 # This is called if the user gives notification permission and Firebase
 # generates a token. The token is stored in the database so we can

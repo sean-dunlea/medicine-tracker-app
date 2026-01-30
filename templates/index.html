@@ -1,24 +1,46 @@
 {% extends "base.html" %}
 
 {% block main_content %}
+<main id="index" class="container">
 
-<section id="index">
+  <header class="hero">
+    <h1>MediMate</h1>
+    <p class="subtitle">Medication Made Manageable.</p>
+  </header>
 
-</section>
-<header>App name</header>
-
-<!-- The button will only be displayed if the user is logged in -->
-{% if session["username"] %}
-    <!-- This button is needed for push notifications. If the user clicks
-    it, an FCM token will be generated -->
-    <section id="notifications">
-        <button id="enable_notifications">Enable Notifications</button>
-    </section> 
-
-    <section id="navigation">
-        <p><a href="{{ url_for('login') }}">Login</a> </p>
-        <p><a href="{{ url_for('register') }}">Create account</a> </p>
+  {% if session.get("username") %}
+    <section class="welcome">
+      <p>Welcome back, <strong>{{ session.get("username") }}</strong></p>
     </section>
-{% endif %}
 
+    <section id="notifications" class="card">
+      <h2>Reminders</h2>
+      <p class="muted">
+        Enable push notifications to get dose reminders on this device.
+      </p>
+      <button id="enable_notifications" type="button">
+        Enable Notifications
+      </button>
+      <p id="notif_status" class="muted"></p>
+    </section>
+
+    <nav id="navigation" class="nav">
+      <a class="btn" href="{{ url_for('add_medication') }}">Add Medication</a>
+      <a class="btn secondary" href="{{ url_for('logout') }}">Logout</a>
+      <a class="btn secondary" href="{{ url_for('history') }}">History</a>
+    </nav>
+
+  {% else %}
+    <section class="card">
+      <h2>Get started</h2>
+      <p class="muted">Not a member? Create an account to build your schedule and start logging doses.</p>
+
+      <nav id="navigation" class="nav">
+        <a class="btn" href="{{ url_for('register') }}">Create account</a>
+        <a class="btn secondary" href="{{ url_for('login') }}">Login</a>
+      </nav>
+    </section>
+  {% endif %}
+
+</main>
 {% endblock %}

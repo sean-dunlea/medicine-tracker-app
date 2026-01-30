@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block main_content %}
+
+<h1>Medication History</h1>
+
+{% if medications %}
+  {% for med in medications %}
+    <div class="card">
+      <strong>{{ med.medication_name }}</strong><br>
+      Dose: {{ med.dosage }}<br>
+      Frequency: {{ med.frequency }}<br>
+      {% if med.instructions %}
+        Instructions: {{ med.instructions }}
+      {% endif %}
+    </div>
+  {% endfor %}
+{% else %}
+  <p>No medications added yet.</p>
+{% endif %}
+
+{% endblock %}

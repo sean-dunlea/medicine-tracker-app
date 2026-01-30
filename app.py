@@ -6,12 +6,15 @@ from forms import RegistrationForm, LoginForm, AddMedicationForm
 from database import get_db, close_db
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from datetime import timedelta
 
 app = Flask(__name__)
 # Secret key for signing sessions to protect against CSRF attacks.
 app.config["SECRET_KEY"] = "this-is-my-secret-key"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+
+app.permanent_session_lifetime = timedelta(days=30) # makes the lifetime of remember me to be 30 days
 
 # These are needed to send push notifications
 import firebase_admin
@@ -179,6 +182,7 @@ def login():
         else:
             session.clear()
             session["username"] = username
+            session.permanent = form.remember.data #this line makes "remember me" work
             next_page = request.args.get("next")
             if not next_page:
                 next_page = url_for("index")
@@ -212,8 +216,40 @@ def add_medication():
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
                        """, (user_id, medication_name, dosage, frequency, time_of_day, start_date, end_date, instructions, reminders_enabled))
             db.commit()
-            return redirect( url_for("index") )
+            return redirect( url_for("history") )
     return render_template("add_medication.html", title="Add Medication", form=form)
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
+
+
+@app.route("/history")
+@login_required
+def history():
+    db = get_db()
+
+    user = db.execute(
+        "SELECT user_id FROM users WHERE username = ?",
+        (session["username"],),
+    ).fetchone()
+
+    medications = db.execute(
+        """
+        SELECT *
+        FROM medications
+        WHERE user_id = ?
+        ORDER BY start_date DESC;
+        """,
+        (user["user_id"],),
+    ).fetchall()
+
+    return render_template(
+        "history.html",
+        title="Medication History",
+        medications=medications
+    )
 
 
 if __name__ == "__main__":

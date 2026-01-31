@@ -32,15 +32,26 @@ DROP TABLE IF EXISTS medications;
 -- need to be taken forever
 -- Users can opt in for reminders or not
 CREATE TABLE medications (
-    medication_id INTEGER PRIMARY KEY,
+    user_medication_id INTEGER PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(user_id),
     medication_name TEXT NOT NULL,
-    dosage TEXT NOT NULL,
-    frequency TEXT NOT NULL,
-    time_of_day TEXT,
+    dosage_amount REAL NOT NULL, 
+    dosage_unit TEXT NOT NULL, -- e.g. mg, ml, tablet etc.
+    frequency_count INT NOT NULL, -- e.g. 1/2/3/ times per day
+    frequency_type TEXT NOT NULL, -- e.g. daily, weekly etc.
     start_date DATE NOT NULL,
     end_date DATE,
     instructions TEXT,
-    reminders_enabled INTEGER DEFAULT 0,
-    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    reminders_enabled BOOLEAN NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS medication_times;
+
+-- I separated time_of_day into its own separate table
+-- to make handling multiple times per day easier
+CREATE TABLE medication_times (
+    time_id INTEGER PRIMARY KEY,
+    user_medication_id INT NOT NULL REFERENCES medications(user_medication_id),
+    time_of_day TIME NOT NULL
 );

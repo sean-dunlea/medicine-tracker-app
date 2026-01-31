@@ -196,27 +196,47 @@ def add_medication():
     if form.validate_on_submit():
         username = session["username"]
         medication_name = form.medication_name.data
-        dosage = form.dosage.data
-        frequency = form.frequency.data
+        dosage_amount = float(form.dosage_amount.data)
+        dosage_unit = form.dosage_unit.data
+        frequency_count = form.frequency_count.data
+        frequency_type = form.frequency_type.data
         time_of_day = form.time_of_day.data
         start_date = form.start_date.data
         end_date = form.end_date.data
         instructions = form.instructions.data
         reminders_enabled = int(form.reminders_enabled.data)
-        db = get_db()
-        user = db.execute("""
-                          SELECT user_id
-                          FROM users
-                          WHERE username = ?;
-                          """, (username,)).fetchone()
-        if user:
-            user_id = user["user_id"]
-            db.execute("""
-                       INSERT INTO medications (user_id, medication_name, dosage, frequency, time_of_day, start_date, end_date, instructions, reminders_enabled)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-                       """, (user_id, medication_name, dosage, frequency, time_of_day, start_date, end_date, instructions, reminders_enabled))
-            db.commit()
-            return redirect( url_for("history") )
+        has_errors = False
+        # For validating the dates
+        if (end_date) and (end_date < start_date):
+            form.end_date.errors.append("The end date cannot be before the start date.")
+            has_errors = True
+        # For validating the number of time entries provided.
+        times = [time for time in time_of_day if time is not None]
+        if frequency_type != "as_needed":
+            if len(times) != frequency_count:
+                form.time_of_day.errors.append(f"Please enter exactly {frequency_count} time(s).")
+                has_errors = True
+        if not has_errors:
+            db = get_db()
+            user = db.execute("""
+                            SELECT user_id
+                            FROM users
+                            WHERE username = ?;
+                            """, (username,)).fetchone()
+            if user:
+                user_id = user["user_id"]
+                cursor = db.execute("""
+                        INSERT INTO medications (user_id, medication_name, dosage_amount, dosage_unit, frequency_count, frequency_type, start_date, end_date, instructions, reminders_enabled)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                        """, (user_id, medication_name, dosage_amount, dosage_unit, frequency_count, frequency_type, start_date, end_date, instructions, reminders_enabled))
+                user_medication_id = cursor.lastrowid
+                for time in times:
+                    db.execute("""
+                            INSERT INTO medication_times (user_medication_id, time_of_day)
+                            VALUES (?, ?);
+                            """, (user_medication_id, time.strftime("%H:%M")))
+                db.commit()
+                return redirect( url_for("history") )
     return render_template("add_medication.html", title="Add Medication", form=form)
 
 @app.route("/logout")

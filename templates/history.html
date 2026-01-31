@@ -7,8 +7,8 @@
   {% for med in medications %}
     <div class="card">
       <strong>{{ med.medication_name }}</strong><br>
-      Dose: {{ med.dosage }}<br>
-      Frequency: {{ med.frequency }}<br>
+      Dosage: {{ med.dosage_amount }} {{ med.dosage_unit }}<br>
+      Frequency: {{ med.frequency_count }} time(s) {{ med.frequency_type }}<br>
       {% if med.instructions %}
         Instructions: {{ med.instructions }}
       {% endif %}

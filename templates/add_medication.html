@@ -17,26 +17,43 @@
 
         <br />
 
-        {{ form.dosage.label }}
-        {{ form.dosage() }}
+        {{ form.dosage_amount.label }}
+        {{ form.dosage_amount() }}
 
-        {% for error in form.dosage.errors %}
+        {% for error in form.dosage_amount.errors %}
+            {{ error }}
+        {% endfor %}
+
+        {{ form.dosage_unit.label }}
+        {{ form.dosage_unit() }}
+
+        {% for error in form.dosage_unit.errors %}
             {{ error }}
         {% endfor %}
 
         <br />
 
-        {{ form.frequency.label }}
-        {{ form.frequency() }}
+        {{ form.frequency_count.label }}
+        {{ form.frequency_count() }}
 
-        {% for error in form.frequency.errors %}
+        {% for error in form.frequency_count.errors %}
+            {{ error }}
+        {% endfor %}
+
+        {{ form.frequency_type.label }}
+        {{ form.frequency_type() }}
+
+        {% for error in form.frequency_type.errors %}
             {{ error }}
         {% endfor %}
 
         <br />
 
-        {{ form.time_of_day.label }}
-        {{ form.time_of_day() }}
+        {% for time in form.time_of_day %}
+            {{ time(step=300) }}
+        {% endfor %}
+
+        <button type="button" id="add_time">+</button>
 
         {% for error in form.time_of_day.errors %}
             {{ error }}

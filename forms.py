@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, DateField, TextAreaField
-from wtforms.validators import DataRequired, Length, EqualTo, Regexp, InputRequired
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, DecimalField, SelectField, IntegerField, TimeField, FieldList, DateField, TextAreaField
+from wtforms.validators import DataRequired, Length, EqualTo, Regexp, InputRequired, NumberRange
 
 username_rule = Regexp(
     r"^[A-Za-z0-9_.-]+$",
@@ -12,7 +12,7 @@ class LoginForm(FlaskForm):
         "Username",
         validators=[
             DataRequired(message="Username is required."),
-            Length(min=3, max=30, message="Usernamen must be 3-30 characters"),
+            Length(min=3, max=30, message="Username must be 3-30 characters"),
         ],
         render_kw={
             "autocomplete": "username",
@@ -76,13 +76,14 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField("Create account")
 
 class AddMedicationForm(FlaskForm):
-    medication_name = StringField("Medication Name", validators=[InputRequired()], render_kw={"placeholder": "e.g. Paracetamol"})
-    dosage = StringField("Dosage", validators=[InputRequired()], render_kw={"placeholder": "e.g. 200 mg"})
-    frequency = SelectField("Frequency", choices=[("once_per_day", "Once per day"), ("twice_per_day", "Twice per day"), ("three_times_per_day", 
-    "Three times per day"), ("as_needed", "As needed")])
-    time_of_day = StringField("Time of Day", render_kw={"placeholder": "e.g. 08:00, 20:00"})
+    medication_name = StringField("Medication Name", validators=[InputRequired()], render_kw={"placeholder": "Paracetamol"})
+    dosage_amount = DecimalField("Dosage", places=2, validators=[InputRequired(), NumberRange(min=0.01)], render_kw={"step": "1", "placeholder": "10"})
+    dosage_unit = SelectField("", choices=[("mg", "mg"), ("ml", "ml"), ("tablet", "tablet(s)"), ("application", "application(s)")])
+    frequency_count = IntegerField("Frequency", validators=[InputRequired(), NumberRange(min=1, max=10)], render_kw={"step": "1", "placeholder": "1"})
+    frequency_type = SelectField("", choices=[("daily", "Daily"), ("weekly", "Weekly"), ("monthly", "Monthly"), ("as_needed", "As needed")])
+    time_of_day = FieldList(TimeField("Time of Day"), min_entries=1)
     start_date = DateField("Start Date", validators=[InputRequired()], format="%Y-%m-%d")
     end_date = DateField("End Date", format="%Y-%m-%d")
-    instructions = TextAreaField("Instructions", render_kw={"placeholder": "e.g. Take with food"})
+    instructions = TextAreaField("Further Instructions (Optional)", render_kw={"placeholder": "e.g. Take with food"})
     reminders_enabled = BooleanField("Enable reminders")
     submit = SubmitField("Add medication")

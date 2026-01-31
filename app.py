@@ -189,6 +189,11 @@ def login():
             return redirect(next_page)
     return render_template("login.html", title="Login", form=form)
 
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect( url_for("index") )
+
 @app.route("/add_medication", methods=["GET", "POST"])
 @login_required
 def add_medication():
@@ -239,38 +244,24 @@ def add_medication():
                 return redirect( url_for("history") )
     return render_template("add_medication.html", title="Add Medication", form=form)
 
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("index"))
-
-
 @app.route("/history")
 @login_required
 def history():
     db = get_db()
-
-    user = db.execute(
-        "SELECT user_id FROM users WHERE username = ?",
-        (session["username"],),
-    ).fetchone()
-
-    medications = db.execute(
-        """
-        SELECT *
-        FROM medications
-        WHERE user_id = ?
-        ORDER BY start_date DESC;
-        """,
-        (user["user_id"],),
-    ).fetchall()
-
-    return render_template(
-        "history.html",
-        title="Medication History",
-        medications=medications
-    )
-
+    username = session["username"]
+    user = db.execute("""
+                    SELECT user_id FROM users WHERE username = ?;
+                    """, (username,),).fetchone()
+    medications = []
+    if user:
+        user_id = user["user_id"]
+        medications = db.execute("""
+                                SELECT *
+                                FROM medications
+                                WHERE user_id = ?
+                                ORDER BY start_date DESC;
+                                """, (user_id,),).fetchall()
+    return render_template("history.html", title="Medication History", medications=medications)
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -29,9 +29,26 @@ app.teardown_appcontext(close_db)
 
 # This will run before every request. It avoids repeating session.get()
 # everywhere and makes the decorators cleaner.
+# @app.before_request
+# def load_logged_in_user():
+#     g.user = session.get("username", None)
 @app.before_request
 def load_logged_in_user():
-    g.user = session.get("username", None)
+    username = session.get("username", None)
+    if username:
+        db = get_db()
+        user = db.execute("""
+                          SELECT *
+                          FROM users
+                          WHERE username = ?;
+                          """, (username,)).fetchone()
+        if user is None:
+            session.clear()
+            g.user = None
+        else:
+            g.user = user
+    else:
+        g.user = None
 
 # Protects routes that require a user to be logged in.
 def login_required(view):
@@ -78,14 +95,13 @@ def send_notification(username, title, body):
                 # this removes it from the database so we don't keep
                 # retrying it
                 if "registration-token-not-registered" in str(e):
-                    db.execute(
-                        """DELETE FROM fcm_tokens
-                        WHERE token = ?;
-                        """, (fcm_token,)
-                    )
+                    db.execute("""
+                               DELETE FROM fcm_tokens
+                               WHERE token = ?;
+                               """, (fcm_token,))
                     db.commit()
                 print(f"Error: {e}")
-
+                
 # This is the home page route.
 @app.route("/")
 def index():
@@ -182,7 +198,7 @@ def login():
         else:
             session.clear()
             session["username"] = username
-            session.permanent = form.remember.data #this line makes "remember me" work
+            session.permanent = form.remember.data # This line makes "Remember Me?" work
             next_page = request.args.get("next")
             if not next_page:
                 next_page = url_for("index")
@@ -209,7 +225,7 @@ def add_medication():
         start_date = form.start_date.data
         end_date = form.end_date.data
         instructions = form.instructions.data
-        reminders_enabled = int(form.reminders_enabled.data)
+        push_notifications_enabled = int(form.push_notifications_enabled.data)
         has_errors = False
         # For validating the dates
         if (end_date) and (end_date < start_date):
@@ -231,9 +247,9 @@ def add_medication():
             if user:
                 user_id = user["user_id"]
                 cursor = db.execute("""
-                        INSERT INTO medications (user_id, medication_name, dosage_amount, dosage_unit, frequency_count, frequency_type, start_date, end_date, instructions, reminders_enabled)
+                        INSERT INTO medications (user_id, medication_name, dosage_amount, dosage_unit, frequency_count, frequency_type, start_date, end_date, instructions, push_notifications_enabled)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-                        """, (user_id, medication_name, dosage_amount, dosage_unit, frequency_count, frequency_type, start_date, end_date, instructions, reminders_enabled))
+                        """, (user_id, medication_name, dosage_amount, dosage_unit, frequency_count, frequency_type, start_date, end_date, instructions, push_notifications_enabled))
                 user_medication_id = cursor.lastrowid
                 for time in times:
                     db.execute("""

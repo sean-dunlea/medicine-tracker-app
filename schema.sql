@@ -42,7 +42,7 @@ CREATE TABLE medications (
     start_date DATE NOT NULL,
     end_date DATE,
     instructions TEXT,
-    reminders_enabled BOOLEAN NOT NULL DEFAULT 0,
+    push_notifications_enabled BOOLEAN NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

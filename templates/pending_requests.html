@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Pending Mate Requests</h1>
+
+<table>
+    {% for invite in invites %}
+        <tr>
+            <td>{{ invite["receiver"] }}</td>
+            <td>
+                <a href="{{ url_for('cancel_request', receiver=invite['receiver'])}}">
+                    Cancel Request
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
+
+{% endblock %}

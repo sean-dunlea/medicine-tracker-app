@@ -33,3 +33,8 @@ class AddMedicationForm(FlaskForm):
     instructions = TextAreaField("Further Instructions (Optional)", render_kw={"placeholder": "e.g. Take with food"})
     push_notifications_enabled = BooleanField("Enable push notifications")
     submit = SubmitField("Add medication")
+
+class AddMateForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired(message="Username is required."), Length(min=3, max=30, message="Username must be 3-30 characters"),],
+    render_kw={"placeholder": "Enter your username",},)
+    submit = SubmitField("Send invite")

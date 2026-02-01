@@ -88,10 +88,10 @@
 
         <br />
 
-        {{ form.reminders_enabled.label }}
-        {{ form.reminders_enabled() }}
+        {{ form.push_notifications_enabled.label }}
+        {{ form.push_notifications_enabled(id="push_notifications_enabled") }}
 
-        {% for error in form.reminders_enabled.errors %}
+        {% for error in form.push_notifications_enabled.errors %}
             {{ error }}
         {% endfor %}
 

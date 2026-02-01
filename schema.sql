@@ -55,3 +55,12 @@ CREATE TABLE medication_times (
     user_medication_id INT NOT NULL REFERENCES medications(user_medication_id),
     time_of_day TIME NOT NULL
 );
+
+
+DROP TABLE IF EXISTS invites;
+
+--Table to differentiate the sender and receiver of invitess
+CREATE TABLE invites (
+    sender TEXT NOT NULL,
+    receiver TEXT NOT NULL
+);

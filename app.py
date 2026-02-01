@@ -2,7 +2,7 @@
 from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify
 # Server-side session management
 from flask_session import Session
-from forms import RegistrationForm, LoginForm, AddMedicationForm
+from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm
 from database import get_db, close_db
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -278,6 +278,55 @@ def history():
                                 ORDER BY start_date DESC;
                                 """, (user_id,),).fetchall()
     return render_template("history.html", title="Medication History", medications=medications)
+
+
+@app.route("/add_mate", methods=["GET", "POST"])
+@login_required
+def add_mate():
+    form = AddMateForm()
+    if form.validate_on_submit():
+        sender = session["username"]
+        receiver = form.username.data
+        db = get_db()
+        existing_user = db.execute("""
+                                SELECT *
+                                FROM users
+                                WHERE username = ?;
+                                """, (receiver,)).fetchone()
+        if existing_user is not None:
+            db.execute("""
+                       INSERT INTO invites (sender, receiver)
+                       VALUES
+                       (?, ?);
+                       """, (sender, receiver))
+            db.commit()
+
+            invites = db.execute("""
+                            SELECT *
+                            FROM invites
+                            WHERE sender = ?""", (sender,))
+            return render_template("pending_requests.html", invites=invites)
+        else:
+            form.username.errors.append("This user does not exist.")
+    return render_template("add_mate.html", title="Add Mates", form=form)
+
+@app.route("/cancel_request/<string:receiver>")
+@login_required
+def cancel_request(receiver):
+    sender = session["username"]
+    db = get_db()
+    db.execute(
+        '''DELETE FROM invites
+        WHERE sender = ? AND receiver = ?;''', (sender, receiver,))
+    db.commit()
+    invites = db.execute("""
+                            SELECT *
+                            FROM invites
+                            WHERE sender = ?""", (sender,))
+    return render_template("pending_requests.html", invites=invites)
+        
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

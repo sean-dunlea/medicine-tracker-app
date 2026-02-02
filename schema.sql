@@ -9,7 +9,8 @@ CREATE TABLE users
 (
     user_id INTEGER PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    timezone TEXT -- Stored here to send push notifications at user's local time
 );
 
 DROP TABLE IF EXISTS fcm_tokens;
@@ -56,10 +57,20 @@ CREATE TABLE medication_times (
     time_of_day TIME NOT NULL
 );
 
+-- I added this table to make avoiding duplicate messages easier
+DROP TABLE IF EXISTS medication_reminders_sent;
+
+CREATE TABLE medication_reminders_sent (
+    id INTEGER PRIMARY KEY,
+    user_medication_id INTEGER NOT NULL,
+    time_of_day TEXT NOT NULL,
+    date_sent DATE NOT NULL,
+    UNIQUE(user_medication_id, time_of_day, date_sent) -- This ensures a reminder is only sent once per medication per time per day
+);     
 
 DROP TABLE IF EXISTS invites;
 
---Table to differentiate the sender and receiver of invitess
+-- Table to differentiate the sender and receiver of invites
 CREATE TABLE invites (
     sender TEXT NOT NULL,
     receiver TEXT NOT NULL

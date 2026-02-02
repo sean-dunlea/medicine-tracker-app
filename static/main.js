@@ -12,3 +12,14 @@ if (add_time_button) {
     lastInput.after(newInput);
 });
 }
+
+// For getting the user's timezone (to send push notifications)
+let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+fetch("set_timezone", {
+    method: "POST",
+    headers: {
+    "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ timezone }),
+});

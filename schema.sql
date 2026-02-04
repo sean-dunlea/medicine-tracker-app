@@ -75,3 +75,11 @@ CREATE TABLE invites (
     sender TEXT NOT NULL,
     receiver TEXT NOT NULL
 );
+
+DROP TABLE IF EXISTS friends;
+
+CREATE TABLE friends (
+    friend1 TEXT NOT NULL,
+    friend2 TEXT NOT NULL
+);
+

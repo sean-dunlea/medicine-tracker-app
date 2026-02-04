@@ -23,9 +23,9 @@ cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
 # These are needed to schedule reminders
-#from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timezone
-#import pytz # This is important for handling different timezones
+import pytz # This is important for handling different timezones
 
 Session(app)
 
@@ -107,69 +107,69 @@ def send_notification(username, title, body):
                     db.commit()
                 print(f"Error: {e}")
 
-## This function checks every minute which medications are due
-#def reminder_scheduler():
-#    with app.app_context():
-#        # current_time = datetime.now()
-#        current_time_utc = datetime.now(timezone.utc)
-#        db = get_db()
-#        # Get all medications for today
-#        medications = db.execute(""" 
-#                                SELECT m.user_medication_id, m.user_id, u.username, m.medication_name, m.dosage_amount, m.dosage_unit, mt.time_of_day, u.timezone
-#                                FROM medications m JOIN medication_times mt ON m.user_medication_id = mt.user_medication_id
-#                                JOIN users u ON m.user_id = u.user_id
-#                                WHERE m.push_notifications_enabled = 1 AND m.start_date <= ? AND (m.end_date IS NULL OR m.end_date >= ?);
-#                                """, (current_time_utc.date(), current_time_utc.date())).fetchall()
-#        for medication in medications:
-#            # Convert the current UTC time into the user's local timezone
-#            user_time_zone = pytz.timezone(medication["timezone"]) if medication["timezone"] else pytz.utc
-#            user_current_time = current_time_utc.astimezone(user_time_zone)
-#            if medication["time_of_day"] == user_current_time.strftime("%H:%M"):
-#                # Check if the reminder was already sent today (we want to avoid duplicates)
-#                reminder_sent = db.execute("""
-#                                        SELECT 1
-#                                        FROM medication_reminders_sent
-#                                        WHERE user_medication_id = ? AND time_of_day = ? AND date_sent = ?;
-#                                        """, (medication["user_medication_id"], medication["time_of_day"], user_current_time.date())).fetchone()
-#                # Skip it if it was already sent
-#                if reminder_sent:
-#                    continue
-#                username = medication["username"]
-#                send_notification(
-#                    username=username,
-#                    title="Medication Reminder",
-#                    body=f"{medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']} is due."
-#                )
-#                # Record that the notification was sent
-#                db.execute("""
-#                        INSERT OR IGNORE INTO medication_reminders_sent (user_medication_id, time_of_day, date_sent)
-#                        VALUES (?, ?, ?);
-#                        """, (medication["user_medication_id"], medication["time_of_day"], user_current_time.date()))
-#                db.commit()
-#scheduler = BackgroundScheduler()
-#scheduler.add_job(reminder_scheduler, "interval", minutes=1)
-#scheduler.start()
+# This function checks every minute which medications are due
+def reminder_scheduler():
+    with app.app_context():
+        # current_time = datetime.now()
+        current_time_utc = datetime.now(timezone.utc)
+        db = get_db()
+        # Get all medications for today
+        medications = db.execute(""" 
+                                SELECT m.user_medication_id, m.user_id, u.username, m.medication_name, m.dosage_amount, m.dosage_unit, mt.time_of_day, u.timezone
+                                FROM medications m JOIN medication_times mt ON m.user_medication_id = mt.user_medication_id
+                                JOIN users u ON m.user_id = u.user_id
+                                WHERE m.push_notifications_enabled = 1 AND m.start_date <= ? AND (m.end_date IS NULL OR m.end_date >= ?);
+                                """, (current_time_utc.date(), current_time_utc.date())).fetchall()
+        for medication in medications:
+            # Convert the current UTC time into the user's local timezone
+            user_time_zone = pytz.timezone(medication["timezone"]) if medication["timezone"] else pytz.utc
+            user_current_time = current_time_utc.astimezone(user_time_zone)
+            if medication["time_of_day"] == user_current_time.strftime("%H:%M"):
+                # Check if the reminder was already sent today (we want to avoid duplicates)
+                reminder_sent = db.execute("""
+                                        SELECT 1
+                                        FROM medication_reminders_sent
+                                        WHERE user_medication_id = ? AND time_of_day = ? AND date_sent = ?;
+                                        """, (medication["user_medication_id"], medication["time_of_day"], user_current_time.date())).fetchone()
+                # Skip it if it was already sent
+                if reminder_sent:
+                    continue
+                username = medication["username"]
+                send_notification(
+                    username=username,
+                    title="Medication Reminder",
+                    body=f"{medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']} is due."
+                )
+                # Record that the notification was sent
+                db.execute("""
+                        INSERT OR IGNORE INTO medication_reminders_sent (user_medication_id, time_of_day, date_sent)
+                        VALUES (?, ?, ?);
+                        """, (medication["user_medication_id"], medication["time_of_day"], user_current_time.date()))
+                db.commit()
+scheduler = BackgroundScheduler()
+scheduler.add_job(reminder_scheduler, "interval", minutes=1)
+scheduler.start()
    
 # This is the home page route.
 @app.route("/")
 def index():
     return render_template("index.html", title="Home")
 
-#@app.route("/set_timezone", methods=["POST"])
-#@login_required
-#def set_timezone():
-#    timezone = request.json.get("timezone")
-#    if timezone:
-#        db = get_db()
-#        username = session["username"]
-#        db.execute("""
-#                   UPDATE users
-#                   SET timezone = ?
-#                   WHERE username = ?;
-#                   """, (timezone, username))
-#        db.commit()
-#    # Returns 204 No Content
-#    return "", 204
+@app.route("/set_timezone", methods=["POST"])
+@login_required
+def set_timezone():
+    timezone = request.json.get("timezone")
+    if timezone:
+        db = get_db()
+        username = session["username"]
+        db.execute("""
+                   UPDATE users
+                   SET timezone = ?
+                   WHERE username = ?;
+                   """, (timezone, username))
+        db.commit()
+    # Returns 204 No Content
+    return "", 204
 
 # This route shows a small preview of what notifications
 # will look like if anyone wants to see. We'll delete this

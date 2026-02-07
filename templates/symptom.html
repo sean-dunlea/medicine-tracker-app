@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<main id="symptom_log">
+
+  <header>
+    <h1>Symptom Log</h1>
+    <p>Record symptoms and track how you’re feeling over time.</p>
+  </header>
+
+  <section>
+    <h2>Add a symptom</h2>
+
+    <form method="POST" novalidate>
+      {{ form.hidden_tag() }}
+
+      <fieldset> <!-- using fieldset + legend for accessibility screen reader to be implemented later -->
+        <legend>Symptom details</legend>
+
+        <p>
+          {{ form.symptom_name.label }}
+          {{ form.symptom_name() }}
+        </p>
+
+        <p>
+          {{ form.severity.label }}
+          {{ form.severity() }}
+        </p>
+
+        <p>
+          {{ form.symptom_date.label }}
+          {{ form.symptom_date() }}
+        </p>
+
+        <p>
+          {{ form.symptom_time.label }}
+          {{ form.symptom_time() }}
+        </p>
+
+        <p>
+          {{ form.medication_name.label }}
+          {{ form.medication_name() }}
+        </p>
+
+        <p>
+          {{ form.notes.label }}
+          {{ form.notes() }}
+        </p>
+
+        <p>
+          {{ form.submit() }}
+        </p>
+      </fieldset>
+    </form>
+  </section>
+
+  <section>
+    <h2>Symptom history</h2>
+
+    {% if symptoms %}
+      <ul>
+        {% for symptom in symptoms %}
+          <li>
+            <article>
+              <strong>{{ symptom.symptom_name }}</strong><br>
+              Date: {{ symptom.symptom_date }}
+              {% if symptom.symptom_time %}
+                at {{ symptom.symptom_time }}
+              {% endif %}
+              <br>
+              Severity: {{ symptom.severity }}
+
+              {% if symptom.medication_name %}
+                <br>Medication: {{ symptom.medication_name }}
+              {% endif %}
+
+              {% if symptom.notes %}
+                <br><em>{{ symptom.notes }}</em>
+              {% endif %}
+            </article>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No symptoms logged yet.</p>
+    {% endif %}
+  </section>
+
+</main>
+{% endblock %}

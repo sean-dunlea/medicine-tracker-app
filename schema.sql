@@ -83,3 +83,18 @@ CREATE TABLE friends (
     friend2 TEXT NOT NULL
 );
 
+DROP TABLE IF EXISTS symptoms;
+CREATE TABLE symptoms (
+symptom_id INTEGER PRIMARY KEY,
+user_id INTEGER NOT NULL,
+symptom_name TEXT NOT NULL,
+severity INTEGER NOT NULL,
+symptom_date DATE NOT NULL,
+symptom_time TIME,
+notes TEXT,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+
+

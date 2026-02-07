@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, DecimalField, SelectField, IntegerField, TimeField, FieldList, DateField, TextAreaField
-from wtforms.validators import DataRequired, Length, EqualTo, Regexp, InputRequired, NumberRange
+from wtforms.validators import DataRequired, Length, EqualTo, Regexp, InputRequired, NumberRange, Optional
 
 username_rule = Regexp(r"^[A-Za-z0-9_.-]+$", message="Username can contain letters, numbers, dots, hyphens, and underscores only.")
 
@@ -38,3 +38,40 @@ class AddMateForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(message="Username is required."), Length(min=3, max=30, message="Username must be 3-30 characters"),],
     render_kw={"placeholder": "Enter your username",},)
     submit = SubmitField("Send invite")
+
+class SymptomForm(FlaskForm):
+    symptom_name = StringField(
+        "Symptom",
+        validators=[DataRequired(message="Please enter a symptom.")]
+    )
+    severity = SelectField(
+        "Severity",
+        choices=[
+            ("1", "1 - Very Mild"),
+            ("2", "2 - Mild"),
+            ("3", "3 - Moderate"),
+            ("4", "4 - Severe"),
+            ("5", "5 - Very Severe"),
+        ],
+        validators=[DataRequired()]
+    )
+    symptom_date = DateField(
+        "Date",
+        validators=[DataRequired()],
+        format="%Y-%m-%d"  
+    )
+    symptom_time = TimeField(
+        "Time",
+        validators=[Optional()],
+        format="%H:%M"
+    )
+    medication_name = StringField(
+        "Medication (if relevant)",
+        validators=[Optional()],
+        render_kw={"placeholder": "e.g. Paracetamol"},
+    )
+    notes = TextAreaField(
+        "Notes",
+        validators=[Optional()]
+    )
+    submit = SubmitField("Save Symptom")

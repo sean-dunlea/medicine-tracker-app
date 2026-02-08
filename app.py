@@ -219,22 +219,26 @@ def save_token():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
+        email = form.email.data
         username = form.username.data
         password = form.password.data
         db = get_db()
         existing_user = db.execute("""
                                 SELECT *
                                 FROM users
-                                WHERE username = ?;
-                                """, (username,)).fetchone()
+                                WHERE email = ? OR username = ?;
+                                """, (email, username)).fetchone()
         if existing_user is not None:
-            form.username.errors.append("This username is already taken.")
+            if existing_user["email"] == email:
+                form.email.errors.append("This email is already in use.")
+            if existing_user["username"] == username:
+                form.username.errors.append("This username is already taken.")
         else:
             db.execute("""
-                       INSERT INTO users (username, password)
+                       INSERT INTO users (email, username, password)
                        VALUES
-                       (?, ?);
-                       """, (username, generate_password_hash(password)))
+                       (?, ?, ?);
+                       """, (email, username, generate_password_hash(password)))
             db.commit()
             return redirect( url_for("login") )
     return render_template("register.html", title="Register", form=form)
@@ -247,21 +251,20 @@ def register():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        username = form.username.data
+        identifier = form.identifier.data # Changed the variable name to identifier as the user may enter their email or username
         password = form.password.data
         db = get_db()
         existing_user = db.execute("""
                                 SELECT *
                                 FROM users
-                                WHERE username = ?;
-                                """, (username,)).fetchone()
-        if existing_user is None:
-            form.username.errors.append("This username does not exist.")
-        elif not check_password_hash(existing_user["password"], password):
-            form.password.errors.append("The password you have provided is incorrect.")
+                                WHERE username = ? OR email = ?;
+                                """, (identifier, identifier)).fetchone()
+        # Changed error message to be generic to prevent against enumeration attacks
+        if (existing_user is None) or (not check_password_hash(existing_user["password"], password)):
+            form.identifier.errors.append("The information you have provided is incorrect.")
         else:
             session.clear()
-            session["username"] = username
+            session["username"] = existing_user["username"]
             session.permanent = form.remember.data # This line makes "Remember Me?" work
             next_page = request.args.get("next")
             if not next_page:
@@ -342,7 +345,6 @@ def history():
                                 ORDER BY start_date DESC;
                                 """, (user_id,),).fetchall()
     return render_template("history.html", title="Medication History", medications=medications)
-
 
 @app.route("/add_mate", methods=["GET", "POST"])
 @login_required

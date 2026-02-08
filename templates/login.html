@@ -13,11 +13,11 @@
     {{ form.hidden_tag() }}
 
     <p>
-      {{ form.username.label }}
-      {{ form.username() }}
-      {% if form.username.errors %}
+      {{ form.identifier.label }}
+      {{ form.identifier() }}
+      {% if form.identifier.errors %}
         <ul>
-          {% for error in form.username.errors %}
+          {% for error in form.identifier.errors %}
             <li class="error">{{ error }}</li>
           {% endfor %}
         </ul>

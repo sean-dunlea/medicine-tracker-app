@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users
 (
     user_id INTEGER PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     timezone TEXT -- Stored here to send push notifications at user's local time

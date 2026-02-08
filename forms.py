@@ -1,11 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, DecimalField, SelectField, IntegerField, TimeField, FieldList, DateField, TextAreaField
-from wtforms.validators import DataRequired, Length, EqualTo, Regexp, InputRequired, NumberRange, Optional
+from wtforms import EmailField, StringField, PasswordField, BooleanField, SubmitField, DecimalField, SelectField, IntegerField, TimeField, FieldList, DateField, TextAreaField
+from wtforms.validators import DataRequired, Email, Length, EqualTo, Regexp, InputRequired, NumberRange, Optional
 
 username_rule = Regexp(r"^[A-Za-z0-9_.-]+$", message="Username can contain letters, numbers, dots, hyphens, and underscores only.")
 
 class LoginForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired(message="Username is required."), Length(min=3, max=30, message="Username must be 3-30 characters"),],
+    # Changed variable name to "identifier" as users may enter either their username or email.
+    identifier = StringField("Username or Email", validators=[DataRequired(message="Username is required."), Length(min=3, max=30, message="Username must be 3-30 characters"),],
         render_kw={"autocomplete": "username", "autofocus": True, "placeholder": "Enter your username",},)
     password = PasswordField("Password", validators=[DataRequired(message="Password is required.")], render_kw={"autocomplete": "current-password", "placeholder": 
         "Enter your password",},)
@@ -13,6 +14,8 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Sign in")
 
 class RegistrationForm(FlaskForm):
+    email = EmailField("Email: ", validators=[DataRequired(message="Email is required."), Email(message="Please enter a valid email address.")], 
+        render_kw={"autocomplete": "email", "placeholder": "Enter your email address"})
     username = StringField("Username", validators=[DataRequired(message="Username is required."), Length(min=3, max=30, message="Username must be 3–30 characters."), 
         username_rule,], render_kw={"autocomplete": "username", "placeholder": "Choose a username",},)
     password = PasswordField("Password", validators=[DataRequired(message="Password is required."), Length(min=8, message="Password must be at least 8 characters."),],

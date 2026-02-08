@@ -30,3 +30,14 @@ local time.
 Install Dependencies:
     - Ensure you are in the project root, then run "pip install APScheduler pytz" or
     "pip install -r requirements.txt" in the terminal.
+
+-------------------------------------------------------------------------------------------------
+
+Email Validation:
+
+This project now also uses WTForms EmailField and Email validators to validate user email
+addresses during registration.
+
+Install Dependencies:
+    - Ensure you are in the project root, then run "pip install email-validator" or
+    "pip install -r requirements.txt" in the terminal.

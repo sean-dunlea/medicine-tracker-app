@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+{% endblock %}
+
+{% block main_content %}
+
+<aside class="pills"></aside>
+<main id="container" 
+class="auth-container {% if request.endpoint == 'register' %}active{% endif %}">
+
+  <!-- SIGN UP -->
+  <section class="form-container sign-up" aria-labelledby="signup-title">
+    <form method="POST" action="{{ url_for('register') }}">
+      {{ register_form.hidden_tag() }}
+
+      <h1 id="signup-title">Create Account</h1>
+      <span>Register with username & password</span>
+
+      {{ register_form.username() }}
+      {{ register_form.password() }}
+      {{ register_form.confirm_password() }}
+
+      {{ register_form.submit() }}
+    </form>
+  </section>
+
+  <!-- SIGN IN -->
+  <section class="form-container sign-in" aria-labelledby="signin-title">
+    <form method="POST" action="{{ url_for('login') }}">
+      {{ login_form.hidden_tag() }}
+
+      <h1 id="signin-title">Sign In</h1>
+      <span>Welcome back</span>
+
+      {{ login_form.username() }}
+      {{ login_form.password() }}
+
+      {{ login_form.submit() }}
+    </form>
+  </section>
+
+  <!-- TOGGLE -->
+  <aside class="toggle-container" aria-hidden="true">
+    <section class="toggle">
+
+      <section class="toggle-panel toggle-left">
+        <h1>Welcome back</h1>
+        <p>Already have an account?</p>
+        <button type="button" id="login" class="ghost">Sign In</button>
+      </section>
+
+      <section class="toggle-panel toggle-right">
+        <h1>Hello there</h1>
+        <p>New here?</p>
+        <button type="button" id="register" class="ghost">Sign Up</button>
+      </section>
+
+    </section>
+  </aside>
+
+</main>
+
+{% endblock %}
+
+{% block page_js %}
+<script src="{{ url_for('static', filename='auth.js') }}"></script>
+{% endblock %}

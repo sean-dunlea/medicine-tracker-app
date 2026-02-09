@@ -7,22 +7,22 @@
 {% block main_content %}
 
 <aside class="pills"></aside>
-<main id="container" 
-class="auth-container {% if request.endpoint == 'register' %}active{% endif %}">
+<main id="container" class="auth-container {% if request.endpoint == 'register' %}active{% endif %}">
 
   <!-- SIGN UP -->
   <section class="form-container sign-up" aria-labelledby="signup-title">
     <form method="POST" action="{{ url_for('register') }}">
-      {{ register_form.hidden_tag() }}
+      {{ registration_form.hidden_tag() }}
 
       <h1 id="signup-title">Create Account</h1>
       <span>Register with username & password</span>
 
-      {{ register_form.username() }}
-      {{ register_form.password() }}
-      {{ register_form.confirm_password() }}
+      {{ registration_form.email() }}
+      {{ registration_form.username() }}
+      {{ registration_form.password() }}
+      {{ registration_form.confirm_password() }}
 
-      {{ register_form.submit() }}
+      {{ registration_form.submit() }}
     </form>
   </section>
 
@@ -34,7 +34,7 @@ class="auth-container {% if request.endpoint == 'register' %}active{% endif %}">
       <h1 id="signin-title">Sign In</h1>
       <span>Welcome back</span>
 
-      {{ login_form.username() }}
+      {{ login_form.identifier() }}
       {{ login_form.password() }}
 
       {{ login_form.submit() }}

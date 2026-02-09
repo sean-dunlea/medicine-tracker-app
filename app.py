@@ -2,7 +2,7 @@
 from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify
 # Server-side session management
 from flask_session import Session
-from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm
+from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm, SymptomForm
 from database import get_db, close_db
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -17,18 +17,10 @@ app.config["SESSION_TYPE"] = "filesystem"
 app.permanent_session_lifetime = timedelta(days=30) # This makes the lifetime of "Remember Me?" equal 30 days
 
 # These are needed to send push notifications
-try:
-    import firebase_admin
-    from firebase_admin import credentials, messaging
-
-    cred = credentials.Certificate("serviceAccountKey.json")
-    firebase_admin.initialize_app(cred)
-
-    FIREBASE_ENABLED = True
-except FileNotFoundError:
-    print("Warning: Firebase service account not found. Notifications disabled.")
-    FIREBASE_ENABLED = False
-
+import firebase_admin
+from firebase_admin import credentials, messaging
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
 
 # These are needed to schedule reminders
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -79,9 +71,6 @@ def login_required(view):
 # Example:
 # send_notification("Sean", "Reminder", "Take your medication.")
 def send_notification(username, title, body):
-    if not FIREBASE_ENABLED:
-        print(f"[Mock Notification] To: {username} | {title}: {body}")
-        return
     db = get_db()
     user = db.execute("""
                         SELECT *
@@ -229,27 +218,31 @@ def save_token():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     login_form = LoginForm()
-    register_form = RegistrationForm()
-    if register_form.validate_on_submit():
-        username = register_form.username.data
-        password = register_form.password.data
+    registration_form = RegistrationForm()
+    if registration_form.validate_on_submit():
+        email = registration_form.email.data
+        username = registration_form.username.data
+        password = registration_form.password.data
         db = get_db()
         existing_user = db.execute("""
                                 SELECT *
                                 FROM users
-                                WHERE username = ?;
-                                """, (username,)).fetchone()
+                                WHERE email = ? OR username = ?;
+                                """, (email, username)).fetchone()
         if existing_user is not None:
-            register_form.username.errors.append("This username is already taken.")
+            if existing_user["email"] == email:
+                registration_form.email.errors.append("This email is already in use.")
+            if existing_user["username"] == username:
+                registration_form.username.errors.append("This username is already taken.")
         else:
             db.execute("""
-                       INSERT INTO users (username, password)
+                       INSERT INTO users (email, username, password)
                        VALUES
-                       (?, ?);
-                       """, (username, generate_password_hash(password)))
+                       (?, ?, ?);
+                       """, (email, username, generate_password_hash(password)))
             db.commit()
             return redirect( url_for("login") )
-    return render_template("auth.html", title="Register", login_form=login_form, register_form=register_form)
+    return render_template("auth.html", title="Register", login_form=login_form, registration_form=registration_form)
 
 # This is the login route. It displays the login form, checks
 # the input against the database including the hashed password, sets
@@ -258,29 +251,28 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     login_form = LoginForm()
-    register_form = RegistrationForm()
+    registration_form = RegistrationForm()
     if login_form.validate_on_submit():
-        username = login_form.username.data
+        identifier = login_form.identifier.data # Changed the variable name to identifier as the user may enter their email or username
         password = login_form.password.data
         db = get_db()
         existing_user = db.execute("""
                                 SELECT *
                                 FROM users
-                                WHERE username = ?;
-                                """, (username,)).fetchone()
-        if existing_user is None:
-            login_form.username.errors.append("This username does not exist.")
-        elif not check_password_hash(existing_user["password"], password):
-            login_form.password.errors.append("The password you have provided is incorrect.")
+                                WHERE username = ? OR email = ?;
+                                """, (identifier, identifier)).fetchone()
+        # Changed error message to be generic to prevent against enumeration attacks
+        if (existing_user is None) or (not check_password_hash(existing_user["password"], password)):
+            login_form.identifier.errors.append("The information you have provided is incorrect.")
         else:
             session.clear()
-            session["username"] = username
+            session["username"] = existing_user["username"]
             session.permanent = login_form.remember.data # This line makes "Remember Me?" work
             next_page = request.args.get("next")
             if not next_page:
                 next_page = url_for("index")
             return redirect(next_page)
-    return render_template("auth.html", title="Login", login_form=login_form,register_form=register_form)
+    return render_template("auth.html", title="Login", login_form=login_form, registration_form=registration_form)
 
 @app.route("/logout")
 def logout():
@@ -356,36 +348,65 @@ def history():
                                 """, (user_id,),).fetchall()
     return render_template("history.html", title="Medication History", medications=medications)
 
-
 @app.route("/add_mate", methods=["GET", "POST"])
 @login_required
 def add_mate():
+    response = ""
     form = AddMateForm()
     if form.validate_on_submit():
         sender = session["username"]
         receiver = form.username.data
+        if sender == receiver:
+            form.username.errors.append("You Cannot invite yourself.")
+            return render_template("add_mate.html", title="Add Mates", form=form, response=response)
         db = get_db()
         existing_user = db.execute("""
                                 SELECT *
                                 FROM users
                                 WHERE username = ?;
                                 """, (receiver,)).fetchone()
-        if existing_user is not None:
+        
+        existing_invite = db.execute("""
+                                     SELECT *
+                                     FROM invites
+                                     WHERE sender = ? AND receiver = ?;
+                                     """, (sender, receiver,)).fetchone()
+        if existing_invite is not None:
+            form.username.errors.append("You have already sent this user an invite.")
+        elif existing_user is not None:
             db.execute("""
                        INSERT INTO invites (sender, receiver)
                        VALUES
                        (?, ?);
-                       """, (sender, receiver))
+                       """, (sender, receiver,))
             db.commit()
-
-            invites = db.execute("""
-                            SELECT *
-                            FROM invites
-                            WHERE sender = ?""", (sender,))
-            return render_template("pending_requests.html", invites=invites)
+            response = "Mate Request Sent"
         else:
             form.username.errors.append("This user does not exist.")
-    return render_template("add_mate.html", title="Add Mates", form=form)
+    return render_template("add_mate.html", title="Add Mates", form=form, response=response)
+
+@app.route("/pending_requests")
+@login_required
+def pending_requests():
+    sender = session["username"]
+    db = get_db()
+    invites = db.execute("""
+                    SELECT *
+                    FROM invites
+                    WHERE sender = ?""", (sender,))
+    return render_template("pending_requests.html", title="Add Mates", invites=invites)
+
+@app.route("/mate_requests")
+@login_required
+def mate_requests():
+    user = session["username"]
+    db = get_db()
+    invites = db.execute("""
+                    SELECT *
+                    FROM invites
+                    WHERE receiver = ?""", (user,))
+    return render_template("mate_requests.html", title="Add Mates", invites=invites)
+    
 
 @app.route("/cancel_request/<string:receiver>")
 @login_required
@@ -400,10 +421,94 @@ def cancel_request(receiver):
                             SELECT *
                             FROM invites
                             WHERE sender = ?""", (sender,))
-    return render_template("pending_requests.html", invites=invites)
+    return render_template("pending_requests.html", title="Pending Requests", invites=invites)
+
+
+@app.route("/accept_request/<string:friend1>")
+@login_required
+def accept_request(friend1):
+    friend2 = session["username"]
+    db = get_db()
+    db.execute("""
+                INSERT INTO friends (friend1, friend2)
+                VALUES
+                (?, ?);
+                """, (friend1, friend2,))
+    db.commit()
+    db.execute(
+        '''DELETE FROM invites
+        WHERE sender = ? AND receiver = ?;''', (friend1, friend2,))
+    db.commit()
+    invites = db.execute("""
+                            SELECT *
+                            FROM invites
+                            WHERE receiver = ?""", (friend2,))
+    return render_template("mate_requests.html", title="Mate Requests", invites=invites)
         
+@app.route("/reject_request/<string:sender>")
+@login_required
+def reject_request(sender):
+    user = session["username"]
+    db = get_db()
+    db.execute(
+        '''DELETE FROM invites
+        WHERE sender = ? AND receiver = ?;''', (sender, user,))
+    db.commit()
+    invites = db.execute("""
+                            SELECT *
+                            FROM invites
+                            WHERE sender = ?""", (sender,))
+    return render_template("mate_requests.html", title="Mate Requests", invites=invites)
 
-
+@app.route("/symptom", methods=["GET", "POST"])
+@login_required
+def symptom():
+    form = SymptomForm()
+    db = get_db()
+    user = db.execute(
+        "SELECT user_id FROM users WHERE username = ?",
+        (session["username"],),
+    ).fetchone()
+    if form.validate_on_submit():
+        db.execute(
+            """
+            INSERT INTO symptoms (
+                user_id,
+                symptom_name,
+                severity,
+                symptom_date,
+                symptom_time,
+                medication_name,
+                notes
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                user["user_id"],
+                form.symptom_name.data,
+                int(form.severity.data),
+                form.symptom_date.data,
+                form.symptom_time.data,
+                form.medication_name.data,
+                form.notes.data,
+            ),
+        )
+        db.commit()
+        return redirect(url_for("symptom"))
+    symptoms = db.execute(
+        """
+        SELECT *
+        FROM symptoms
+        WHERE user_id = ?
+        ORDER BY symptom_date DESC
+        """,
+        (user["user_id"],),
+    ).fetchall()
+    return render_template(
+        "symptom.html",
+        form=form,
+        symptoms=symptoms
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)

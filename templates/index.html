@@ -1,12 +1,18 @@
 {% extends "base.html" %}
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+{% endblock %}
 
 {% block main_content %}
 <main id="index" class="container">
 
-  <header class="hero">
-    <h1>MediMate</h1>
-    <p class="subtitle">Medication Made Manageable.</p>
-  </header>
+<header class="hero">
+  <h1 class="animated-title">
+    <span class="medi">Medi</span><span class="mate">Mate</span>
+  </h1>
+  <p class="subtitle">Medication Made Manageable.</p>
+</header>
+
 
   {% if session.get("username") %}
     <section class="welcome">

@@ -1,0 +1,73 @@
+/* ============================================
+   INDEX/HOMEPAGE SPECIFIC STYLES
+   ============================================ */
+
+/* CHANGED: Removed duplicate body styles, now in styles.css */
+
+/* --- Hero --- */
+.hero {
+  margin-top: 6rem;
+}
+
+.animated-title {
+  font-size: 6rem;
+  font-weight: 700;
+  display: inline-block;
+  position: relative;
+}
+
+/* Slide in "Medi" */
+.animated-title .medi {
+  color: var(--primary);
+  display: inline-block;
+  opacity: 0;
+  transform: translateX(-30px);
+  animation: mediSlide 0.5s forwards;
+}
+
+/* Slide in "Mate" */
+.animated-title .mate {
+  color: var(--primary-dark);
+  display: inline-block;
+  opacity: 0;
+  transform: translateX(30px);
+  animation: mateSlide 0.5s forwards;
+  animation-delay: 0.5s;
+}
+
+/* --- Slide animations --- */
+@keyframes mediSlide {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes mateSlide {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* --- Click/pop for both after slide --- */
+.animated-title .medi,
+.animated-title .mate {
+  animation-name: mediSlide, mateClick;
+  animation-duration: 0.5s, 0.2s;
+  animation-delay: 0s, 0.60s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes mateClick {
+  0% { transform: translateX(0) scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* CHANGED: Added subtitle styles */
+.subtitle {
+  font-size: 1.2rem;
+  color: var(--muted);
+  margin-top: var(--spacing-md);
+}

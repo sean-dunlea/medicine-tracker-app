@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+      {% block page_css %}{% endblock %}
     <meta name="viewport" content="initial-scale=1.0, width=device-width" />
 </head>
 
@@ -19,6 +20,7 @@
     </footer>
     <script type="module" src="{{ url_for('static', filename='main.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='firebase.js') }}"></script>
+    {% block page_js %}{% endblock %}
 </body>
 
 </html>

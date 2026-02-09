@@ -1,0 +1,193 @@
+/* ============================================
+   AUTH PAGE SPECIFIC STYLES
+   Handles login/register sliding animation
+   ============================================ */
+
+:root {
+  --pill-pink: #fa9191;
+  --pill-orange: #e7b075;
+  --pill-brown: #b48363;
+}
+
+/* CHANGED: Removed duplicate body background, now in styles.css */
+body {
+  overflow: hidden; /* Only for auth pages */
+}
+
+/* PILLS */
+aside.pills {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+aside.pills span {
+  position: absolute;
+  opacity: 0.45;
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  from { transform: translateY(-80px) rotate(0deg); }
+  to { transform: translateY(110vh) rotate(360deg); }
+}
+
+.capsule {
+  width: 22px;
+  height: 40px;
+  border-radius: 20px;
+}
+
+.circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+
+/* CONTAINER */
+main.auth-container {
+  background: var(--card);
+  border-radius: 30px;
+  box-shadow: 0 30px 60px rgba(0,0,0,.15);
+  position: relative;
+  overflow: hidden;
+  width: 760px;
+  max-width: 100%;
+  min-height: 480px;
+  margin: 6rem auto;
+  z-index: 2;
+}
+
+/* FORMS */
+.form-container {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  transition: all .6s ease-in-out;
+}
+
+.sign-in {
+  left: 0;
+  z-index: 2;
+}
+
+.auth-container.active .sign-in {
+  transform: translateX(100%);
+}
+
+.sign-up {
+  left: 0;
+  opacity: 0;
+  z-index: 1;
+}
+
+.auth-container.active .sign-up {
+  transform: translateX(100%);
+  opacity: 1;
+  z-index: 5;
+}
+
+/* CHANGED: Updated form styles to work with general styles.css */
+.form-container form {
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 40px;
+  height: 100%;
+}
+
+.form-container input {
+  margin: 8px 0;
+}
+
+.form-container button {
+  margin-top: var(--spacing-sm);
+  padding: 12px 45px;
+}
+
+/*  TOGGLE  */
+.toggle-container {
+  position: absolute;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: all .6s ease-in-out;
+  z-index: 10;
+}
+
+.auth-container.active .toggle-container {
+  transform: translateX(-100%);
+}
+
+.toggle {
+  background: var(--primary);
+  color: var(--cream);
+  position: relative;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  transition: all .6s ease-in-out;
+}
+
+.auth-container.active .toggle {
+  transform: translateX(50%);
+}
+
+.toggle-panel {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--spacing-lg);
+}
+
+.toggle-left {
+  transform: translateX(-200%);
+}
+
+.auth-container.active .toggle-left {
+  transform: translateX(0);
+}
+
+.toggle-right {
+  right: 0;
+}
+
+/* CHANGED: Added ghost button style for toggle buttons */
+button.ghost {
+  background: transparent;
+  border: 3px solid white;
+}
+
+button.ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Style for submit inputs */
+.form-container input[type="submit"] {
+  background: linear-gradient(to right, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  padding: 12px 45px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: var(--spacing-sm);
+  width: auto; /* Override the 100% width from general input styles */
+}
+
+.form-container input[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(199, 76, 76, 0.3);
+}

@@ -17,10 +17,18 @@ app.config["SESSION_TYPE"] = "filesystem"
 app.permanent_session_lifetime = timedelta(days=30) # This makes the lifetime of "Remember Me?" equal 30 days
 
 # These are needed to send push notifications
-import firebase_admin
-from firebase_admin import credentials, messaging
-cred = credentials.Certificate("serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
+try:
+    import firebase_admin
+    from firebase_admin import credentials, messaging
+
+    cred = credentials.Certificate("serviceAccountKey.json")
+    firebase_admin.initialize_app(cred)
+
+    FIREBASE_ENABLED = True
+except FileNotFoundError:
+    print("Warning: Firebase service account not found. Notifications disabled.")
+    FIREBASE_ENABLED = False
+
 
 # These are needed to schedule reminders
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -71,6 +79,9 @@ def login_required(view):
 # Example:
 # send_notification("Sean", "Reminder", "Take your medication.")
 def send_notification(username, title, body):
+    if not FIREBASE_ENABLED:
+        print(f"[Mock Notification] To: {username} | {title}: {body}")
+        return
     db = get_db()
     user = db.execute("""
                         SELECT *
@@ -217,11 +228,19 @@ def save_token():
 # the user to the login page if the registration was successful.
 @app.route("/register", methods=["GET", "POST"])
 def register():
+<<<<<<< Updated upstream
     form = RegistrationForm()
     if form.validate_on_submit():
         email = form.email.data
         username = form.username.data
         password = form.password.data
+=======
+    login_form = LoginForm()
+    register_form = RegistrationForm()
+    if register_form.validate_on_submit():
+        username = register_form.username.data
+        password = register_form.password.data
+>>>>>>> Stashed changes
         db = get_db()
         existing_user = db.execute("""
                                 SELECT *
@@ -229,10 +248,14 @@ def register():
                                 WHERE email = ? OR username = ?;
                                 """, (email, username)).fetchone()
         if existing_user is not None:
+<<<<<<< Updated upstream
             if existing_user["email"] == email:
                 form.email.errors.append("This email is already in use.")
             if existing_user["username"] == username:
                 form.username.errors.append("This username is already taken.")
+=======
+            register_form.username.errors.append("This username is already taken.")
+>>>>>>> Stashed changes
         else:
             db.execute("""
                        INSERT INTO users (email, username, password)
@@ -241,7 +264,7 @@ def register():
                        """, (email, username, generate_password_hash(password)))
             db.commit()
             return redirect( url_for("login") )
-    return render_template("register.html", title="Register", form=form)
+    return render_template("auth.html", title="Register", login_form=login_form, register_form=register_form)
 
 # This is the login route. It displays the login form, checks
 # the input against the database including the hashed password, sets
@@ -249,14 +272,23 @@ def register():
 # page if "next" is provided.
 @app.route("/login", methods=["GET", "POST"])
 def login():
+<<<<<<< Updated upstream
     form = LoginForm()
     if form.validate_on_submit():
         identifier = form.identifier.data # Changed the variable name to identifier as the user may enter their email or username
         password = form.password.data
+=======
+    login_form = LoginForm()
+    register_form = RegistrationForm()
+    if login_form.validate_on_submit():
+        username = login_form.username.data
+        password = login_form.password.data
+>>>>>>> Stashed changes
         db = get_db()
         existing_user = db.execute("""
                                 SELECT *
                                 FROM users
+<<<<<<< Updated upstream
                                 WHERE username = ? OR email = ?;
                                 """, (identifier, identifier)).fetchone()
         # Changed error message to be generic to prevent against enumeration attacks
@@ -266,11 +298,23 @@ def login():
             session.clear()
             session["username"] = existing_user["username"]
             session.permanent = form.remember.data # This line makes "Remember Me?" work
+=======
+                                WHERE username = ?;
+                                """, (username,)).fetchone()
+        if existing_user is None:
+            login_form.username.errors.append("This username does not exist.")
+        elif not check_password_hash(existing_user["password"], password):
+            login_form.password.errors.append("The password you have provided is incorrect.")
+        else:
+            session.clear()
+            session["username"] = username
+            session.permanent = login_form.remember.data # This line makes "Remember Me?" work
+>>>>>>> Stashed changes
             next_page = request.args.get("next")
             if not next_page:
                 next_page = url_for("index")
             return redirect(next_page)
-    return render_template("login.html", title="Login", form=form)
+    return render_template("auth.html", title="Login", login_form=login_form,register_form=register_form)
 
 @app.route("/logout")
 def logout():

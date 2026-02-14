@@ -5,6 +5,7 @@ from flask_session import Session
 from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm, LogSymptomForm
 from database import get_db, close_db
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from functools import wraps
 from datetime import timedelta
 import os
@@ -548,6 +549,25 @@ def log_symptom():
                           """,
         (user["user_id"],),).fetchall()
     return render_template("log_symptom.html", form=form, symptoms=symptoms)
+
+@app.route("/profile")
+@login_required
+def profile():
+    db = get_db()
+    user = db.execute(
+        "SELECT * FROM users WHERE username = ?",
+        (session["username"],),
+    ).fetchone()
+
+    mates = db.execute(
+        """
+        SELECT COUNT(*) FROM friends
+        WHERE friend1 =? OR friend2 = ?
+        """,
+        (session["username"], session["username"]),
+    ).fetchone()[0]
+    return render_template("profile.html", user=user, mates=mates)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

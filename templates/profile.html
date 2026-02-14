@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<!-- very basic at the moment, will add more later on~~ -->
+
+<main id="profile">
+    <header>
+        <h1>{{ user.username }}</h1>
+    </header>
+
+    <!-- <section> 
+        {% if user.profile_picture %}
+        <img src="{{ url_for('static', filename='uploads/' + user.profile_picture) }}"
+        alt="Profile picture"
+        width="150">
+        {% else %}
+        <p>No profile picture uploaded.</p> 
+         {% endif %}
+    </section> -->
+
+    <section>
+        <p><strong>Mates:</strong> {{ mates }}</p>
+    </section>
+</main>
+
+{% endblock %}

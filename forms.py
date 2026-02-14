@@ -35,6 +35,7 @@ class AddMedicationForm(FlaskForm):
     end_date = DateField("End Date", format="%Y-%m-%d")
     instructions = TextAreaField("Further Instructions (Optional)", render_kw={"placeholder": "e.g. Take with food"})
     push_notifications_enabled = BooleanField("Enable push notifications")
+    email_notifications_enabled = BooleanField("Enable push notifications")
     submit = SubmitField("Add medication")
 
 class AddMateForm(FlaskForm):

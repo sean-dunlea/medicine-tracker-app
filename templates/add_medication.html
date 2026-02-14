@@ -97,6 +97,15 @@
 
         <br />
 
+        {{ form.email_notifications_enabled.label }}
+        {{ form.email_notifications_enabled() }}
+
+        {% for error in form.email_notifications_enabled.errors %}
+            {{ error }}
+        {% endfor %}
+
+        <br />
+
         {{ form.submit() }}
 
     </form>

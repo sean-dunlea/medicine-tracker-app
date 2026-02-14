@@ -7,6 +7,7 @@ from database import get_db, close_db
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import timedelta
+import os
 
 app = Flask(__name__)
 # Secret key for signing sessions to protect against CSRF attacks.
@@ -27,6 +28,22 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timezone
 import pytz # This is important for handling different timezones
 
+# These are needed to send email notifications
+from flask_mailman import Mail, EmailMessage
+from dotenv import load_dotenv
+load_dotenv()
+username = os.environ.get("MAIL_USERNAME")
+password = os.environ.get("MAIL_PASSWORD")
+app.config.update(
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_PORT=587,
+    MAIL_USE_TLS=True,
+    MAIL_USERNAME=username,
+    MAIL_PASSWORD=password,
+    MAIL_DEFAULT_SENDER=os.environ.get("MAIL_USERNAME").strip()
+)
+mail = Mail(app)
+
 Session(app)
 
 # Ensures the database connection is closed after each request.
@@ -34,9 +51,6 @@ app.teardown_appcontext(close_db)
 
 # This will run before every request. It avoids repeating session.get()
 # everywhere and makes the decorators cleaner.
-# @app.before_request
-# def load_logged_in_user():
-#     g.user = session.get("username", None)
 @app.before_request
 def load_logged_in_user():
     username = session.get("username", None)
@@ -69,8 +83,8 @@ def login_required(view):
 # with that user (they might have multiple tokens if they're logged in on different
 # devices or browsers) and sends the notification to each one.
 # Example:
-# send_notification("Sean", "Reminder", "Take your medication.")
-def send_notification(username, title, body):
+# send_push_notification("Sean", "Reminder", "Take your medication.")
+def send_push_notification(username, title, body):
     db = get_db()
     user = db.execute("""
                         SELECT *
@@ -107,6 +121,28 @@ def send_notification(username, title, body):
                     db.commit()
                 print(f"Error: {e}")
 
+# This function will make it easier to send email notifications.
+# Example:
+# send_email_notification("Sean", "Reminder", "Take your medication.")
+def send_email_notification(username, title, body):
+    db = get_db()
+    user = db.execute("""
+                        SELECT *
+                        FROM users
+                        WHERE username = ?;
+                        """, (username,)).fetchone()
+    if user:
+        recipient = user["email"]
+        message = EmailMessage(
+            subject=title,
+            body=body,
+            to=[recipient]
+        )
+        try:
+            message.send()
+        except Exception as e:
+            print(f"Error sending email to {recipient}: {e}")
+
 # This function checks every minute which medications are due
 def reminder_scheduler():
     with app.app_context():
@@ -115,10 +151,10 @@ def reminder_scheduler():
         db = get_db()
         # Get all medications for today
         medications = db.execute(""" 
-                                SELECT m.user_medication_id, m.user_id, u.username, m.medication_name, m.dosage_amount, m.dosage_unit, mt.time_of_day, u.timezone
+                                SELECT m.user_medication_id, m.user_id, u.username, u.email, m.medication_name, m.dosage_amount, m.dosage_unit, mt.time_of_day, u.timezone, m.push_notifications_enabled, m.email_notifications_enabled
                                 FROM medications m JOIN medication_times mt ON m.user_medication_id = mt.user_medication_id
                                 JOIN users u ON m.user_id = u.user_id
-                                WHERE m.push_notifications_enabled = 1 AND m.start_date <= ? AND (m.end_date IS NULL OR m.end_date >= ?);
+                                WHERE m.start_date <= ? AND (m.end_date IS NULL OR m.end_date >= ?);
                                 """, (current_time_utc.date(), current_time_utc.date())).fetchall()
         for medication in medications:
             # Convert the current UTC time into the user's local timezone
@@ -135,19 +171,30 @@ def reminder_scheduler():
                 if reminder_sent:
                     continue
                 username = medication["username"]
-                send_notification(
-                    username=username,
-                    title="Medication Reminder",
-                    body=f"{medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']} is due."
-                )
+                notification_sent = False
+                if medication["push_notifications_enabled"]:
+                    send_push_notification(
+                        username=username,
+                        title="Medication Reminder",
+                        body=f"{medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']} is due."
+                    )
+                    notification_sent = True
+                if medication["email_notifications_enabled"] and medication["email"]:
+                    send_email_notification(
+                        username=username,
+                        title="Medication Reminder",
+                        body=f"{medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']} is due."
+                    )
+                    notification_sent = True
                 # Record that the notification was sent
-                db.execute("""
-                        INSERT OR IGNORE INTO medication_reminders_sent (user_medication_id, time_of_day, date_sent)
-                        VALUES (?, ?, ?);
-                        """, (medication["user_medication_id"], medication["time_of_day"], user_current_time.date()))
-                db.commit()
+                if notification_sent:
+                    db.execute("""
+                            INSERT OR IGNORE INTO medication_reminders_sent (user_medication_id, time_of_day, date_sent)
+                            VALUES (?, ?, ?);
+                            """, (medication["user_medication_id"], medication["time_of_day"], user_current_time.date()))
+                    db.commit()
 scheduler = BackgroundScheduler()
-scheduler.add_job(reminder_scheduler, "interval", minutes=1)
+scheduler.add_job(reminder_scheduler, "interval", minutes=1, replace_existing=True)
 scheduler.start()
    
 # This is the home page route.
@@ -174,15 +221,25 @@ def set_timezone():
 # This route shows a small preview of what notifications
 # will look like if anyone wants to see. We'll delete this
 # later.
-@app.route("/test_notification", methods=["GET", "POST"])
+@app.route("/test_push_notification", methods=["GET", "POST"])
 @login_required
-def test_notification():
-    send_notification(
+def test_push_notification():
+    send_push_notification(
         username=session["username"],
         title="Test",
         body="This is a test"
     )
-    return render_template("test_notification.html", title="Test Notification")
+    return render_template("test_push_notification.html", title="Test Push Notification")
+
+@app.route("/test_email_notification", methods=["GET", "POST"])
+@login_required
+def test_email_notification():
+    send_email_notification(
+        username=session["username"],
+        title="Test",
+        body="This is a test"
+    )
+    return render_template("test_email_notification.html", title="Test Email Notification")
 
 # This is called if the user gives notification permission and Firebase
 # generates a token. The token is stored in the database so we can
@@ -295,6 +352,7 @@ def add_medication():
         end_date = form.end_date.data
         instructions = form.instructions.data
         push_notifications_enabled = int(form.push_notifications_enabled.data)
+        email_notifications_enabled = int(form.email_notifications_enabled.data)
         has_errors = False
         # For validating the dates
         if (end_date) and (end_date < start_date):
@@ -316,9 +374,9 @@ def add_medication():
             if user:
                 user_id = user["user_id"]
                 cursor = db.execute("""
-                        INSERT INTO medications (user_id, medication_name, dosage_amount, dosage_unit, frequency_count, frequency_type, start_date, end_date, instructions, push_notifications_enabled)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-                        """, (user_id, medication_name, dosage_amount, dosage_unit, frequency_count, frequency_type, start_date, end_date, instructions, push_notifications_enabled))
+                        INSERT INTO medications (user_id, medication_name, dosage_amount, dosage_unit, frequency_count, frequency_type, start_date, end_date, instructions, push_notifications_enabled, email_notifications_enabled)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                        """, (user_id, medication_name, dosage_amount, dosage_unit, frequency_count, frequency_type, start_date, end_date, instructions, push_notifications_enabled, email_notifications_enabled))
                 user_medication_id = cursor.lastrowid
                 for time in times:
                     db.execute("""

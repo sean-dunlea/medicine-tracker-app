@@ -23,3 +23,24 @@ fetch("set_timezone", {
     },
     body: JSON.stringify({ timezone }),
 });
+
+let test_email_notification_button = document.getElementById("test_email_notification")
+if (test_email_notification_button) {
+        test_email_notification_button.addEventListener("click", async () => {
+            try {
+                const response = await fetch("/test_email_notification", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+                if (response.ok) {
+                    console.log("Test email sent")
+                } else {
+                    console.log("Failed to send email")
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    });
+}

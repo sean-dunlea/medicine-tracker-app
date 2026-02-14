@@ -65,10 +65,10 @@ if (enable_notifications_button) {
     });
 }
 
-const test_notification_button = document.getElementById("test_notification");
-if (test_notification_button) {
-    test_notification_button.addEventListener("click", async () => {
-        await fetch("/test_notification", { method: "POST" });
+const test_push_notification_button = document.getElementById("test_push_notification");
+if (test_push_notification_button) {
+    test_push_notification_button.addEventListener("click", async () => {
+        await fetch("/test_push_notification", { method: "POST" });
         console.log("Received test notification");
     })
 }

@@ -2,7 +2,7 @@
 from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify
 # Server-side session management
 from flask_session import Session
-from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm, SymptomForm
+from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm, LogSymptomForm
 from database import get_db, close_db
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -407,22 +407,22 @@ def mate_requests():
                     WHERE receiver = ?""", (user,))
     return render_template("mate_requests.html", title="Add Mates", invites=invites)
     
-
 @app.route("/cancel_request/<string:receiver>")
 @login_required
 def cancel_request(receiver):
     sender = session["username"]
     db = get_db()
-    db.execute(
-        '''DELETE FROM invites
-        WHERE sender = ? AND receiver = ?;''', (sender, receiver,))
+    db.execute("""
+               DELETE FROM invites
+               WHERE sender = ? AND receiver = ?;
+               """, (sender, receiver,))
     db.commit()
     invites = db.execute("""
-                            SELECT *
-                            FROM invites
-                            WHERE sender = ?""", (sender,))
+                         SELECT *
+                         FROM invites
+                         WHERE sender = ?
+                         """, (sender,))
     return render_template("pending_requests.html", title="Pending Requests", invites=invites)
-
 
 @app.route("/accept_request/<string:friend1>")
 @login_required
@@ -435,14 +435,16 @@ def accept_request(friend1):
                 (?, ?);
                 """, (friend1, friend2,))
     db.commit()
-    db.execute(
-        '''DELETE FROM invites
-        WHERE sender = ? AND receiver = ?;''', (friend1, friend2,))
+    db.execute("""
+               DELETE FROM invites
+               WHERE sender = ? AND receiver = ?;
+               """, (friend1, friend2,))
     db.commit()
     invites = db.execute("""
-                            SELECT *
-                            FROM invites
-                            WHERE receiver = ?""", (friend2,))
+                         SELECT *
+                         FROM invites
+                         WHERE receiver = ?
+                         """, (friend2,))
     return render_template("mate_requests.html", title="Mate Requests", invites=invites)
         
 @app.route("/reject_request/<string:sender>")
@@ -450,65 +452,44 @@ def accept_request(friend1):
 def reject_request(sender):
     user = session["username"]
     db = get_db()
-    db.execute(
-        '''DELETE FROM invites
-        WHERE sender = ? AND receiver = ?;''', (sender, user,))
+    db.execute("""
+               DELETE FROM invites
+               WHERE sender = ? AND receiver = ?;
+               """, (sender, user,))
     db.commit()
     invites = db.execute("""
-                            SELECT *
-                            FROM invites
-                            WHERE sender = ?""", (sender,))
+                         SELECT *
+                         FROM invites
+                         WHERE sender = ?
+                         """, (sender,))
     return render_template("mate_requests.html", title="Mate Requests", invites=invites)
 
-@app.route("/symptom", methods=["GET", "POST"])
+@app.route("/log_symptom", methods=["GET", "POST"])
 @login_required
-def symptom():
-    form = SymptomForm()
+def log_symptom():
+    form = LogSymptomForm()
     db = get_db()
-    user = db.execute(
-        "SELECT user_id FROM users WHERE username = ?",
-        (session["username"],),
-    ).fetchone()
+    user = db.execute("""
+                      SELECT user_id 
+                      FROM users 
+                      WHERE username = ?
+                      """, (session["username"],),).fetchone()
     if form.validate_on_submit():
-        db.execute(
-            """
-            INSERT INTO symptoms (
-                user_id,
-                symptom_name,
-                severity,
-                symptom_date,
-                symptom_time,
-                medication_name,
-                notes
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
-            """,
-            (
-                user["user_id"],
-                form.symptom_name.data,
-                int(form.severity.data),
-                form.symptom_date.data,
-                form.symptom_time.data,
-                form.medication_name.data,
-                form.notes.data,
-            ),
-        )
+        db.execute("""
+                   INSERT INTO symptoms (user_id, symptom_name, severity, symptom_date, symptom_time, notes)
+                   VALUES (?, ?, ?, ?, ?, ?)
+                   """, (user["user_id"], form.symptom_name.data, int(form.severity.data), form.symptom_date.data,
+                         form.symptom_time.data.strftime("%H:%M"), form.notes.data,),)
         db.commit()
-        return redirect(url_for("symptom"))
-    symptoms = db.execute(
-        """
-        SELECT *
-        FROM symptoms
-        WHERE user_id = ?
-        ORDER BY symptom_date DESC
-        """,
-        (user["user_id"],),
-    ).fetchall()
-    return render_template(
-        "symptom.html",
-        form=form,
-        symptoms=symptoms
-    )
+        return redirect(url_for("log_symptom"))
+    symptoms = db.execute("""
+                          SELECT *
+                          FROM symptoms
+                          WHERE user_id = ?
+                          ORDER BY symptom_date DESC
+                          """,
+        (user["user_id"],),).fetchall()
+    return render_template("log_symptom.html", form=form, symptoms=symptoms)
 
 if __name__ == "__main__":
     app.run(debug=True)

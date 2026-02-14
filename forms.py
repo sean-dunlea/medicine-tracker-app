@@ -42,39 +42,11 @@ class AddMateForm(FlaskForm):
     render_kw={"placeholder": "Enter your username",},)
     submit = SubmitField("Send invite")
 
-class SymptomForm(FlaskForm):
-    symptom_name = StringField(
-        "Symptom",
-        validators=[DataRequired(message="Please enter a symptom.")]
-    )
-    severity = SelectField(
-        "Severity",
-        choices=[
-            ("1", "1 - Very Mild"),
-            ("2", "2 - Mild"),
-            ("3", "3 - Moderate"),
-            ("4", "4 - Severe"),
-            ("5", "5 - Very Severe"),
-        ],
-        validators=[DataRequired()]
-    )
-    symptom_date = DateField(
-        "Date",
-        validators=[DataRequired()],
-        format="%Y-%m-%d"  
-    )
-    symptom_time = TimeField(
-        "Time",
-        validators=[Optional()],
-        format="%H:%M"
-    )
-    medication_name = StringField(
-        "Medication (if relevant)",
-        validators=[Optional()],
-        render_kw={"placeholder": "e.g. Paracetamol"},
-    )
-    notes = TextAreaField(
-        "Notes",
-        validators=[Optional()]
-    )
-    submit = SubmitField("Save Symptom")
+class LogSymptomForm(FlaskForm):
+    symptom_name = StringField("Symptom", validators=[DataRequired(message="Please enter a symptom.")])
+    severity = SelectField("Severity", choices=[("1", "1 - Very Mild"), ("2", "2 - Mild"), ("3", "3 - Moderate"),("4", "4 - Severe"), ("5", "5 - Very Severe"),], 
+        validators=[DataRequired()])
+    symptom_date = DateField("Date", validators=[DataRequired()], format="%Y-%m-%d")
+    symptom_time = TimeField("Time", validators=[Optional()], format="%H:%M")
+    notes = TextAreaField("Notes", validators=[Optional()])
+    submit = SubmitField("Log Symptom")

@@ -3,3 +3,4 @@ flask_session/
 __pycache__/
 tempCodeRunnerFile.py
 app.db
+.DS_Store

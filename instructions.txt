@@ -24,7 +24,7 @@ is not included in this repository for security reasons.
 
 Medication Reminder Scheduler:
 
-This project also includes a background scheduler to send medication reminders at the user's
+This project includes a background scheduler to send medication reminders at the user's
 local time. 
 
 Install Dependencies:
@@ -35,9 +35,25 @@ Install Dependencies:
 
 Email Validation:
 
-This project now also uses WTForms EmailField and Email validators to validate user email
+This project uses WTForms EmailField and Email validators to validate user email
 addresses during registration.
 
 Install Dependencies:
     - Ensure you are in the project root, then run "pip install email-validator" or
+    "pip install -r requirements.txt" in the terminal.
+
+-------------------------------------------------------------------------------------------------
+
+This project uses python-dotenv to manage environment variables like email credentials.
+
+Install Dependencies:
+    - Ensure you are in the project root, then run "pip install python-dotenv" or
+    "pip install -r requirements.txt" in the terminal.
+
+-------------------------------------------------------------------------------------------------
+
+This project uses Flask-Mailman to send email notifications for medication reminders.
+
+Install Dependencies:
+    - Ensure you are in the project root, then run "pip install Flask-Mailman" or
     "pip install -r requirements.txt" in the terminal.

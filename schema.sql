@@ -11,8 +11,9 @@ CREATE TABLE users
     email TEXT UNIQUE NOT NULL,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    timezone TEXT -- Stored here to send push notifications at user's local time
-);
+    profile_picture TEXT,
+    timezone TEXT ); -- Stored here to send push notifications at user's local time
+
 
 DROP TABLE IF EXISTS fcm_tokens;
 

@@ -568,6 +568,30 @@ def profile():
     ).fetchone()[0]
     return render_template("profile.html", user=user, mates=mates)
 
+@app.route("/symptom/report")
+@login_required
+def symptom_report():
+    db = get_db()
+    user = db.execute(
+        "SELECT * FROM users WHERE username = ?",
+        (session["username"],)
+        ).fetchone()
+    symptoms = db.execute(
+        """SELECT *
+        FROM symptoms
+        WHERE user_id = ?
+        ORDER BY symptom_date DESC
+        """,
+        (user["user_id"],)
+    ).fetchall()
+    total_symptoms = len(symptoms)
+    return render_template(
+        "symptom_report.html",
+        user=user,
+        symptoms=symptoms,
+        total_symptoms=total_symptoms,
+        generated_on=datetime.now()
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)

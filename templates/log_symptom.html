@@ -48,10 +48,10 @@
       </fieldset>
     </form>
   </section>
-
+  
   <section>
     <h2>Symptom history</h2>
-
+    <a href="{{ url_for('symptom_report') }}">Share Report</a>
     {% if symptoms %}
       <ul>
         {% for symptom in symptoms %}

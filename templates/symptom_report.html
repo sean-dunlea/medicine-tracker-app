@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block main_content %} 
+<!-- This allows patients to print or download their symptoms report to be able to share it with their doctor or caretaker etc.  -->
+<main id="gp_report">
+    <button onclick="window.print()">Print / Save as PDF</button>
+<h1>Symptoms Report</h1>
+<section class="meta">
+    <p><strong>Patient:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Date generated:</strong> {{ generated_on.strftime("%d %B %Y") }}</p>
+    <p><strong>Total symptoms logged:</strong> {{ total_symptoms }}</p>
+</section>
+
+{% if symptoms %}
+    <table class="report_table">
+        <tr>
+            <th>Date</th>
+            <th>Symptom</th>
+            <th>Severity</th>
+            <th>Time</th>
+            <th>Notes</th>
+        </tr>
+        {% for s in symptoms %}
+        <tr>
+            <td>{{ s.symptom_date }}</td>
+            <td>{{ s.symptom_name }}</td>
+            <td>{{ s.severity }}</td>
+            <td>{{ s.symptom_time or "-" }}</td>
+            <td>{{ s.notes or "-" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No symptoms recorded.</p>
+{% endif %}
+
+</main>
+{% endblock %}

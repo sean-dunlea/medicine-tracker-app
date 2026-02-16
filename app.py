@@ -550,24 +550,6 @@ def log_symptom():
         (user["user_id"],),).fetchall()
     return render_template("log_symptom.html", form=form, symptoms=symptoms)
 
-@app.route("/profile")
-@login_required
-def profile():
-    db = get_db()
-    user = db.execute(
-        "SELECT * FROM users WHERE username = ?",
-        (session["username"],),
-    ).fetchone()
-
-    mates = db.execute(
-        """
-        SELECT COUNT(*) FROM friends
-        WHERE friend1 =? OR friend2 = ?
-        """,
-        (session["username"], session["username"]),
-    ).fetchone()[0]
-    return render_template("profile.html", user=user, mates=mates)
-
 @app.route("/symptom/report")
 @login_required
 def symptom_report():
@@ -592,6 +574,46 @@ def symptom_report():
         total_symptoms=total_symptoms,
         generated_on=datetime.now()
     )
+
+@app.route("/profile")
+@login_required
+def profile():
+    db = get_db()
+    user = db.execute(
+        "SELECT * FROM users WHERE username = ?",
+        (session["username"],),
+    ).fetchone()
+
+    mates = db.execute(
+        """
+        SELECT COUNT(*) FROM friends
+        WHERE friend1 =? OR friend2 = ?
+        """,
+        (session["username"], session["username"]),
+    ).fetchone()[0]
+    return render_template("profile.html", user=user, mates=mates)
+
+@app.route("/profile/edit", methods=["GET", "POST"])
+@login_required
+def edit_profile():
+    db = get_db()
+
+    user = db.execute(
+        "SELECT * FROM users WHERE username = ?",
+        (session["username"],)
+    ).fetchone()
+    avatars = ["avatar1.png", "avatar2.png", "avatar3.png", "avatar4.png"]
+    if request.method == "POST":
+        selected_avatar = request.form.get("avatar")
+        if selected_avatar in avatars:
+            db.execute(
+                "UPDATE users SET profile_picture = ? WHERE user_id = ?",
+                (selected_avatar, user["user_id"]),
+            )
+            db.commit()
+        return redirect(url_for("profile"))
+    return render_template("edit_profile.html", user=user, avatars=avatars)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

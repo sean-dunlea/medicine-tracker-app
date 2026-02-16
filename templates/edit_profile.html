@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block main_content %}
+
+<main id="edit_profile">
+    <h1>Choose Your Avatar</h1>
+    <form method="POST">
+        <div class ="avatar_grid">
+            {% for avatar in avatars %}
+            <label class="avatar_option">
+                <input type="radio" name="avatar" value="{{ avatar }}"
+                    {% if user.profile_picture == avatar %}checked{% endif %}>
+                <img src="{{ url_for('static', filename='avatars/' + avatar ) }}"
+                    alt="Avatar"
+                    width="120">
+            </label>
+            {% endfor %}
+        </div>
+        <button type="submit">Save</button>
+    </form>
+</main>
+
+{% endblock %}

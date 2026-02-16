@@ -10,17 +10,35 @@
 </head>
 
 <body>
-    <header>
-    </header>
+    {% block top_nav %}
+        <nav class="nav">
+            <a class="btn secondary" href="{{ url_for('index') }}">Home</a>
+            {% if session.get("username") %}
+                <a class="btn secondary" href="{{ url_for('add_medication') }}">Add Medication</a>
+                <a class="btn secondary" href="{{ url_for('logout') }}">Logout</a>
+                <a class="btn secondary" href="{{ url_for('history') }}">History</a>
+                <a class="btn secondary" href="{{ url_for('add_mate') }}">Add MediMate</a>
+                <a class="btn secondary" href="{{ url_for('pending_requests') }}">Pending Requests</a>
+                <a class="btn secondary" href="{{ url_for('mate_requests') }}">Mate Requests</a>
+                <a class="btn secondary" href="{{ url_for('log_symptom') }}">Symptoms Log</a>
+                <a class="btn secondary" href="{{ url_for('profile') }}">My Profile</a>
+     
+            {% endif %}     
+        </nav>
+    {% endblock %}
     <main>
         {% block main_content %}
         {% endblock %}
     </main>
     <footer>
+        <p>&copy; 2026 MediMate</p>
     </footer>
     <script type="module" src="{{ url_for('static', filename='main.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='firebase.js') }}"></script>
     {% block page_js %}{% endblock %}
+
+
 </body>
+
 
 </html>

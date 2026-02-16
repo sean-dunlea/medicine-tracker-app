@@ -2,22 +2,24 @@
 
 {% block main_content %}
 
-<!-- very basic at the moment, will add more later on~~ -->
-
+<!-- Profle pictures can be seen once the designs for the avatars are done -->
 <main id="profile">
     <header>
         <h1>{{ user.username }}</h1>
     </header>
 
-    <!-- <section> 
+    <section> 
+        <a href="{{ url_for('edit_profile') }}" class="btn">Change Avatar</a>
         {% if user.profile_picture %}
-        <img src="{{ url_for('static', filename='uploads/' + user.profile_picture) }}"
+        <img src="{{ url_for('static', filename='avatars/' + user.profile_picture) }}"
         alt="Profile picture"
         width="150">
         {% else %}
-        <p>No profile picture uploaded.</p> 
+        <img src="{{ url_for('static', filename='avatars/avatar1.jpg') }}"
+        alt="Default profile picture"
+        width="150">
          {% endif %}
-    </section> -->
+    </section>
 
     <section>
         <p><strong>Mates:</strong> {{ mates }}</p>

@@ -9,7 +9,11 @@
         {{ form.hidden_tag() }}
 
         {{ form.medication_name.label }}
-        {{ form.medication_name() }}
+        {{ form.medication_name(id="medication_name_field") }}
+
+        <!-- This is where the suggested medication names will appear. It can be styled however you like. -->
+        <ul id="suggested_medication_names_list">
+        </ul>
 
         {% for error in form.medication_name.errors %}
             {{ error }}

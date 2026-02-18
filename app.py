@@ -634,7 +634,6 @@ def edit_profile():
         return redirect(url_for("profile"))
     return render_template("edit_profile.html", user=user, avatars=avatars)
 
-<<<<<<< HEAD
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
@@ -677,8 +676,5 @@ def settings():
         preferences_form=preferences_form,
         user=user,
     )
-
-=======
->>>>>>> d55be6845f00a7d3571e188642bf6efd0e57b71c
 if __name__ == "__main__":
     app.run(debug=True)

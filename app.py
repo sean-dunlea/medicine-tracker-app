@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify
+from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify, flash
 # Server-side session management
 from flask_session import Session
-from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm, LogSymptomForm
+from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm, LogSymptomForm, ChangeEmailForm, ChangePasswordForm, PreferencesForm
 from database import get_db, close_db
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -614,6 +614,48 @@ def edit_profile():
         return redirect(url_for("profile"))
     return render_template("edit_profile.html", user=user, avatars=avatars)
 
+@app.route("/settings", methods=["GET", "POST"])
+@login_required
+def settings():
+    db = get_db()
+    user = db.execute(
+        "SELECT * FROM users WHERE username = ?",
+        (session["username"],)
+    ).fetchone()
+    email_form = ChangeEmailForm(prefix="email")
+    password_form = ChangePasswordForm(prefix="password")
+    preferences_form = PreferencesForm(prefix="prefs")
+    if request.method == "GET":
+        email_form.email.data = user["email"]
+        preferences_form.allow_mates_activity.data = bool(user["allow_mates_activity"])
+    if email_form.submit.data and email_form.validate_on_submit():
+        db.execute(
+            "UPDATE users SET email = ? WHERE user_id = ?",
+            (email_form.email.data, user["user_id"]),
+        )
+        db.commit()
+        flash("Email updated successfully")
+        return redirect(url_for("settings"))
+    
+    if password_form.submit.data and password_form.validate_on_submit():
+        if not check_password_hash(user["password"], password_form.current_password.data):
+            password_form.current_password.errors.append("Incorrect current password")
+        else:
+            new_hash = generate_password_hash(password_form.new_password.data)
+            db.execute(
+                "UPDATE users SET password = ? WHERE user_id = ?",
+                (new_hash, user["user_id"]),
+            )
+            db.commit()
+            flash("Password changed successfully")
+            return redirect(url_for("settings"))
+    return render_template(
+        "settings.html",
+        email_form=email_form,
+        password_form=password_form,
+        preferences_form=preferences_form,
+        user=user,
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)

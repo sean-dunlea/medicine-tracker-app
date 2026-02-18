@@ -51,3 +51,16 @@ class LogSymptomForm(FlaskForm):
     symptom_time = TimeField("Time", validators=[Optional()], format="%H:%M")
     notes = TextAreaField("Notes", validators=[Optional()])
     submit = SubmitField("Log Symptom")
+
+class ChangeEmailForm(FlaskForm):
+    email = StringField("New Email", validators=[DataRequired()])
+    submit = SubmitField("Update Email")
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField("Current Password", validators=[DataRequired()])
+    new_password = PasswordField("New Password", validators=[DataRequired()])
+    submit = SubmitField("Change Password")
+
+class PreferencesForm(FlaskForm):
+    allow_mates_activity = BooleanField("Allow mates to see activity")
+    submit = SubmitField("Save Preferences")

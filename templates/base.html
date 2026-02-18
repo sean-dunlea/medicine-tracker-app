@@ -15,13 +15,14 @@
             <a class="btn secondary" href="{{ url_for('index') }}">Home</a>
             {% if session.get("username") %}
                 <a class="btn secondary" href="{{ url_for('add_medication') }}">Add Medication</a>
-                <a class="btn secondary" href="{{ url_for('logout') }}">Logout</a>
                 <a class="btn secondary" href="{{ url_for('history') }}">History</a>
                 <a class="btn secondary" href="{{ url_for('add_mate') }}">Add MediMate</a>
                 <a class="btn secondary" href="{{ url_for('pending_requests') }}">Pending Requests</a>
                 <a class="btn secondary" href="{{ url_for('mate_requests') }}">Mate Requests</a>
                 <a class="btn secondary" href="{{ url_for('log_symptom') }}">Symptoms Log</a>
                 <a class="btn secondary" href="{{ url_for('profile') }}">My Profile</a>
+                <a class="btn secondary" href="{{ url_for('settings') }}">Settings</a>
+                <a class="btn secondary" href="{{ url_for('logout') }}">Logout</a>
      
             {% endif %}     
         </nav>
@@ -39,6 +40,15 @@
 
 
 </body>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class="flash_messages">
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
 
 
 </html>

@@ -388,6 +388,33 @@ def add_medication():
                 return redirect( url_for("history") )
     return render_template("add_medication.html", title="Add Medication", form=form)
 
+@app.route("/query_medications", methods=["GET"])
+def query_medications():
+    medication_query = request.args.get("q", "")
+    if len(medication_query) >= 2:
+        db = get_db()
+        # These results are more user-friendly and human-readable (brands and synonyms)
+        cursor = db.execute("""
+                            SELECT DISTINCT name
+                            FROM drugbank_products
+                            WHERE name LIKE ?
+                            ORDER BY LENGTH(name) ASC
+                            LIMIT 10
+                            """, (f"{medication_query}%",))
+        results = [{"name": row["name"]} for row in cursor.fetchall()]
+        # If it returns less than 10 results, we'll use these as well (generic names)
+        if len(results) < 10:
+            cursor = db.execute("""
+                                SELECT DISTINCT generic_name AS name 
+                                FROM drugbank_drugs
+                                WHERE generic_name LIKE ?
+                                ORDER BY LENGTH(generic_name) ASC
+                                LIMIT ?
+                                """, (f"{medication_query}%", 10 - len(results)))
+        results += [{"name": row["name"]} for row in cursor.fetchall()]
+        return jsonify(results)
+    return jsonify([])
+
 @app.route("/history")
 @login_required
 def history():
@@ -554,26 +581,19 @@ def log_symptom():
 @login_required
 def symptom_report():
     db = get_db()
-    user = db.execute(
-        "SELECT * FROM users WHERE username = ?",
-        (session["username"],)
-        ).fetchone()
-    symptoms = db.execute(
-        """SELECT *
-        FROM symptoms
-        WHERE user_id = ?
-        ORDER BY symptom_date DESC
-        """,
-        (user["user_id"],)
-    ).fetchall()
+    user = db.execute("""
+                      SELECT * 
+                      FROM users 
+                      WHERE username = ?
+                      """, (session["username"],)).fetchone()
+    symptoms = db.execute("""
+                          SELECT *
+                          FROM symptoms
+                          WHERE user_id = ?
+                          ORDER BY symptom_date DESC
+                          """, (user["user_id"],)).fetchall()
     total_symptoms = len(symptoms)
-    return render_template(
-        "symptom_report.html",
-        user=user,
-        symptoms=symptoms,
-        total_symptoms=total_symptoms,
-        generated_on=datetime.now()
-    )
+    return render_template("symptom_report.html", user=user, symptoms=symptoms, total_symptoms=total_symptoms, generated_on=datetime.now())
 
 @app.route("/profile")
 @login_required
@@ -613,7 +633,6 @@ def edit_profile():
             db.commit()
         return redirect(url_for("profile"))
     return render_template("edit_profile.html", user=user, avatars=avatars)
-
 
 if __name__ == "__main__":
     app.run(debug=True)

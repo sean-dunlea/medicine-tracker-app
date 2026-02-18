@@ -4,3 +4,8 @@ __pycache__/
 tempCodeRunnerFile.py
 app.db
 .DS_Store
+full_database.xml
+initialise_drugbank_tables.py
+parse_and_insert_drugbank_data.py
+drugbank_drugs.sql
+drugbank_products.sql

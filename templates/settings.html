@@ -43,6 +43,18 @@
         {{ preferences_form.allow_mates_activity }}
     </section>
 
+  {% if session.get("username") %}
+    <section id="notifications" class="card">
+      <h2>Reminders</h2>
+      <p class="muted">
+        Enable push notifications to get dose reminders on this device.
+      </p>
+      <button id="enable_notifications" type="button">
+        Enable Notifications
+      </button>
+      <p id="notif_status" class="muted"></p>
+    </section>
+    {% endif %}
 </main>
 
 

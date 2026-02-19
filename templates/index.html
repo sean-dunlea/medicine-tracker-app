@@ -21,18 +21,6 @@
     <section class="welcome">
       <p>Welcome back, <strong>{{ session.get("username") }}</strong></p>
     </section>
-
-    <section id="notifications" class="card">
-      <h2>Reminders</h2>
-      <p class="muted">
-        Enable push notifications to get dose reminders on this device.
-      </p>
-      <button id="enable_notifications" type="button">
-        Enable Notifications
-      </button>
-      <p id="notif_status" class="muted"></p>
-    </section>
-
     <!-- This is the homepage bottom nav in the index page. If you are adding another link, please add it to the nav in base.html as well! -->
     <nav class="nav">
       <a class="btn secondary" href="{{ url_for('add_medication') }}">Add Medication</a>

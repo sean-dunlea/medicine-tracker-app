@@ -550,6 +550,7 @@ def reject_request(sender):
                          """, (sender,))
     return render_template("mate_requests.html", title="Mate Requests", invites=invites)
 
+#users can log their symptoms
 @app.route("/log_symptom", methods=["GET", "POST"])
 @login_required
 def log_symptom():
@@ -577,6 +578,7 @@ def log_symptom():
         (user["user_id"],),).fetchall()
     return render_template("log_symptom.html", form=form, symptoms=symptoms)
 
+#Users can print a report from their symptoms log to give to their gp/caretaker etc.
 @app.route("/symptom/report")
 @login_required
 def symptom_report():
@@ -595,6 +597,7 @@ def symptom_report():
     total_symptoms = len(symptoms)
     return render_template("symptom_report.html", user=user, symptoms=symptoms, total_symptoms=total_symptoms, generated_on=datetime.now())
 
+#Profile section showing amount of mates 
 @app.route("/profile")
 @login_required
 def profile():
@@ -613,6 +616,7 @@ def profile():
     ).fetchone()[0]
     return render_template("profile.html", user=user, mates=mates)
 
+#Profile picture
 @app.route("/profile/edit", methods=["GET", "POST"])
 @login_required
 def edit_profile():
@@ -634,6 +638,7 @@ def edit_profile():
         return redirect(url_for("profile"))
     return render_template("edit_profile.html", user=user, avatars=avatars)
 
+#Settings includes privacy feature allowing the user to show their activity to their mates, and also change their email and password
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():

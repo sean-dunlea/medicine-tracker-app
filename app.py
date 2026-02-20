@@ -515,12 +515,19 @@ def accept_request(friend1):
                 VALUES
                 (?, ?);
                 """, (friend1, friend2,))
-    db.commit()
+    
+    db.execute("""
+                INSERT INTO friends (friend1, friend2)
+                VALUES
+                (?, ?);
+                """, (friend2, friend1,))
+
     db.execute("""
                DELETE FROM invites
                WHERE sender = ? AND receiver = ?;
                """, (friend1, friend2,))
     db.commit()
+
     invites = db.execute("""
                          SELECT *
                          FROM invites
@@ -544,6 +551,42 @@ def reject_request(sender):
                          WHERE sender = ?
                          """, (sender,))
     return render_template("mate_requests.html", title="Mate Requests", invites=invites)
+
+@app.route("/medimates")
+@login_required
+def medimates():
+    user = session["username"]
+    db = get_db()
+    medimates = db.execute("""
+                    SELECT *
+                    FROM friends
+                    WHERE friend1 = ?""", (user,))
+    return render_template("medimates.html", title="Medimates", medimates=medimates)
+
+@app.route("/remove_medimate/<string:friend>")
+@login_required
+def remove_medimate(friend):
+    user = session["username"]
+    db = get_db()
+    db.execute("""
+               DELETE FROM friends
+               WHERE friend1 = ? AND friend2 = ?;
+               """, (user, friend,))
+    
+    db.execute("""
+               DELETE FROM friends
+               WHERE friend1 = ? AND friend2 = ?;
+               """, (friend, user,))
+    
+    db.commit()
+    
+    medimates = db.execute("""
+                    SELECT *
+                    FROM friends
+                    WHERE friend1 = ?""", (user,))
+    return render_template("medimates.html", title="Medimates", medimates=medimates)
+
+    
 
 #users can log their symptoms
 @app.route("/log_symptom", methods=["GET", "POST"])

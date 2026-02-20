@@ -478,7 +478,7 @@ def add_mate():
 def pending_requests():
     sender = session["username"]
     db = get_db()
-    invites = db.execute("""
+    pending_requests = db.execute("""
                     SELECT *
                     FROM invites
                     WHERE sender = ?""", (sender,))
@@ -493,7 +493,11 @@ def mate_requests():
                     SELECT *
                     FROM invites
                     WHERE receiver = ?""", (user,))
-    return render_template("mate_requests.html", title="Add Mates", invites=invites)
+    pending_requests = db.execute("""
+                    SELECT *
+                    FROM invites
+                    WHERE sender = ?""", (user,))
+    return render_template("mate_requests.html", title="Add Mates", invites=invites, pending_requests=pending_requests)
     
 @app.route("/cancel_request/<string:receiver>")
 @login_required

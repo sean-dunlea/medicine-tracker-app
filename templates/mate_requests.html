@@ -20,5 +20,20 @@
     {% endfor %}
 </table>
 
+<h1>Pending Mate Requests</h1>
+
+<table>
+    {% for request in pending_requests %}
+        <tr>
+            <td>{{ request["receiver"] }}</td>
+            <td>
+                <a href="{{ url_for('cancel_request', receiver=request['receiver'])}}">
+                    Cancel Request
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
 
 {% endblock %}

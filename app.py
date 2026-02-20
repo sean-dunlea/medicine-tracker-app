@@ -3,7 +3,7 @@ from flask import Flask, render_template, redirect, url_for, session, g, request
 # Server-side session management
 from flask_session import Session
 from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm, LogSymptomForm, ChangeEmailForm, ChangePasswordForm, PreferencesForm
-from database import get_db, close_db
+from database import get_db, close_db, initialise_drugbank
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
@@ -49,6 +49,8 @@ Session(app)
 
 # Ensures the database connection is closed after each request.
 app.teardown_appcontext(close_db)
+# This initialises the DrugBank database
+initialise_drugbank()
 
 # This will run before every request. It avoids repeating session.get()
 # everywhere and makes the decorators cleaner.

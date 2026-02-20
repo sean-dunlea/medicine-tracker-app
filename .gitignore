@@ -2,7 +2,6 @@ serviceAccountKey.json
 flask_session/
 __pycache__/
 tempCodeRunnerFile.py
-app.db
 .DS_Store
 full_database.xml
 initialise_drugbank_tables.py

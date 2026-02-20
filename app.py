@@ -473,17 +473,6 @@ def add_mate():
             form.username.errors.append("This user does not exist.")
     return render_template("add_mate.html", title="Add Mates", form=form, response=response)
 
-@app.route("/pending_requests")
-@login_required
-def pending_requests():
-    sender = session["username"]
-    db = get_db()
-    pending_requests = db.execute("""
-                    SELECT *
-                    FROM invites
-                    WHERE sender = ?""", (sender,))
-    return render_template("pending_requests.html", title="Add Mates", invites=invites)
-
 @app.route("/mate_requests")
 @login_required
 def mate_requests():

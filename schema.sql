@@ -5,18 +5,16 @@ DROP TABLE IF EXISTS users;
 -- We might add an email later (and other things if needed)
 -- user_id is the unique identifier (in case we allow usernames to 
 -- change later) and it also auto increments 
-CREATE TABLE users
-(
+CREATE TABLE users (
     user_id INTEGER PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     profile_picture TEXT,
     allow_mates_activity BOOLEAN DEFAULT 1, 
-    timezone TEXT ); -- Stored here to send push notifications at user's local time
+    timezone TEXT -- Stored here to send push notifications at user's local time
+);
     
-
-
 DROP TABLE IF EXISTS fcm_tokens;
 
 -- FCM tokens are stored in a separate table so that users
@@ -101,3 +99,6 @@ CREATE TABLE symptoms (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
+DROP TABLE IF EXISTS drugbank_drugs;
+DROP TABLE IF EXISTS drugbank_products;

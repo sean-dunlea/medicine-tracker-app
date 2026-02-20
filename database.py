@@ -22,3 +22,26 @@ def close_db(e=None):
     db = g.pop("db", None)
     if db is not None:
         db.close()
+
+# This initialises the DrugBank database
+def initialise_drugbank():
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    # This checks if the main DrugBank table already exists
+    cursor.execute("""
+                   SELECT name 
+                   FROM sqlite_master 
+                   WHERE type="table" AND name="drugbank_drugs";
+                   """)
+    table_exists = cursor.fetchone()
+    if table_exists:
+        print("DrugBank tables already exist - skipping initialisation.")
+        db.close()
+        return
+    # This only runs if the table does not already exist
+    print("Initialising DrugBank tables...")
+    with open("drugbank.sql", "r") as f:
+        cursor.executescript(f.read())
+    db.commit()
+    db.close()
+    print("DrugBank initialisation complete.")

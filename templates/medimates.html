@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>MediMates</h1>
+
+<table>
+    {% for mate in medimates %}
+        <tr>
+            <td>{{ mate["friend2"] }}</td>
+            <td>
+                <a href="{{ url_for('remove_medimate', friend=mate['friend2'])}}">
+                    Remove Medimate
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

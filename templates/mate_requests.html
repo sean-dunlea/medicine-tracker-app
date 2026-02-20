@@ -7,7 +7,7 @@
 <table>
     {% for invite in invites %}
         <tr>
-            <td>{{ invite["receiver"] }}</td>
+            <td>{{ invite["sender"] }}</td>
             <td>
                 <a href="{{ url_for('accept_request', friend1=invite['sender'])}}">
                     Accept Request

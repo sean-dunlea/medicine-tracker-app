@@ -16,6 +16,7 @@
             {% if session.get("username") %}
                 <a class="btn secondary" href="{{ url_for('add_medication') }}">Add Medication</a>
                 <a class="btn secondary" href="{{ url_for('history') }}">History</a>
+                <a class="btn secondary" href="{{ url_for('medimates') }}">MediMates</a>
                 <a class="btn secondary" href="{{ url_for('add_mate') }}">Add MediMate</a>
                 <a class="btn secondary" href="{{ url_for('mate_requests') }}">Mate Requests</a>
                 <a class="btn secondary" href="{{ url_for('log_symptom') }}">Symptoms Log</a>

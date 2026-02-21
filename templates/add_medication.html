@@ -53,13 +53,22 @@
 
         <br />
 
-        {% for time in form.time_of_day %}
-            {{ time(step=300) }}
+        {% for time_entry in form.time_entries %}
+            <section class="time_entry">
+                {{ time_entry.time_of_day.label }}
+                {{ time_entry.time_of_day(step=300, class="time_of_day") }}
+
+                {{ time_entry.weekday.label }}
+                {{ time_entry.weekday(class="weekday") }}
+
+                {{ time_entry.day_of_month.label }}
+                {{ time_entry.day_of_month(class="day_of_month") }}
+            </section>
         {% endfor %}
 
         <button type="button" id="add_time">+</button>
 
-        {% for error in form.time_of_day.errors %}
+        {% for error in form.time_entries.errors %}
             {{ error }}
         {% endfor %}
 

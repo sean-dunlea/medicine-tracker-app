@@ -149,12 +149,11 @@ def send_email_notification(username, title, body):
 # This function checks every minute which medications are due
 def reminder_scheduler():
     with app.app_context():
-        # current_time = datetime.now()
         current_time_utc = datetime.now(timezone.utc)
         db = get_db()
         # Get all medications for today
         medications = db.execute(""" 
-                                SELECT m.user_medication_id, m.user_id, u.username, u.email, m.medication_name, m.dosage_amount, m.dosage_unit, mt.time_of_day, u.timezone, m.push_notifications_enabled, m.email_notifications_enabled
+                                SELECT m.user_medication_id, m.user_id, u.username, u.email, m.medication_name, m.dosage_amount, m.dosage_unit, m.frequency_type, mt.time_of_day, u.timezone, m.push_notifications_enabled, m.email_notifications_enabled, mt.weekday, mt.day_of_month
                                 FROM medications m JOIN medication_times mt ON m.user_medication_id = mt.user_medication_id
                                 JOIN users u ON m.user_id = u.user_id
                                 WHERE m.start_date <= ? AND (m.end_date IS NULL OR m.end_date >= ?);
@@ -163,7 +162,21 @@ def reminder_scheduler():
             # Convert the current UTC time into the user's local timezone
             user_time_zone = pytz.timezone(medication["timezone"]) if medication["timezone"] else pytz.utc
             user_current_time = current_time_utc.astimezone(user_time_zone)
-            if medication["time_of_day"] == user_current_time.strftime("%H:%M"):
+            current_weekday = user_current_time.weekday()
+            current_day_of_month = user_current_time.day
+            frequency_type = medication["frequency_type"]
+            if frequency_type == "weekly":
+                if medication["weekday"] != current_weekday:
+                    continue
+            if frequency_type == "monthly":
+                if medication["day_of_month"] != current_day_of_month:
+                    continue
+            if frequency_type == "as_needed":
+                continue
+            # This converts the stored medication time to a time object and strips the seconds and milliseconds
+            medication_time = datetime.strptime(medication["time_of_day"], "%H:%M").time()
+            # This compares only the hours and minutes (ignores seconds and microseconds) to avoid small mismatches
+            if medication_time != user_current_time.time().replace(second=0, microsecond=0):
                 # Check if the reminder was already sent today (we want to avoid duplicates)
                 reminder_sent = db.execute("""
                                         SELECT 1
@@ -350,7 +363,7 @@ def add_medication():
         dosage_unit = form.dosage_unit.data
         frequency_count = form.frequency_count.data
         frequency_type = form.frequency_type.data
-        time_of_day = form.time_of_day.data
+        time_entries = form.time_entries.data
         start_date = form.start_date.data
         end_date = form.end_date.data
         instructions = form.instructions.data
@@ -362,11 +375,23 @@ def add_medication():
             form.end_date.errors.append("The end date cannot be before the start date.")
             has_errors = True
         # For validating the number of time entries provided.
-        times = [time for time in time_of_day if time is not None]
+        valid_time_entries = [time_entry for time_entry in time_entries if time_entry["time_of_day"]]
         if frequency_type != "as_needed":
-            if len(times) != frequency_count:
-                form.time_of_day.errors.append(f"Please enter exactly {frequency_count} time(s).")
+            if len(valid_time_entries) != frequency_count:
+                form.time_entries.errors.append(f"Please enter exactly {frequency_count} time(s).")
                 has_errors = True
+        if frequency_type == "weekly":
+            for entry in valid_time_entries:
+                if not entry["weekday"]:
+                    form.time_entries.errors.append("Please select a weekday for each time.")
+                    has_errors = True
+                    break
+        if frequency_type == "monthly":
+            for entry in valid_time_entries:
+                if not entry["day_of_month"]:
+                    form.time_entries.errors.append("Please enter a day of month for each time.")
+                    has_errors = True
+                    break
         if not has_errors:
             db = get_db()
             user = db.execute("""
@@ -381,11 +406,16 @@ def add_medication():
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                         """, (user_id, medication_name, dosage_amount, dosage_unit, frequency_count, frequency_type, start_date, end_date, instructions, push_notifications_enabled, email_notifications_enabled))
                 user_medication_id = cursor.lastrowid
-                for time in times:
+                for entry in valid_time_entries:
+                    time_value = entry["time_of_day"].strftime("%H:%M")
+                    weekday = entry["weekday"]
+                    day_of_month = entry["day_of_month"]
+                    weekday = int(weekday) if weekday else None
+                    day_of_month = int(day_of_month) if day_of_month else None
                     db.execute("""
-                            INSERT INTO medication_times (user_medication_id, time_of_day)
-                            VALUES (?, ?);
-                            """, (user_medication_id, time.strftime("%H:%M")))
+                               INSERT INTO medication_times (user_medication_id, time_of_day, weekday, day_of_month)
+                               VALUES (?, ?, ?, ?);
+                               """, (user_medication_id, time_value, weekday, day_of_month))
                 db.commit()
                 return redirect( url_for("history") )
     return render_template("add_medication.html", title="Add Medication", form=form)

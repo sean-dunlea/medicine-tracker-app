@@ -1,16 +1,115 @@
-const add_time_button = document.getElementById("add_time");
+let frequency_select = document.getElementById("frequency_type");
+
+function update_fields() {
+    if (!frequency_select) return;
+
+    let frequency = frequency_select.value;
+
+    // This shows/hides weekday inputs
+    document.querySelectorAll(".weekday").forEach(field => {
+        let label = document.querySelector(`label[for="${field.id}"]`);
+        if (frequency === "weekly") {
+            field.style.display = "inline-block";
+            if (label) {
+                label.style.display = "inline-block";
+            }
+        } else {
+            field.style.display = "none";
+            if (label) {
+                label.style.display = "none";
+            }
+        }
+    });
+
+    // This shows/hides day_of_month inputs
+    document.querySelectorAll(".day_of_month").forEach(field => {
+        let label = document.querySelector(`label[for="${field.id}"]`);
+        if (frequency === "monthly") {
+            field.style.display = "inline-block";
+            if (label) {
+                label.style.display = "inline-block"
+            }
+        } else {
+            field.style.display = "none";
+            if (label) {
+                label.style.display = "none"
+            }
+        }
+    });
+}
+
+update_fields();
+
+// This updates the field based on user's choice
+if (frequency_select) {
+    frequency_select.addEventListener("change", update_fields);
+}
+
+// This adds the time entry button
+// let add_time_button = document.getElementById("add_time");
+
+// if (add_time_button) {
+//     add_time_button.addEventListener("click", function() {
+//         let time_of_day_fields = document.querySelectorAll(".time_of_day");
+//         let weekday_fields = document.querySelectorAll(".weekday");
+//         let day_of_month_fields = document.querySelectorAll(".day_of_month");
+
+//         if (time_of_day_fields.length === 0) return;
+
+//         let last_index = time_of_day_fields.length - 1;
+
+//         // This clones the inputs
+//         let new_time_of_day = time_of_day_fields[last_index].cloneNode(true);
+//         let new_weekday = weekday_fields[last_index].cloneNode(true);
+//         let new_day_of_month = day_of_month_fields[last_index].cloneNode(true);
+
+//         // This clears the values
+//         new_time_of_day.value = "";
+//         new_weekday.value = "";
+//         new_day_of_month.value = "";
+
+//         // This inserts after the last inputs
+//         time_of_day_fields[last_index].after(new_time_of_day);
+//         weekday_fields[last_index].after(new_weekday);
+//         day_of_month_fields[last_index].after(new_day_of_month);
+
+//         // This updates visibility
+//         update_fields();
+//     });
+// }
+let add_time_button = document.getElementById("add_time");
 
 if (add_time_button) {
-    add_time_button.addEventListener('click', function() {
-    const timeInputs = document.querySelectorAll('input[name^="time_of_day"]');
-    const lastInput = timeInputs[timeInputs.length - 1];
-    const newInput = lastInput.cloneNode(true);
-    newInput.value = '';
-    const nextIndex = timeInputs.length;
-    newInput.name = `time_of_day-${nextIndex}`;
-    newInput.id = '';
-    lastInput.after(newInput);
-});
+    add_time_button.addEventListener("click", function () {
+
+        let entries = document.querySelectorAll(".time_entry");
+        let last_entry = entries[entries.length - 1];
+        let new_entry = last_entry.cloneNode(true);
+        let newIndex = entries.length;
+
+        new_entry.querySelectorAll("input, select, label").forEach(element => {
+
+            if (element.name) {
+                element.name = element.name.replace(/time_entries-\d+-/, `time_entries-${newIndex}-`);
+            }
+
+            if (element.id) {
+                element.id = element.id.replace(/time_entries-\d+-/, `time_entries-${newIndex}-`);
+            }
+
+            if (element.htmlFor) {
+                element.htmlFor = element.htmlFor.replace(/time_entries-\d+-/, `time_entries-${newIndex}-`);
+            }
+
+            if (element.value) {
+                element.value = "";
+            }
+        });
+
+        last_entry.after(new_entry);
+
+        update_fields();
+    });
 }
 
 // For getting the user's timezone (to send push notifications)

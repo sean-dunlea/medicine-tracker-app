@@ -191,15 +191,15 @@ def reminder_scheduler():
                 if medication["push_notifications_enabled"]:
                     send_push_notification(
                         username=username,
-                        title="Medication Reminder",
-                        body=f"{medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']} is due."
+                        title="Medication Reminder 💊",
+                        body=f"Hey, {username}! It's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}. Keep up the great work!"
                     )
                     notification_sent = True
                 if medication["email_notifications_enabled"] and medication["email"]:
                     send_email_notification(
                         username=username,
-                        title="Medication Reminder",
-                        body=f"{medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']} is due."
+                        title="Medication Reminder 💊",
+                        body=f"Hello, {username},\n\nThis is a friendly reminder that it's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}.\n\nStay healthy and keep up the great work!"
                     )
                     notification_sent = True
                 # Record that the notification was sent

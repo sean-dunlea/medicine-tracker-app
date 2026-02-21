@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+    <table>
+        <thead>
+            <tr>
+                {% for day in calendar.keys() %}
+                    <th>{{ day.strftime("%A %d %b") }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+
+        <tbody>
+            {% set max_rows = calendar.values() | map('length') | max %}
+            {% for i in range(max_rows) %}
+            <tr>
+                {% for day, meds in calendar.items() %}
+                    <td>
+                        {% if meds|length > i %}
+                            {% set med = meds[i] %}
+                            {{ med.medication_name }}<br>
+                            {{ med.time_of_day }}<br>
+
+                            {% if med.taken %}
+                                <button disabled>Taken</button>
+
+                            {% elif med.can_take %}
+                                <!-- <form method="POST"
+                                    action="{{ url_for('log_medication', user_medication_id=med.user_medication_id) }}">
+                                    <button type="submit">Mark as Taken</button>
+                                </form> -->
+                                <form method="POST"
+                                    action="{{ url_for('log_medication', user_medication_id=med.user_medication_id) }}">
+                                    <input type="hidden" name="scheduled_date" value="{{ day.isoformat() }}">
+                                    <input type="hidden" name="time_of_day" value="{{ med.time_of_day }}">
+                                    <button type="submit">Mark as Taken</button>
+                                </form>
+
+                            {% else %}
+                                <button disabled>Not Yet</button>
+                            {% endif %}
+
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

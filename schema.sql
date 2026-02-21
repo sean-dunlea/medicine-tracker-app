@@ -71,6 +71,17 @@ CREATE TABLE medication_reminders_sent (
     UNIQUE(user_medication_id, time_of_day, date_sent) -- This ensures a reminder is only sent once per medication per time per day
 );     
 
+-- This tracks each time a user takes their medication
+DROP TABLE IF EXISTS medication_logs;
+
+CREATE TABLE medication_logs (
+    medication_log_id INTEGER PRIMARY KEY,
+    user_medication_id INTEGER NOT NULL REFERENCES medications(user_medication_id), -- This links the log to a specific medication plan
+    scheduled_date DATE NOT NULL,
+    time_of_day TEXT NOT NULL,
+    datetime_taken TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- This stores when the user marks a medication as taken
+);
+
 DROP TABLE IF EXISTS invites;
 
 -- Table to differentiate the sender and receiver of invites

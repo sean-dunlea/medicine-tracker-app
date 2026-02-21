@@ -7,7 +7,7 @@ from database import get_db, close_db, initialise_drugbank
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
-from datetime import timedelta
+from datetime import date, timedelta
 import os
 
 app = Flask(__name__)
@@ -217,6 +217,90 @@ scheduler.start()
 @app.route("/")
 def index():
     return render_template("index.html", title="Home")
+
+@app.route("/week_calendar")
+@login_required
+def week_calendar():
+    # This calculates the current week from Monday to Sunday
+    today = date.today()
+    # This gets the first day of the week by subtracting the current weekday index
+    monday = today - timedelta(days=today.weekday())
+    # This generates the list of 7 days
+    weekdays = [monday + timedelta(days=weekday_index) for weekday_index in range(7)]
+    # This gets the user's medications and the times
+    db = get_db()
+    username = session["username"]
+    user = db.execute("""
+                SELECT user_id
+                FROM users
+                WHERE username = ?;
+                """, (username,)).fetchone()
+    if user:
+        user_id = user["user_id"]
+    medications = db.execute(""" 
+                             SELECT m.user_medication_id, m.medication_name, m.frequency_type, m.start_date, m.end_date, mt.time_of_day, mt.weekday
+                             FROM medications m JOIN medication_times mt ON m.user_medication_id = mt.user_medication_id
+                             WHERE m.user_id = ?;
+                             """, (user_id,)).fetchall()
+    # This gets the medication logs for this week
+    medication_logs = db.execute("""
+                                 SELECT user_medication_id, scheduled_date, time_of_day
+                                 FROM medication_logs
+                                 WHERE user_medication_id IN (SELECT user_medication_id FROM medications WHERE user_id = ?)
+                                 AND scheduled_date BETWEEN ? AND ?
+                                 """, (user_id, monday, monday + timedelta(days=6))).fetchall()
+    # This builds a dictionary to check if a medication was taken on a specific day
+    medication_log_dict = {(medication_log["user_medication_id"], medication_log["scheduled_date"], medication_log["time_of_day"]): True for medication_log in medication_logs}
+    # This prepares the calendar
+    calendar = {weekday: [] for weekday in weekdays}
+    for weekday in weekdays:
+        for medication in medications:
+            # This ignores medications that haven't started yet or ones that already ended
+            if weekday < medication["start_date"]:
+                continue
+            if medication["end_date"] and weekday > medication["end_date"]:
+                continue
+            include = False
+            if medication["frequency_type"] == "daily":
+                include = True
+            elif medication["frequency_type"] == "weekly":
+                if medication["weekday"] == weekday.weekday():
+                    include = True
+            if include:
+                already_taken = medication_log_dict.get((medication["user_medication_id"], weekday, medication["time_of_day"]), False)
+                medication_datetime = datetime.combine(weekday, datetime.strptime(medication["time_of_day"], "%H:%M").time())
+                can_take = datetime.now() >= medication_datetime
+                if already_taken:
+                    can_take = False
+                else:
+                    can_take = datetime.now() >= medication_datetime
+                calendar[weekday].append({
+                    "user_medication_id": medication["user_medication_id"],
+                    "medication_name": medication["medication_name"],
+                    "time_of_day": medication["time_of_day"],
+                    "taken": already_taken,
+                    "can_take": can_take
+                })
+    return render_template("week_calendar.html", calendar=calendar)
+
+@app.route("/log_medication/<int:user_medication_id>", methods=["POST"])
+@login_required
+def log_medication(user_medication_id):
+    db = get_db()
+    scheduled_date = request.form.get("scheduled_date")
+    time_of_day = request.form.get("time_of_day")
+    existing_log = db.execute("""
+                              SELECT 1
+                              FROM medication_logs
+                              WHERE user_medication_id = ? AND scheduled_date = ? AND time_of_day = ?
+                              """, (user_medication_id, scheduled_date, time_of_day)).fetchone()
+    if not existing_log:
+        db.execute("""
+                INSERT OR IGNORE INTO medication_logs (user_medication_id, scheduled_date, time_of_day)
+                VALUES (?, ?, ?);
+                """, (user_medication_id, scheduled_date, time_of_day))
+        db.commit()
+    return redirect( url_for("week_calendar") )
 
 @app.route("/set_timezone", methods=["POST"])
 @login_required

@@ -475,7 +475,7 @@ def add_mate():
         sender = session["username"]
         receiver = form.username.data
         if sender == receiver:
-            form.username.errors.append("You Cannot invite yourself.")
+            form.username.errors.append("You cannot invite yourself.")
             return render_template("add_mate.html", title="Add Mates", form=form, response=response)
         db = get_db()
         existing_user = db.execute("""
@@ -499,6 +499,12 @@ def add_mate():
                        """, (sender, receiver,))
             db.commit()
             response = "Mate Request Sent"
+            # Hey diva, I just added this part so the receiver gets a notification
+            # about the friend request. Hope that's okay xx
+            title = "New Mate Request! 💊"
+            body = f"{sender} has sent you a MediMate request!"
+            send_email_notification(receiver, title, body)
+            send_push_notification(receiver, title, body)
         else:
             form.username.errors.append("This user does not exist.")
     return render_template("add_mate.html", title="Add Mates", form=form, response=response)
@@ -558,6 +564,12 @@ def accept_request(friend1):
                """, (friend1, friend2,))
     db.commit()
 
+    # This notifies the sender that their request was accepted yurrr
+    title = "Mate Request Accepted! 💊"
+    body = f"{friend2} has accepted your MediMate request!"
+    send_email_notification(friend1, title, body)
+    send_push_notification(friend1, title, body)
+
     invites = db.execute("""
                          SELECT *
                          FROM invites
@@ -575,6 +587,11 @@ def reject_request(sender):
                WHERE sender = ? AND receiver = ?;
                """, (sender, user,))
     db.commit()
+    # This notifies the sender that the receiver was too cool for them :(
+    title = "Mate Request Rejected"
+    body = f"{user} has rejected your MediMate request."
+    send_email_notification(sender, title, body)
+    send_push_notification(sender, title, body)
     invites = db.execute("""
                          SELECT *
                          FROM invites

@@ -212,15 +212,14 @@ def reminder_scheduler():
 scheduler = BackgroundScheduler()
 scheduler.add_job(reminder_scheduler, "interval", minutes=1, replace_existing=True)
 scheduler.start()
-   
-# This is the home page route.
-@app.route("/")
-def index():
-    return render_template("index.html", title="Home")
 
-@app.route("/week_calendar")
+@app.route("/calendar")
 @login_required
-def week_calendar():
+def calendar():
+    calendar_year = build_year_calendar(g.user["user_id"])
+    return render_template("calendar.html", calendar=calendar_year)
+
+def build_week_calendar(user_id):
     # This calculates the current week from Monday to Sunday
     today = date.today()
     # This gets the first day of the week by subtracting the current weekday index
@@ -229,14 +228,6 @@ def week_calendar():
     weekdays = [monday + timedelta(days=weekday_index) for weekday_index in range(7)]
     # This gets the user's medications and the times
     db = get_db()
-    username = session["username"]
-    user = db.execute("""
-                SELECT user_id
-                FROM users
-                WHERE username = ?;
-                """, (username,)).fetchone()
-    if user:
-        user_id = user["user_id"]
     medications = db.execute(""" 
                              SELECT m.user_medication_id, m.medication_name, m.frequency_type, m.start_date, m.end_date, mt.time_of_day, mt.weekday
                              FROM medications m JOIN medication_times mt ON m.user_medication_id = mt.user_medication_id
@@ -281,6 +272,73 @@ def week_calendar():
                     "taken": already_taken,
                     "can_take": can_take
                 })
+    return calendar
+
+def build_year_calendar(user_id):
+    db = get_db()
+    today = date.today()
+    start_of_year = date(today.year, 1, 1)
+    end_of_year = date(today.year, 12, 31)
+    total_days = (end_of_year - start_of_year).days + 1
+    days = [start_of_year + timedelta(days=i) for i in range(total_days)]
+    medications = db.execute("""
+        SELECT m.user_medication_id, m.medication_name,
+               m.frequency_type, m.start_date, m.end_date,
+               mt.time_of_day, mt.weekday
+        FROM medications m
+        JOIN medication_times mt
+        ON m.user_medication_id = mt.user_medication_id
+        WHERE m.user_id = ?
+    """, (user_id,)).fetchall()
+
+    medication_logs = db.execute("""
+        SELECT user_medication_id, scheduled_date, time_of_day
+        FROM medication_logs
+        WHERE user_medication_id IN (
+            SELECT user_medication_id FROM medications WHERE user_id = ?
+        )
+    """, (user_id,)).fetchall()
+    log_dict = {
+        (log["user_medication_id"], log["scheduled_date"], log["time_of_day"]): True
+        for log in medication_logs
+    }
+    calendar = {day: [] for day in days}
+    for day in days:
+        for medication in medications:
+            if day < medication["start_date"]:
+                continue
+            if medication["end_date"] and day > medication["end_date"]:
+                continue
+            include = False
+            if medication["frequency_type"] == "daily":
+                include = True
+            elif medication["frequency_type"] == "weekly":
+                if medication["weekday"] == day.weekday():
+                    include = True
+            if include:
+                taken = log_dict.get(
+                    (medication["user_medication_id"], day, medication["time_of_day"]),
+                    False
+                )
+                calendar[day].append({
+                    "medication_name": medication["medication_name"],
+                    "time_of_day": medication["time_of_day"],
+                    "taken": taken
+                })
+    return calendar
+
+# This is the home page route.
+@app.route("/")
+def index():
+    if not g.user:
+        return render_template("index.html", title="Home")
+    calendar = build_week_calendar(g.user["user_id"])
+    return render_template("index.html", title="Home", calendar=calendar)
+
+@app.route("/week_calendar")
+@login_required
+def week_calendar():
+    calendar = build_week_calendar(g.user["user_id"])
     return render_template("week_calendar.html", calendar=calendar)
 
 @app.route("/log_medication/<int:user_medication_id>", methods=["POST"])

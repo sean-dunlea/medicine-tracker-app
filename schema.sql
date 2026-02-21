@@ -40,7 +40,7 @@ CREATE TABLE medications (
     medication_name TEXT NOT NULL,
     dosage_amount REAL NOT NULL, 
     dosage_unit TEXT NOT NULL, -- e.g. mg, ml, tablet etc.
-    frequency_count INT NOT NULL, -- e.g. 1/2/3/ times per day
+    frequency_count INT NOT NULL, -- e.g. 1/2/3/ times
     frequency_type TEXT NOT NULL, -- e.g. daily, weekly etc.
     start_date DATE NOT NULL,
     end_date DATE,
@@ -52,12 +52,12 @@ CREATE TABLE medications (
 
 DROP TABLE IF EXISTS medication_times;
 
--- I separated time_of_day into its own separate table
--- to make handling multiple times per day easier
 CREATE TABLE medication_times (
     time_id INTEGER PRIMARY KEY,
     user_medication_id INT NOT NULL REFERENCES medications(user_medication_id),
-    time_of_day TIME NOT NULL
+    time_of_day TIME NOT NULL,
+    weekday INTEGER, -- 0 is Monday, 6 is Sunday
+    day_of_month INTEGER
 );
 
 -- I added this table to make avoiding duplicate messages easier

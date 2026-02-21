@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import EmailField, StringField, PasswordField, BooleanField, SubmitField, DecimalField, SelectField, IntegerField, TimeField, FieldList, DateField, TextAreaField
+from wtforms import Form, FormField, EmailField, StringField, PasswordField, BooleanField, SubmitField, DecimalField, SelectField, IntegerField, TimeField, FieldList, DateField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, Regexp, InputRequired, NumberRange, Optional
 
 username_rule = Regexp(r"^[A-Za-z0-9_.-]+$", message="Username can contain letters, numbers, dots, hyphens, and underscores only.")
@@ -24,18 +24,23 @@ class RegistrationForm(FlaskForm):
         render_kw={"autocomplete": "new-password", "placeholder": "Repeat your password",},)
     submit = SubmitField("Create account")
 
+class TimeEntryForm(Form):
+    time_of_day = TimeField("Time of Day", validators=[Optional()])
+    weekday = SelectField("Weekday", choices=[("0", "Monday"), ("1", "Tuesday"), ("2", "Wednesday"), ("3", "Thursday"), ("4", "Friday"), ("5", "Saturday"), ("6", "Sunday")], validators=[Optional()], default="")
+    day_of_month = IntegerField("Day of Month", validators=[Optional()])
+
 class AddMedicationForm(FlaskForm):
     medication_name = StringField("Medication Name", validators=[InputRequired()], render_kw={"placeholder": "Paracetamol"})
     dosage_amount = DecimalField("Dosage", places=2, validators=[InputRequired(), NumberRange(min=0.01)], render_kw={"step": "1", "placeholder": "10"})
     dosage_unit = SelectField("", choices=[("mg", "mg"), ("ml", "ml"), ("tablet", "tablet(s)"), ("application", "application(s)")])
-    frequency_count = IntegerField("Frequency", validators=[InputRequired(), NumberRange(min=1, max=10)], render_kw={"step": "1", "placeholder": "1"})
+    frequency_count = IntegerField("Times per Period", validators=[InputRequired(), NumberRange(min=1, max=10)], render_kw={"step": "1", "placeholder": "1"})
     frequency_type = SelectField("", choices=[("daily", "Daily"), ("weekly", "Weekly"), ("monthly", "Monthly"), ("as_needed", "As needed")])
-    time_of_day = FieldList(TimeField("Time of Day"), min_entries=1)
+    time_entries = FieldList(FormField(TimeEntryForm), min_entries=1)
     start_date = DateField("Start Date", validators=[InputRequired()], format="%Y-%m-%d")
     end_date = DateField("End Date", format="%Y-%m-%d")
     instructions = TextAreaField("Further Instructions (Optional)", render_kw={"placeholder": "e.g. Take with food"})
     push_notifications_enabled = BooleanField("Enable push notifications")
-    email_notifications_enabled = BooleanField("Enable push notifications")
+    email_notifications_enabled = BooleanField("Enable email notifications")
     submit = SubmitField("Add medication")
 
 class AddMateForm(FlaskForm):

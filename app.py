@@ -2,7 +2,7 @@
 from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify, flash
 # Server-side session management
 from flask_session import Session
-from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm, LogSymptomForm, ChangeEmailForm, ChangePasswordForm, PreferencesForm
+from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm, LogSymptomForm, ChangeEmailForm, ChangePasswordForm, PreferencesForm, TimeEntryForm
 from database import get_db, close_db, initialise_drugbank
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -941,6 +941,24 @@ def symptom_report():
                           """, (user["user_id"],)).fetchall()
     total_symptoms = len(symptoms)
     return render_template("symptom_report.html", user=user, symptoms=symptoms, total_symptoms=total_symptoms, generated_on=datetime.now())
+
+@app.route("/history/report")
+@login_required
+def history_report():
+    db = get_db()
+    user = db.execute("""
+                      SELECT * 
+                      FROM users 
+                      WHERE username = ?
+                      """, (session["username"],)).fetchone()
+    medications = db.execute("""
+                          SELECT *
+                          FROM medications
+                          WHERE user_id = ?
+                          ORDER BY start_date DESC
+                          """, (user["user_id"],)).fetchall()
+    total_meds = len(medications)
+    return render_template("medication_report.html", user=user, medications=medications, total_meds=total_meds, generated_on=datetime.now())
 
 #Profile section showing amount of mates 
 @app.route("/profile")

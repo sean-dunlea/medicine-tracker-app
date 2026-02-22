@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block main_content %} 
+<!-- This allows patients to print or download their medications report to be able to share it with their doctor or caretaker etc.  -->
+<main id="gp_report">
+    <button onclick="window.print()">Print / Save as PDF</button>
+<h1>Medication Report</h1>
+<section class="meta">
+    <p><strong>Patient:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Date generated:</strong> {{ generated_on.strftime("%d %B %Y") }}</p>
+    <p><strong>Total medications logged:</strong> {{ total_meds }}</p>
+</section>
+
+{% if history %}
+    <table class="report_table">
+        <tr>
+            <th>Name</th>
+            <th>Dosage</th>
+            <th>Frequency</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Notes</th>
+        </tr>
+        {% for med in medications %}
+        <tr>
+            <td>{{ med.medication_name }}</td>
+            <td>{{ med.dosage_amount }} {{ med.dosage_unit }}</td>
+            <td>{{ med.frequency_type }}</td>
+            <td>{{ med.start_date }}</td>
+            <td>{{ med.end_date if med.end_date else "Ongoing" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No medications recorded.</p>
+{% endif %}
+
+</main>
+{% endblock %}

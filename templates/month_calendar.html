@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<div class="calendar-container">
+
+    <div class="calendar-header">
+        <a href="{{ url_for('month_calendar', year=prev_year, month=prev_month) }}" class="arrow">&#8249;</a>
+        <h2>{{ month_name }} {{ year }}</h2>
+        <a href="{{ url_for('month_calendar', year=next_year, month=next_month) }}" class="arrow">&#8250;</a>
+    </div>
+
+    <div class="weekdays">
+        <div>S</div>
+        <div>M</div>
+        <div>T</div>
+        <div>W</div>
+        <div>T</div>
+        <div>F</div>
+        <div>S</div>
+    </div>
+
+    <div class="calendar-grid">
+        {% for day in calendar %}
+            <div class="calendar-day
+                {% if not day.in_month %}faded{% endif %}
+                {% if day.date == today %}today{% endif %}">
+                {{ day.date.day }}
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

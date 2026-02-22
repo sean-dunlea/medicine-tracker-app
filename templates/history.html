@@ -2,7 +2,7 @@
 {% block main_content %}
 
 <h1>Medication History</h1>
-
+<button onclick="window.print()">Print / Save as PDF</button>
 {% if medications %}
   {% for med in medications %}
     <div class="card">

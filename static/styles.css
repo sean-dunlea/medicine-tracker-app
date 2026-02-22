@@ -187,3 +187,156 @@ table th {
   font-weight: 600;
   background: var(--cream);
 }
+
+
+/* CALENDAR - to be changed */
+/* THESE ARE FOR THE CALENDAR IN VIEW FULL CALENDAR */
+.calendar-container {
+    width: 340px;
+    margin: 40px auto;
+}
+
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+}
+
+.calendar-day {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.calendar-day:hover {
+    background: #eee;
+}
+
+.calendar-day.today {
+    background: #a83f3f;
+    color: white;
+}
+
+.calendar-day.faded {
+    color: #bbb;
+}
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 340px;
+    margin: 0 auto 15px auto;
+}
+
+.calendar-header h2 {
+    flex: 1;
+    text-align: center;
+    margin: 0;
+}
+
+.arrow {
+    text-decoration: none;
+    font-size: 24px;
+    color: #444;
+}
+
+/* THESE ARE FOR THE BIG CALENDAR IN LOG MEDICATION */
+.todays-meds {
+    margin-top: 40px;
+}
+
+.med-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #f5eee6;
+    border-radius: 10px;
+}
+
+.check-btn {
+    background: #2f6bed;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+
+.taken-btn {
+    background: #c94c4c;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+
+
+/* THIS IS FOR THE WEEK DISPLAY IN THE HOME PAGE */
+/* Container */
+.week-status {
+  margin-top: 2rem;
+}
+
+/* 7 day grid */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Base card style */
+.day-card {
+  padding: 1rem 0.5rem;
+  border-radius: 14px;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+/* Day name (Mon Tue etc) */
+.day-name {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Date number */
+.day-number {
+  font-size: 1.4rem;
+  margin-top: 0.3rem;
+}
+/* YELLOW SUCCESSFULLY TAKEN ALL MEDS  */
+.day-complete {
+  background-color: #F4C430; /* warm yellow */
+  color: #3b2f1d;
+}
+
+/* RED Missed Meds */
+.day-missed {
+  background-color: #D9534F; /* strong red */
+  color: white;
+}
+
+/* WHITE No meds that day */
+.day-empty {
+  background-color: #eaeaea;
+  color: #666;
+}
+
+/* Subtle hover animation */
+.day-card:hover {
+  transform: translateY(-3px);
+}

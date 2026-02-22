@@ -1,0 +1,18 @@
+<div class="week-grid">
+{% for day, info in calendar.items() %}
+    {% if info.has_meds %}
+        {% if info.all_taken %}
+            {% set status_class = "day-complete" %}
+        {% else %}
+            {% set status_class = "day-missed" %}
+        {% endif %}
+    {% else %}
+        {% set status_class = "day-empty" %}
+    {% endif %}
+
+    <div class="day-card {{ status_class }}">
+        <div class="day-name">{{ day.strftime("%a") }}</div>
+        <div class="day-number">{{ day.day }}</div>
+    </div>
+{% endfor %}
+</div>

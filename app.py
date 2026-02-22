@@ -2,7 +2,7 @@
 from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify, flash
 # Server-side session management
 from flask_session import Session
-from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm, LogSymptomForm, ChangeEmailForm, ChangePasswordForm, PreferencesForm, TimeEntryForm
+from forms import RegistrationForm, LoginForm, AddMedicationForm, AddMateForm, LogSymptomForm, ChangeEmailForm, ChangePasswordForm, PreferencesForm
 from database import get_db, close_db, initialise_drugbank
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -650,6 +650,17 @@ def add_medication():
                 db.commit()
                 return redirect( url_for("history") )
     return render_template("add_medication.html", title="Add Medication", form=form)
+
+@app.route("/delete_medication/<int:user_medication_id>", methods=["POST"])
+@login_required
+def delete_medication(user_medication_id):
+    db = get_db()
+    db.execute("""
+               DELETE FROM medication_times WHERE user_medication_id = ?""", (user_medication_id,))
+    db.execute("""DELETE FROM medication_logs WHERE user_medication_id = ?""", (user_medication_id,))
+    db.execute("""DELETE FROM medications WHERE user_medication_id = ? AND user_id = ?""",(user_medication_id, g.user["user_id"]))
+    db.commit()
+    return redirect(url_for("history"))
 
 @app.route("/query_medications", methods=["GET"])
 def query_medications():

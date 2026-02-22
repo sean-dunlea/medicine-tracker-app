@@ -1,0 +1,84 @@
+#add_medication_wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 1rem;
+    min-height: 80vh;
+}
+
+.modal-card {
+    background: var(--card);
+    width: 100%;
+    max-width: 700px;
+    padding: 3rem;
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+
+/* Header */
+.form-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* Progress */
+.progress-steps {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    padding: 0;
+    margin-top: 1.5rem;
+}
+
+.step-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--cream);
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    border: 2px solid var(--muted);
+    transition: all 0.3s ease;
+}
+
+.step-circle.active {
+    background: linear-gradient(to right, var(--primary), var(--primary-dark));
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(199, 76, 76, 0.3);
+}
+
+/* Fieldsets */
+fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: none;
+}
+
+fieldset.active {
+    display: block;
+}
+
+legend {
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Step footer */
+.step-footer {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Time Entry */
+.time_entry {
+    background: var(--cream);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+}

@@ -147,69 +147,120 @@ def send_email_notification(username, title, body):
         except Exception as e:
             print(f"Error sending email to {recipient}: {e}")
 
+# I decided to modularise the reminder_scheduler as it was getting quite large and complex.
+
+# This returns all medications that are scheduled for now. They're filtered by user timezone and frequency.
+def get_medications(current_time_utc):
+    db = get_db()
+    medications = db.execute(""" 
+                             SELECT m.user_medication_id, m.user_id, u.username, u.email, m.medication_name, m.dosage_amount, m.dosage_unit, m.frequency_type, mt.time_of_day, u.timezone, m.push_notifications_enabled, m.email_notifications_enabled, mt.weekday, mt.day_of_month
+                             FROM medications m JOIN medication_times mt ON m.user_medication_id = mt.user_medication_id
+                             JOIN users u ON m.user_id = u.user_id
+                             WHERE m.start_date <= ? AND (m.end_date IS NULL OR m.end_date >= ?);
+                             """, (current_time_utc.date(), current_time_utc.date())).fetchall()
+    return medications
+
+# This checks if a reminder should be sent to the user or not based on the frequency and time
+def should_notify_user(medication, user_current_time):
+    current_weekday = user_current_time.weekday()
+    current_day_of_month = user_current_time.day
+    frequency_type = medication["frequency_type"]
+    medication_time = datetime.strptime(medication["time_of_day"], "%H:%M").time()
+    current_time_only = user_current_time.time().replace(second=0, microsecond=0)
+    if frequency_type == "weekly" and medication["weekday"] != current_weekday:
+        return False
+    if frequency_type == "monthly" and medication["day_of_month"] != current_day_of_month:
+        return False
+    if frequency_type == "as_needed":
+        return False
+    return medication_time == current_time_only
+
+# This will send the push and email notifications to the user (if relevant)
+def notify_user(medication):
+    username = medication["username"]
+    notification_sent = False
+    if medication["push_notifications_enabled"]:
+        send_push_notification(
+            username=username,
+            title="Medication Reminder 💊",
+            body=f"Hey, {username}! It's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}. Keep up the great work!"
+        )
+        notification_sent = True
+    if medication["email_notifications_enabled"] and medication["email"]:
+        send_email_notification(
+            username=username,
+            title="Medication Reminder 💊",
+            body=f"Hello, {username},\n\nThis is a friendly reminder that it's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}.\n\nStay healthy and keep up the great work!"
+        )
+        notification_sent = True
+    return notification_sent
+
+# This sends notifications to all the user's MediMates
+def notify_medimates(user_id, title, body):
+    db = get_db()
+    medimates = db.execute("""
+                           SELECT u2.username, u2.email
+                           FROM friends f JOIN users u2 ON (f.friend1 = u2.username OR f.friend2 = u2.username)
+                           WHERE (f.friend1 = ? OR f.friend2 = ?) AND (u2.user_id != ?)
+                           """, (user_id, user_id, user_id)).fetchall()
+    for medimate in medimates:
+        send_push_notification(
+            username=medimate["username"],
+            title = title,
+            body = body
+        )
+        if medimate["email"]:
+            send_email_notification(
+                username = medimate["username"],
+                title = title,
+                body = body
+            )
+
+# This checks if a user has not marked a medication as taken within 1 hour of when it's due
+# and notifies their MediMates
+def check_if_overdue_and_notify_medimates(medication, user_current_time):
+    db = get_db()
+    scheduled_time = datetime.strptime(medication["time_of_day"], "%H:%M").time()
+    scheduled_dt = datetime.combine(user_current_time.date(), scheduled_time)
+    user_timezone = pytz.timezone(medication["timezone"]) if medication["timezone"] else pytz.utc
+    scheduled_dt = user_timezone.localize(scheduled_dt.replace(tzinfo=None))
+    # This check if med was already logged
+    log_exists = db.execute("""
+                            SELECT 1 FROM medication_logs
+                            WHERE user_medication_id = ? AND scheduled_date = ? AND time_of_day = ?
+                            """, (medication["user_medication_id"], user_current_time.date(), medication["time_of_day"])).fetchone()
+    # This checks if 1 hour has passed and the medication is still not logged. If so, it notifies their MediMates.
+    if not log_exists and user_current_time >= scheduled_dt + timedelta(hours=1):
+        title = "Medication Missed! 💊"
+        body = f"{medication['username']} hasn’t marked their medication as taken yet."
+        notify_medimates(medication["user_id"], title, body)
+
 # This function checks every minute which medications are due
 def reminder_scheduler():
     with app.app_context():
         current_time_utc = datetime.now(timezone.utc)
-        db = get_db()
-        # Get all medications for today
-        medications = db.execute(""" 
-                                SELECT m.user_medication_id, m.user_id, u.username, u.email, m.medication_name, m.dosage_amount, m.dosage_unit, m.frequency_type, mt.time_of_day, u.timezone, m.push_notifications_enabled, m.email_notifications_enabled, mt.weekday, mt.day_of_month
-                                FROM medications m JOIN medication_times mt ON m.user_medication_id = mt.user_medication_id
-                                JOIN users u ON m.user_id = u.user_id
-                                WHERE m.start_date <= ? AND (m.end_date IS NULL OR m.end_date >= ?);
-                                """, (current_time_utc.date(), current_time_utc.date())).fetchall()
+        medications = get_medications(current_time_utc)
         for medication in medications:
-            # Convert the current UTC time into the user's local timezone
+            # This converts the current UTC time into the user's local timezone
             user_time_zone = pytz.timezone(medication["timezone"]) if medication["timezone"] else pytz.utc
             user_current_time = current_time_utc.astimezone(user_time_zone)
-            current_weekday = user_current_time.weekday()
-            current_day_of_month = user_current_time.day
-            frequency_type = medication["frequency_type"]
-            if frequency_type == "weekly":
-                if medication["weekday"] != current_weekday:
-                    continue
-            if frequency_type == "monthly":
-                if medication["day_of_month"] != current_day_of_month:
-                    continue
-            if frequency_type == "as_needed":
-                continue
-            # This converts the stored medication time to a time object and strips the seconds and milliseconds
-            medication_time = datetime.strptime(medication["time_of_day"], "%H:%M").time()
-            # This compares only the hours and minutes (ignores seconds and microseconds) to avoid small mismatches
-            if medication_time != user_current_time.time().replace(second=0, microsecond=0):
-                # Check if the reminder was already sent today (we want to avoid duplicates)
-                reminder_sent = db.execute("""
-                                        SELECT 1
-                                        FROM medication_reminders_sent
-                                        WHERE user_medication_id = ? AND time_of_day = ? AND date_sent = ?;
-                                        """, (medication["user_medication_id"], medication["time_of_day"], user_current_time.date())).fetchone()
-                # Skip it if it was already sent
-                if reminder_sent:
-                    continue
-                username = medication["username"]
-                notification_sent = False
-                if medication["push_notifications_enabled"]:
-                    send_push_notification(
-                        username=username,
-                        title="Medication Reminder 💊",
-                        body=f"Hey, {username}! It's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}. Keep up the great work!"
-                    )
-                    notification_sent = True
-                if medication["email_notifications_enabled"] and medication["email"]:
-                    send_email_notification(
-                        username=username,
-                        title="Medication Reminder 💊",
-                        body=f"Hello, {username},\n\nThis is a friendly reminder that it's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}.\n\nStay healthy and keep up the great work!"
-                    )
-                    notification_sent = True
-                # Record that the notification was sent
-                if notification_sent:
-                    db.execute("""
-                            INSERT OR IGNORE INTO medication_reminders_sent (user_medication_id, time_of_day, date_sent)
-                            VALUES (?, ?, ?);
-                            """, (medication["user_medication_id"], medication["time_of_day"], user_current_time.date()))
-                    db.commit()
+            if should_notify_user(medication, user_current_time):
+                # This avoids sending duplicate notifications
+                db = get_db()
+                already_sent = db.execute("""
+                                          SELECT 1
+                                          FROM medication_reminders_sent
+                                          WHERE user_medication_id = ? AND time_of_day = ? AND date_sent = ?
+                                          """, (medication["user_medication_id"], medication["time_of_day"], user_current_time.date())).fetchone()
+                if not already_sent:
+                    if notify_user(medication):
+                        db.execute("""
+                                    INSERT INTO medication_reminders_sent (user_medication_id, time_of_day, date_sent)
+                                    VALUES (?, ?, ?)
+                                    """, (medication["user_medication_id"], medication["time_of_day"], user_current_time.date()))
+                        db.commit()
+            # This checks if the medication is overdue and notifies MediMates if so.
+            check_if_overdue_and_notify_medimates(medication, user_current_time)
 scheduler = BackgroundScheduler()
 scheduler.add_job(reminder_scheduler, "interval", minutes=1, replace_existing=True)
 scheduler.start()
@@ -386,6 +437,16 @@ def log_medication(user_medication_id):
                 VALUES (?, ?, ?);
                 """, (user_medication_id, scheduled_date, time_of_day))
         db.commit()
+        # This notifies the user's MediMates that they have taken their medication
+        user = db.execute("""
+                          SELECT u.user_id, u.username
+                          FROM users u JOIN medications m ON m.user_id = m.user_id
+                          WHERE m.user_medication_id = ?
+                          """, (user_medication_id,)).fetchone()
+        if user:
+            title = "Medication Taken! 💊"
+            body = f"{user['username']} has just taken their medication!"
+            notify_medimates(user["user_id"], title, body)
     return redirect( url_for("log_medication_week") )
 
 @app.route("/set_timezone", methods=["POST"])
@@ -589,6 +650,17 @@ def add_medication():
                 db.commit()
                 return redirect( url_for("history") )
     return render_template("add_medication.html", title="Add Medication", form=form)
+
+@app.route("/delete_medication/<int:user_medication_id>", methods=["POST"])
+@login_required
+def delete_medication(user_medication_id):
+    db = get_db()
+    db.execute("""
+               DELETE FROM medication_times WHERE user_medication_id = ?""", (user_medication_id,))
+    db.execute("""DELETE FROM medication_logs WHERE user_medication_id = ?""", (user_medication_id,))
+    db.execute("""DELETE FROM medications WHERE user_medication_id = ? AND user_id = ?""",(user_medication_id, g.user["user_id"]))
+    db.commit()
+    return redirect(url_for("history"))
 
 @app.route("/query_medications", methods=["GET"])
 def query_medications():
@@ -880,6 +952,24 @@ def symptom_report():
                           """, (user["user_id"],)).fetchall()
     total_symptoms = len(symptoms)
     return render_template("symptom_report.html", user=user, symptoms=symptoms, total_symptoms=total_symptoms, generated_on=datetime.now())
+
+@app.route("/history/report")
+@login_required
+def history_report():
+    db = get_db()
+    user = db.execute("""
+                      SELECT * 
+                      FROM users 
+                      WHERE username = ?
+                      """, (session["username"],)).fetchone()
+    medications = db.execute("""
+                          SELECT *
+                          FROM medications
+                          WHERE user_id = ?
+                          ORDER BY start_date DESC
+                          """, (user["user_id"],)).fetchall()
+    total_meds = len(medications)
+    return render_template("medication_report.html", user=user, medications=medications, total_meds=total_meds, generated_on=datetime.now())
 
 #Profile section showing amount of mates 
 @app.route("/profile")

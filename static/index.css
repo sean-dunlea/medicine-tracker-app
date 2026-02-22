@@ -1,41 +1,89 @@
-/* ============================================
-   INDEX/HOMEPAGE SPECIFIC STYLES
-   ============================================ */
-
-/* CHANGED: Removed duplicate body styles, now in styles.css */
-
-/* --- Hero --- */
-.hero {
-  margin-top: 6rem;
+#index {
+  min-height: 100vh;
+  padding: 0;
 }
 
-.animated-title {
-  font-size: 6rem;
+/* Grid split */
+#index .landing {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+/* FULL LEFT COLUMN */
+#index .landing-content {
+  background-color: var(--primary);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 6rem;
+}
+
+/* Title */
+#index .animated-title {
+  font-size: 6.5rem;
   font-weight: 700;
-  display: inline-block;
-  position: relative;
+  display: inline-flex;
+  white-space: nowrap;
 }
 
-/* Slide in "Medi" */
-.animated-title .medi {
-  color: var(--primary);
-  display: inline-block;
+/* Medi */
+#index .animated-title .medi {
+  color: var(--cream);
   opacity: 0;
   transform: translateX(-30px);
-  animation: mediSlide 0.5s forwards;
+  animation: mediSlide 0.5s ease forwards,
+    titlePop 0.25s ease forwards 1s;
 }
 
-/* Slide in "Mate" */
-.animated-title .mate {
+/* Mate */
+#index .animated-title .mate {
   color: var(--primary-dark);
-  display: inline-block;
   opacity: 0;
   transform: translateX(30px);
-  animation: mateSlide 0.5s forwards;
-  animation-delay: 0.5s;
+  animation: mateSlide 0.5s ease forwards 0.5s,
+    titlePop 0.25s ease forwards 1s;
 }
 
-/* --- Slide animations --- */
+#index .subtitle {
+  font-size: 1.7rem;
+  color: var(--cream);
+  margin-top: 1.5rem;
+  max-width: 500px;
+}
+
+#index .cta-btn {
+  margin-top: 2rem;
+}
+
+/* FULL RIGHT COLUMN */
+#index .landing-visual {
+  background-color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-image: url("/static/bg.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+/* Sprite */
+#index .sprite {
+  width: 400px;
+  height: 400px;
+
+  background-image: url("/static/spritesheet.png");
+  background-repeat: no-repeat;
+
+  animation:
+    playSprite 1s steps(3) forwards,
+    spritePop 0.25s ease forwards 1s;
+}
+
+/*ANIMATIONS*/
+
 @keyframes mediSlide {
   to {
     opacity: 1;
@@ -50,24 +98,80 @@
   }
 }
 
-/* --- Click/pop for both after slide --- */
-.animated-title .medi,
-.animated-title .mate {
-  animation-name: mediSlide, mateClick;
-  animation-duration: 0.5s, 0.2s;
-  animation-delay: 0s, 0.60s;
-  animation-fill-mode: forwards;
+@keyframes titlePop {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
-@keyframes mateClick {
-  0% { transform: translateX(0) scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+@keyframes playSprite {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: -1200px 0;
+  }
 }
 
-/* CHANGED: Added subtitle styles */
-.subtitle {
-  font-size: 1.2rem;
-  color: var(--muted);
-  margin-top: var(--spacing-md);
+@keyframes spritePop {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/*
+   RESPONSIVE */
+
+/* Tablet */
+@media (max-width: 1024px) {
+
+  #index .landing {
+    grid-template-columns: 1fr;
+  }
+
+  #index {
+    background: var(--primary);
+  }
+
+  #index .landing-content {
+    padding: 4rem 2rem;
+    text-align: center;
+    align-items: center;
+  }
+
+  #index .landing-visual {
+    background-color: var(--cream);
+    background-size: cover;
+    min-height: 50vh;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+
+  #index .animated-title {
+    font-size: 3.5rem;
+  }
+
+  #index .subtitle {
+    font-size: 1.2rem;
+  }
+
 }

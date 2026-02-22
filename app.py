@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 from functools import wraps
 from datetime import date, timedelta
 import os
+import calendar as pycalendar
 
 app = Flask(__name__)
 # Secret key for signing sessions to protect against CSRF attacks.
@@ -213,11 +214,31 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(reminder_scheduler, "interval", minutes=1, replace_existing=True)
 scheduler.start()
 
-@app.route("/calendar")
+@app.route("/month_calendar/<int:year>/<int:month>")
+@login_required
+def month_calendar(year, month):
+    calendar_year = build_month_calendar(g.user["user_id"], year, month)
+    today = date.today()
+    month_name = pycalendar.month_name[month]
+    if month == 1:
+        prev_month = 12
+        prev_year = year -1
+    else:
+        prev_month = month - 1
+        prev_year = year
+    if month == 12:
+        next_month = 1
+        next_year = year + 1
+    else: 
+        next_month = month + 1
+        next_year = year
+    return render_template("month_calendar.html", calendar=calendar_year, year=year, month=month, month_name=month_name, today=today, prev_month=prev_month, prev_year=prev_year, next_month=next_month, next_year=next_year)
+
+@app.route("/month_calendar")
 @login_required
 def calendar():
-    calendar_year = build_year_calendar(g.user["user_id"])
-    return render_template("calendar.html", calendar=calendar_year)
+    today = date.today()
+    return redirect(url_for("month_calendar", year=today.year, month=today.month))
 
 def build_week_calendar(user_id):
     # This calculates the current week from Monday to Sunday
@@ -274,13 +295,27 @@ def build_week_calendar(user_id):
                 })
     return calendar
 
-def build_year_calendar(user_id):
+def build_week_status(user_id):
+    detailed_calendar = build_week_calendar(user_id)
+    status_calendar = {}
+    for day, meds in detailed_calendar.items():
+        if not meds:
+            status_calendar[day] = {
+                "all_taken": False,
+                "has_meds": False
+            }
+        else:
+            all_taken = all(med["taken"] for med in meds)
+            status_calendar[day] = {
+                "all_taken": all_taken,
+                "has_meds": True
+            }
+    return status_calendar
+
+def build_month_calendar(user_id, year, month):
     db = get_db()
-    today = date.today()
-    start_of_year = date(today.year, 1, 1)
-    end_of_year = date(today.year, 12, 31)
-    total_days = (end_of_year - start_of_year).days + 1
-    days = [start_of_year + timedelta(days=i) for i in range(total_days)]
+    first_weekday, days_in_month = pycalendar.monthrange(year, month)
+    first_day = date(year, month, 1)
     medications = db.execute("""
         SELECT m.user_medication_id, m.medication_name,
                m.frequency_type, m.start_date, m.end_date,
@@ -290,56 +325,49 @@ def build_year_calendar(user_id):
         ON m.user_medication_id = mt.user_medication_id
         WHERE m.user_id = ?
     """, (user_id,)).fetchall()
-
-    medication_logs = db.execute("""
-        SELECT user_medication_id, scheduled_date, time_of_day
-        FROM medication_logs
-        WHERE user_medication_id IN (
-            SELECT user_medication_id FROM medications WHERE user_id = ?
-        )
-    """, (user_id,)).fetchall()
-    log_dict = {
-        (log["user_medication_id"], log["scheduled_date"], log["time_of_day"]): True
-        for log in medication_logs
-    }
-    calendar = {day: [] for day in days}
-    for day in days:
+    calendar =[]
+    start_grid = first_day - timedelta(days=first_day.weekday())
+    for i in range(42): #this is grid for 6 weeks
+        current_day = start_grid + timedelta(days=i)
+        day_meds = []
         for medication in medications:
-            if day < medication["start_date"]:
+            if current_day < medication["start_date"]:
                 continue
-            if medication["end_date"] and day > medication["end_date"]:
+            if medication["end_date"] and current_day > medication["end_date"]:
                 continue
             include = False
             if medication["frequency_type"] == "daily":
                 include = True
             elif medication["frequency_type"] == "weekly":
-                if medication["weekday"] == day.weekday():
+                if medication["weekday"] == current_day.weekday():
                     include = True
             if include:
-                taken = log_dict.get(
-                    (medication["user_medication_id"], day, medication["time_of_day"]),
-                    False
-                )
-                calendar[day].append({
-                    "medication_name": medication["medication_name"],
-                    "time_of_day": medication["time_of_day"],
-                    "taken": taken
+                day_meds.append({
+                    "name": medication["medication_name"],
+                    "time": medication["time_of_day"]
                 })
+        calendar.append({
+            "date": current_day,
+            "in_month": current_day.month == month,
+            "medications": day_meds
+        })
     return calendar
 
 # This is the home page route.
 @app.route("/")
 def index():
-    if not g.user:
-        return render_template("index.html", title="Home")
-    calendar = build_week_calendar(g.user["user_id"])
+    if g.user:
+        calendar = build_week_status(g.user["user_id"])
+    else:
+        calendar = None
     return render_template("index.html", title="Home", calendar=calendar)
 
-@app.route("/week_calendar")
+# This displays the weekly calendar in log medication
+@app.route("/log_medication")
 @login_required
-def week_calendar():
+def log_medication_week():
     calendar = build_week_calendar(g.user["user_id"])
-    return render_template("week_calendar.html", calendar=calendar)
+    return render_template("log_medication.html", calendar=calendar)
 
 @app.route("/log_medication/<int:user_medication_id>", methods=["POST"])
 @login_required
@@ -358,7 +386,7 @@ def log_medication(user_medication_id):
                 VALUES (?, ?, ?);
                 """, (user_medication_id, scheduled_date, time_of_day))
         db.commit()
-    return redirect( url_for("week_calendar") )
+    return redirect( url_for("log_medication_week") )
 
 @app.route("/set_timezone", methods=["POST"])
 @login_required

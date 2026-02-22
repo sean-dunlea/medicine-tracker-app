@@ -2,15 +2,22 @@
 {% block main_content %}
 
 <h1>Medication History</h1>
-
+<button onclick="window.print()">Print / Save as PDF</button>
 {% if medications %}
   {% for med in medications %}
     <div class="card">
+      <form method="POST"
+        action = "{{ url_for('delete_medication', user_medication_id=med.user_medication_id) }}"
+        class="delete-form"
+        onsubmit="return confirm('Are you sure you want to delete this medication?');">
+      <button type="submit" class="delete-btn">🗑</button></form>
+<!-- ATTRIBUTION: bin emoji is taken from https://emojidb.org/trash-emojis -->
+
       <strong>{{ med.medication_name }}</strong><br>
-      Dosage: {{ med.dosage_amount }} {{ med.dosage_unit }}<br>
-      Frequency: {{ med.frequency_count }} time(s) {{ med.frequency_type }}<br>
+      <p>Dosage: {{ med.dosage_amount }} {{ med.dosage_unit }}</p>
+      <p>Frequency: {{ med.frequency_count }} time(s) {{ med.frequency_type }}</p>
       {% if med.instructions %}
-        Instructions: {{ med.instructions }}
+        <p>Instructions: {{ med.instructions }}</p>
       {% endif %}
     </div>
   {% endfor %}

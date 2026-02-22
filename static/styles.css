@@ -303,3 +303,19 @@ label {
 .day-card:hover {
   transform: translateY(-3px);
 }
+
+
+/* THIS IS FOR THE DELETE BUTTON INSIDE HISTORY */
+.delete-btn {
+    background: #a40000;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: 0.2s ease;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+    transform: scale(1.15);
+}

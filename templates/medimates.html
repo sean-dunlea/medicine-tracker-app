@@ -17,4 +17,57 @@
     {% endfor %}
 </table>
 
+<h1>Add Medimate</h1>
+
+<form action="" method="POST" novalidate>
+
+        {{ form.hidden_tag() }}
+
+        {{ form.username.label }}
+        {{ form.username() }}
+
+        {% for error in form.username.errors %}
+            {{ error }}
+        {% endfor %}
+
+        <br />
+
+        {{ form.submit() }}
+
+    </form>
+    <p>{{ response }}</p>
+
+<h1>Mate Requests</h1>
+
+<table>
+    {% for invite in invites %}
+        <tr>
+            <td>{{ invite["sender"] }}</td>
+            <td>
+                <a href="{{ url_for('accept_request', friend1=invite['sender'])}}">
+                    Accept Request
+                </a>
+                <a href="{{ url_for('reject_request', sender=invite['sender'])}}">
+                    Reject Request
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
+<h1>Pending Mate Requests</h1>
+
+<table>
+    {% for request in pending_requests %}
+        <tr>
+            <td>{{ request["receiver"] }}</td>
+            <td>
+                <a href="{{ url_for('cancel_request', receiver=request['receiver'])}}">
+                    Cancel Request
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
 {% endblock %}

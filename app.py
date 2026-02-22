@@ -7,8 +7,9 @@ from database import get_db, close_db, initialise_drugbank
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
-from datetime import timedelta
+from datetime import date, timedelta
 import os
+import calendar as pycalendar
 
 app = Flask(__name__)
 # Secret key for signing sessions to protect against CSRF attacks.
@@ -191,15 +192,15 @@ def reminder_scheduler():
                 if medication["push_notifications_enabled"]:
                     send_push_notification(
                         username=username,
-                        title="Medication Reminder",
-                        body=f"{medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']} is due."
+                        title="Medication Reminder 💊",
+                        body=f"Hey, {username}! It's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}. Keep up the great work!"
                     )
                     notification_sent = True
                 if medication["email_notifications_enabled"] and medication["email"]:
                     send_email_notification(
                         username=username,
-                        title="Medication Reminder",
-                        body=f"{medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']} is due."
+                        title="Medication Reminder 💊",
+                        body=f"Hello, {username},\n\nThis is a friendly reminder that it's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}.\n\nStay healthy and keep up the great work!"
                     )
                     notification_sent = True
                 # Record that the notification was sent
@@ -212,11 +213,180 @@ def reminder_scheduler():
 scheduler = BackgroundScheduler()
 scheduler.add_job(reminder_scheduler, "interval", minutes=1, replace_existing=True)
 scheduler.start()
-   
+
+@app.route("/month_calendar/<int:year>/<int:month>")
+@login_required
+def month_calendar(year, month):
+    calendar_year = build_month_calendar(g.user["user_id"], year, month)
+    today = date.today()
+    month_name = pycalendar.month_name[month]
+    if month == 1:
+        prev_month = 12
+        prev_year = year -1
+    else:
+        prev_month = month - 1
+        prev_year = year
+    if month == 12:
+        next_month = 1
+        next_year = year + 1
+    else: 
+        next_month = month + 1
+        next_year = year
+    return render_template("month_calendar.html", calendar=calendar_year, year=year, month=month, month_name=month_name, today=today, prev_month=prev_month, prev_year=prev_year, next_month=next_month, next_year=next_year)
+
+@app.route("/month_calendar")
+@login_required
+def calendar():
+    today = date.today()
+    return redirect(url_for("month_calendar", year=today.year, month=today.month))
+
+def build_week_calendar(user_id):
+    # This calculates the current week from Monday to Sunday
+    today = date.today()
+    # This gets the first day of the week by subtracting the current weekday index
+    monday = today - timedelta(days=today.weekday())
+    # This generates the list of 7 days
+    weekdays = [monday + timedelta(days=weekday_index) for weekday_index in range(7)]
+    # This gets the user's medications and the times
+    db = get_db()
+    medications = db.execute(""" 
+                             SELECT m.user_medication_id, m.medication_name, m.frequency_type, m.start_date, m.end_date, mt.time_of_day, mt.weekday
+                             FROM medications m JOIN medication_times mt ON m.user_medication_id = mt.user_medication_id
+                             WHERE m.user_id = ?;
+                             """, (user_id,)).fetchall()
+    # This gets the medication logs for this week
+    medication_logs = db.execute("""
+                                 SELECT user_medication_id, scheduled_date, time_of_day
+                                 FROM medication_logs
+                                 WHERE user_medication_id IN (SELECT user_medication_id FROM medications WHERE user_id = ?)
+                                 AND scheduled_date BETWEEN ? AND ?
+                                 """, (user_id, monday, monday + timedelta(days=6))).fetchall()
+    # This builds a dictionary to check if a medication was taken on a specific day
+    medication_log_dict = {(medication_log["user_medication_id"], medication_log["scheduled_date"], medication_log["time_of_day"]): True for medication_log in medication_logs}
+    # This prepares the calendar
+    calendar = {weekday: [] for weekday in weekdays}
+    for weekday in weekdays:
+        for medication in medications:
+            # This ignores medications that haven't started yet or ones that already ended
+            if weekday < medication["start_date"]:
+                continue
+            if medication["end_date"] and weekday > medication["end_date"]:
+                continue
+            include = False
+            if medication["frequency_type"] == "daily":
+                include = True
+            elif medication["frequency_type"] == "weekly":
+                if medication["weekday"] == weekday.weekday():
+                    include = True
+            if include:
+                already_taken = medication_log_dict.get((medication["user_medication_id"], weekday, medication["time_of_day"]), False)
+                medication_datetime = datetime.combine(weekday, datetime.strptime(medication["time_of_day"], "%H:%M").time())
+                can_take = datetime.now() >= medication_datetime
+                if already_taken:
+                    can_take = False
+                else:
+                    can_take = datetime.now() >= medication_datetime
+                calendar[weekday].append({
+                    "user_medication_id": medication["user_medication_id"],
+                    "medication_name": medication["medication_name"],
+                    "time_of_day": medication["time_of_day"],
+                    "taken": already_taken,
+                    "can_take": can_take
+                })
+    return calendar
+
+def build_week_status(user_id):
+    detailed_calendar = build_week_calendar(user_id)
+    status_calendar = {}
+    for day, meds in detailed_calendar.items():
+        if not meds:
+            status_calendar[day] = {
+                "all_taken": False,
+                "has_meds": False
+            }
+        else:
+            all_taken = all(med["taken"] for med in meds)
+            status_calendar[day] = {
+                "all_taken": all_taken,
+                "has_meds": True
+            }
+    return status_calendar
+
+def build_month_calendar(user_id, year, month):
+    db = get_db()
+    first_weekday, days_in_month = pycalendar.monthrange(year, month)
+    first_day = date(year, month, 1)
+    medications = db.execute("""
+        SELECT m.user_medication_id, m.medication_name,
+               m.frequency_type, m.start_date, m.end_date,
+               mt.time_of_day, mt.weekday
+        FROM medications m
+        JOIN medication_times mt
+        ON m.user_medication_id = mt.user_medication_id
+        WHERE m.user_id = ?
+    """, (user_id,)).fetchall()
+    calendar =[]
+    start_grid = first_day - timedelta(days=first_day.weekday())
+    for i in range(42): #this is grid for 6 weeks
+        current_day = start_grid + timedelta(days=i)
+        day_meds = []
+        for medication in medications:
+            if current_day < medication["start_date"]:
+                continue
+            if medication["end_date"] and current_day > medication["end_date"]:
+                continue
+            include = False
+            if medication["frequency_type"] == "daily":
+                include = True
+            elif medication["frequency_type"] == "weekly":
+                if medication["weekday"] == current_day.weekday():
+                    include = True
+            if include:
+                day_meds.append({
+                    "name": medication["medication_name"],
+                    "time": medication["time_of_day"]
+                })
+        calendar.append({
+            "date": current_day,
+            "in_month": current_day.month == month,
+            "medications": day_meds
+        })
+    return calendar
+
 # This is the home page route.
 @app.route("/")
 def index():
-    return render_template("index.html", title="Home")
+    if g.user:
+        calendar = build_week_status(g.user["user_id"])
+    else:
+        calendar = None
+    return render_template("index.html", title="Home", calendar=calendar)
+
+# This displays the weekly calendar in log medication
+@app.route("/log_medication")
+@login_required
+def log_medication_week():
+    calendar = build_week_calendar(g.user["user_id"])
+    return render_template("log_medication.html", calendar=calendar)
+
+@app.route("/log_medication/<int:user_medication_id>", methods=["POST"])
+@login_required
+def log_medication(user_medication_id):
+    db = get_db()
+    scheduled_date = request.form.get("scheduled_date")
+    time_of_day = request.form.get("time_of_day")
+    existing_log = db.execute("""
+                              SELECT 1
+                              FROM medication_logs
+                              WHERE user_medication_id = ? AND scheduled_date = ? AND time_of_day = ?
+                              """, (user_medication_id, scheduled_date, time_of_day)).fetchone()
+    if not existing_log:
+        db.execute("""
+                INSERT OR IGNORE INTO medication_logs (user_medication_id, scheduled_date, time_of_day)
+                VALUES (?, ?, ?);
+                """, (user_medication_id, scheduled_date, time_of_day))
+        db.commit()
+    return redirect( url_for("log_medication_week") )
 
 @app.route("/set_timezone", methods=["POST"])
 @login_required
@@ -466,57 +636,46 @@ def history():
                                 """, (user_id,),).fetchall()
     return render_template("history.html", title="Medication History", medications=medications)
 
-@app.route("/add_mate", methods=["GET", "POST"])
-@login_required
-def add_mate():
-    response = ""
-    form = AddMateForm()
-    if form.validate_on_submit():
-        sender = session["username"]
-        receiver = form.username.data
-        if sender == receiver:
-            form.username.errors.append("You Cannot invite yourself.")
-            return render_template("add_mate.html", title="Add Mates", form=form, response=response)
-        db = get_db()
-        existing_user = db.execute("""
-                                SELECT *
-                                FROM users
-                                WHERE username = ?;
-                                """, (receiver,)).fetchone()
-        
-        existing_invite = db.execute("""
-                                     SELECT *
-                                     FROM invites
-                                     WHERE sender = ? AND receiver = ?;
-                                     """, (sender, receiver,)).fetchone()
-        if existing_invite is not None:
-            form.username.errors.append("You have already sent this user an invite.")
-        elif existing_user is not None:
-            db.execute("""
-                       INSERT INTO invites (sender, receiver)
-                       VALUES
-                       (?, ?);
-                       """, (sender, receiver,))
-            db.commit()
-            response = "Mate Request Sent"
-        else:
-            form.username.errors.append("This user does not exist.")
-    return render_template("add_mate.html", title="Add Mates", form=form, response=response)
-
-@app.route("/mate_requests")
-@login_required
-def mate_requests():
-    user = session["username"]
-    db = get_db()
-    invites = db.execute("""
-                    SELECT *
-                    FROM invites
-                    WHERE receiver = ?""", (user,))
-    pending_requests = db.execute("""
-                    SELECT *
-                    FROM invites
-                    WHERE sender = ?""", (user,))
-    return render_template("mate_requests.html", title="Add Mates", invites=invites, pending_requests=pending_requests)
+#@app.route("/add_mate", methods=["GET", "POST"])
+#@login_required
+#def add_mate():
+#    response = ""
+#    form = AddMateForm()
+#    if form.validate_on_submit():
+#        sender = session["username"]
+#        receiver = form.username.data
+#        if sender == receiver:
+#            form.username.errors.append("You cannot invite yourself.")
+#            return render_template("add_mate.html", title="Add Mates", form=form, response=response)
+#        db = get_db()
+#        existing_user = db.execute("""
+#                                SELECT *
+#                                FROM users
+#                                WHERE username = ?;
+#                                """, (receiver,)).fetchone()
+#        
+#        existing_invite = db.execute("""
+#                                     SELECT *
+#                                     FROM invites
+#                                     WHERE sender = ? AND receiver = ?;
+#                                     """, (sender, receiver,)).fetchone()
+#        if existing_invite is not None:
+#            form.username.errors.append("You have already sent this user an invite.")
+#        elif existing_user is not None:
+#            db.execute("""
+#                       INSERT INTO invites (sender, receiver)
+#                       VALUES
+#                       (?, ?);
+#                       """, (sender, receiver,))
+#            db.commit()
+#            response = "Mate Request Sent"
+#            title = "New Mate Request! 💊"
+#            body = f"{sender} has sent you a MediMate request!"
+#            send_email_notification(receiver, title, body)
+#            send_push_notification(receiver, title, body)
+#        else:
+#            form.username.errors.append("This user does not exist.")
+#    return render_template("add_mate.html", title="Add Mates", form=form, response=response)
     
 @app.route("/cancel_request/<string:receiver>")
 @login_required
@@ -533,7 +692,7 @@ def cancel_request(receiver):
                          FROM invites
                          WHERE sender = ?
                          """, (sender,))
-    return render_template("pending_requests.html", title="Pending Requests", invites=invites)
+    return redirect(url_for("medimates"))
 
 @app.route("/accept_request/<string:friend1>")
 @login_required
@@ -558,12 +717,18 @@ def accept_request(friend1):
                """, (friend1, friend2,))
     db.commit()
 
+    # This notifies the sender that their request was accepted yurrr
+    title = "Mate Request Accepted! 💊"
+    body = f"{friend2} has accepted your MediMate request!"
+    send_email_notification(friend1, title, body)
+    send_push_notification(friend1, title, body)
+
     invites = db.execute("""
                          SELECT *
                          FROM invites
                          WHERE receiver = ?
                          """, (friend2,))
-    return render_template("mate_requests.html", title="Mate Requests", invites=invites)
+    return redirect(url_for("medimates"))
         
 @app.route("/reject_request/<string:sender>")
 @login_required
@@ -575,23 +740,74 @@ def reject_request(sender):
                WHERE sender = ? AND receiver = ?;
                """, (sender, user,))
     db.commit()
+    # This notifies the sender that the receiver was too cool for them :(
+    title = "Mate Request Rejected"
+    body = f"{user} has rejected your MediMate request."
+    send_email_notification(sender, title, body)
+    send_push_notification(sender, title, body)
     invites = db.execute("""
                          SELECT *
                          FROM invites
                          WHERE sender = ?
                          """, (sender,))
-    return render_template("mate_requests.html", title="Mate Requests", invites=invites)
+    return redirect(url_for("medimates"))
 
-@app.route("/medimates")
+@app.route("/medimates", methods=["GET", "POST"])
 @login_required
 def medimates():
-    user = session["username"]
+    response = ""
     db = get_db()
+    user = session["username"]
+    form = AddMateForm()
+    if form.validate_on_submit():
+        receiver = form.username.data
+        if user == receiver:
+            form.username.errors.append("You cannot invite yourself.")
+            return render_template("add_mate.html", title="Add Mates", form=form, response=response)
+        existing_user = db.execute("""
+                                SELECT *
+                                FROM users
+                                WHERE username = ?;
+                                """, (receiver,)).fetchone()
+        
+        existing_invite = db.execute("""
+                                     SELECT *
+                                     FROM invites
+                                     WHERE sender = ? AND receiver = ?;
+                                     """, (user, receiver,)).fetchone()
+        if existing_invite is not None:
+            form.username.errors.append("You have already sent this user an invite.")
+        elif existing_user is not None:
+            db.execute("""
+                       INSERT INTO invites (sender, receiver)
+                       VALUES
+                       (?, ?);
+                       """, (user, receiver,))
+            db.commit()
+            response = "Mate Request Sent"
+            title = "New Mate Request! 💊"
+            body = f"{user} has sent you a MediMate request!"
+            send_email_notification(receiver, title, body)
+            send_push_notification(receiver, title, body)
+        else:
+            form.username.errors.append("This user does not exist.")
+
     medimates = db.execute("""
                     SELECT *
                     FROM friends
                     WHERE friend1 = ?""", (user,))
-    return render_template("medimates.html", title="Medimates", medimates=medimates)
+    
+    invites = db.execute("""
+                    SELECT *
+                    FROM invites
+                    WHERE receiver = ?""", (user,))
+    pending_requests = db.execute("""
+                    SELECT *
+                    FROM invites
+                    WHERE sender = ?""", (user,))
+    
+
+    return render_template("medimates.html", title="Medimates", medimates=medimates, invites=invites, pending_requests=pending_requests, form=form, response=response)
 
 @app.route("/remove_medimate/<string:friend>")
 @login_required
@@ -614,7 +830,7 @@ def remove_medimate(friend):
                     SELECT *
                     FROM friends
                     WHERE friend1 = ?""", (user,))
-    return render_template("medimates.html", title="Medimates", medimates=medimates)
+    return redirect(url_for("medimates"))
 
     
 

@@ -16,7 +16,6 @@
   <p class="subtitle">Medication Made Manageable.</p>
 </header>
 
-
   {% if session.get("username") %}
     <section class="welcome">
       <p>Welcome back, <strong>{{ session.get("username") }}</strong></p>
@@ -26,13 +25,21 @@
       <a class="btn secondary" href="{{ url_for('add_medication') }}">Add Medication</a>
       <a class="btn secondary" href="{{ url_for('history') }}">History</a>
       <a class="btn secondary" href="{{ url_for('medimates') }}">MediMates</a>
-      <a class="btn secondary" href="{{ url_for('add_mate') }}">Add MediMate</a>
-      <a class="btn secondary" href="{{ url_for('mate_requests') }}">Mate Requests</a>
       <a class="btn secondary" href="{{ url_for('log_symptom') }}">Symptoms Log</a>
       <a class="btn secondary" href="{{ url_for('profile') }}">My Profile</a>
       <a class="btn secondary" href="{{ url_for('settings') }}">Settings</a>
       <a class="btn secondary" href="{{ url_for('logout') }}">Logout</a>
     </nav>
+    
+    {% if calendar %}
+    <section>
+      <h2>This Week</h2>
+      {% include "week_calendar.html" %}
+      <a class="btn" href="{{ url_for('calendar') }}">View Full Calendar</a>
+      <a class="btn" href="{{ url_for('log_medication_week') }}">Log Medication</a>
+    </section>
+    {% endif %}
+
 
   {% else %}
     <section class="card">

@@ -1,47 +1,18 @@
-<!-- this displays the calendar for the first 7 days in index -->
-    <table>
-        <thead>
-            <tr>
-                {% for day in calendar.keys() %}
-                    <th>{{ day.strftime("%A %d %b") }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
+<div class="week-grid">
+{% for day, info in calendar.items() %}
+    {% if info.has_meds %}
+        {% if info.all_taken %}
+            {% set status_class = "day-complete" %}
+        {% else %}
+            {% set status_class = "day-missed" %}
+        {% endif %}
+    {% else %}
+        {% set status_class = "day-empty" %}
+    {% endif %}
 
-        <tbody>
-            {% set max_rows = calendar.values() | map('length') | max %}
-            {% for i in range(max_rows) %}
-            <tr>
-                {% for day, meds in calendar.items() %}
-                    <td>
-                        {% if meds|length > i %}
-                            {% set med = meds[i] %}
-                            {{ med.medication_name }}<br>
-                            {{ med.time_of_day }}<br>
-
-                            {% if med.taken %}
-                                <button disabled>Taken</button>
-
-                            {% elif med.can_take %}
-                                <!-- <form method="POST"
-                                    action="{{ url_for('log_medication', user_medication_id=med.user_medication_id) }}">
-                                    <button type="submit">Mark as Taken</button>
-                                </form> -->
-                                <form method="POST"
-                                    action="{{ url_for('log_medication', user_medication_id=med.user_medication_id) }}">
-                                    <input type="hidden" name="scheduled_date" value="{{ day.isoformat() }}">
-                                    <input type="hidden" name="time_of_day" value="{{ med.time_of_day }}">
-                                    <button type="submit">Mark as Taken</button>
-                                </form>
-
-                            {% else %}
-                                <button disabled>Not Yet</button>
-                            {% endif %}
-
-                        {% endif %}
-                    </td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="day-card {{ status_class }}">
+        <div class="day-name">{{ day.strftime("%a") }}</div>
+        <div class="day-number">{{ day.day }}</div>
+    </div>
+{% endfor %}
+</div>

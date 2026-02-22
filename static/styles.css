@@ -1,9 +1,4 @@
-/* ============================================
-   GENERAL STYLES - Applied to all pages
-   ============================================ */
-
 :root {
-  /* Color palette */
   --bg: #fdf3ec;
   --card: #fff8ee;
   --cream: #fff0e4;
@@ -12,27 +7,31 @@
   --muted: #8a6f5a;
   --text-dark: #5a4a42;
   --input-bg: #d8c8c8;
-  
-  /* Spacing */
+
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
   --spacing-md: 1.5rem;
   --spacing-lg: 2rem;
   --spacing-xl: 3rem;
-  
-  /* Border radius */
+
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
 }
 
+/* Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html, body {
+  height: 100%;
+}
+
+/* Base Layout */
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg);
@@ -68,7 +67,7 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Buttons - CHANGED: Added general button styles */
+/* Buttons */
 button,
 .btn {
   background: linear-gradient(to right, var(--primary), var(--primary-dark));
@@ -79,7 +78,7 @@ button,
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   display: inline-block;
   text-align: center;
 }
@@ -100,13 +99,8 @@ button:hover,
   background: #e6d5bd;
 }
 
-/* Forms - CHANGED: Added general form styles */
-input[type="text"],
-input[type="password"],
-input[type="email"],
-input[type="date"],
-input[type="time"],
-input[type="number"],
+/* Forms */
+input,
 textarea,
 select {
   background: var(--input-bg);
@@ -116,7 +110,7 @@ select {
   width: 100%;
   font-size: 1rem;
   font-family: inherit;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 input:focus,
@@ -134,23 +128,21 @@ label {
   color: var(--text-dark);
 }
 
-/* Cards - CHANGED: Added general card styles */
+/* Generic Components */
 .card {
   background: var(--card);
   border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-md);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Container */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-lg);
 }
 
-/* Utility classes - CHANGED: Added utility classes */
+/* Utilities */
 .text-center { text-align: center; }
 .text-muted { color: var(--muted); }
 .mb-sm { margin-bottom: var(--spacing-sm); }
@@ -159,35 +151,6 @@ label {
 .mt-sm { margin-top: var(--spacing-sm); }
 .mt-md { margin-top: var(--spacing-md); }
 .mt-lg { margin-top: var(--spacing-lg); }
-
-/* Navigation - CHANGED: Added navigation styles */
-.nav {
-  display: flex;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: var(--spacing-md);
-}
-
-/* Table - CHANGED: Added basic table styles */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: var(--spacing-md) 0;
-}
-
-table th,
-table td {
-  padding: var(--spacing-sm);
-  text-align: left;
-  border-bottom: 1px solid var(--cream);
-}
-
-table th {
-  font-weight: 600;
-  background: var(--cream);
-}
-
 
 /* CALENDAR - to be changed */
 /* THESE ARE FOR THE CALENDAR IN VIEW FULL CALENDAR */

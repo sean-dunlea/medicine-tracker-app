@@ -7,50 +7,58 @@
 {% endblock %}
 
 {% block main_content %}
-<main id="index" class="container">
-
-<header class="hero">
-  <h1 class="animated-title">
-    <span class="medi">Medi</span><span class="mate">Mate</span>
-  </h1>
-  <p class="subtitle">Medication Made Manageable.</p>
-</header>
+<main id="index" >
 
   {% if session.get("username") %}
-    <section class="welcome">
-      <p>Welcome back, <strong>{{ session.get("username") }}</strong></p>
-    </section>
-    <!-- This is the homepage bottom nav in the index page. If you are adding another link, please add it to the nav in base.html as well! -->
-    <nav class="nav">
-      <a class="btn secondary" href="{{ url_for('add_medication') }}">Add Medication</a>
-      <a class="btn secondary" href="{{ url_for('history') }}">History</a>
-      <a class="btn secondary" href="{{ url_for('medimates') }}">MediMates</a>
-      <a class="btn secondary" href="{{ url_for('log_symptom') }}">Symptoms Log</a>
-      <a class="btn secondary" href="{{ url_for('profile') }}">My Profile</a>
-      <a class="btn secondary" href="{{ url_for('settings') }}">Settings</a>
-      <a class="btn secondary" href="{{ url_for('logout') }}">Logout</a>
-    </nav>
-    
-    {% if calendar %}
-    <section>
-      <h2>This Week</h2>
-      {% include "week_calendar.html" %}
-      <a class="btn" href="{{ url_for('calendar') }}">View Full Calendar</a>
-      <a class="btn" href="{{ url_for('log_medication_week') }}">Log Medication</a>
-    </section>
-    {% endif %}
+  <section class="welcome">
+    <p>Welcome back, <strong>{{ session.get("username") }}</strong></p>
+  </section>
+  <!-- This is the homepage bottom nav in the index page. If you are adding another link, please add it to the nav in base.html as well! -->
+  <nav class="nav">
+    <a class="btn secondary" href="{{ url_for('add_medication') }}">Add Medication</a>
+    <a class="btn secondary" href="{{ url_for('history') }}">History</a>
+    <a class="btn secondary" href="{{ url_for('medimates') }}">MediMates</a>
+    <a class="btn secondary" href="{{ url_for('log_symptom') }}">Symptoms Log</a>
+    <a class="btn secondary" href="{{ url_for('profile') }}">My Profile</a>
+    <a class="btn secondary" href="{{ url_for('settings') }}">Settings</a>
+    <a class="btn secondary" href="{{ url_for('logout') }}">Logout</a>
+  </nav>
+
+  {% if calendar %}
+  <section>
+    <h2>This Week</h2>
+    {% include "week_calendar.html" %}
+    <a class="btn" href="{{ url_for('calendar') }}">View Full Calendar</a>
+    <a class="btn" href="{{ url_for('log_medication_week') }}">Log Medication</a>
+  </section>
+  {% endif %}
 
 
   {% else %}
-    <section class="card">
-      <h2>Get started</h2>
-      <p class="muted">Not a member? Create an account to build your schedule and start logging doses.</p>
+  <section class="landing">
 
-      <nav id="navigation" class="nav">
-        <a class="btn" href="{{ url_for('register') }}">Create account</a>
-        <a class="btn secondary" href="{{ url_for('login') }}">Login</a>
+    <!-- LEFT CONTENT -->
+    <article class="landing-content">
+      <header>
+        <h1 class="animated-title">
+          <span class="medi">Medi</span><span class="mate">Mate</span>
+        </h1>
+        <p class="subtitle">Medication Made Manageable.</p>
+      </header>
+
+      <nav aria-label="Get started">
+        <a class="btn cta-btn" href="{{ url_for('login') }}">
+          Get Started
+        </a>
       </nav>
-    </section>
+    </article>
+
+    <!-- RIGHT ANIMATION -->
+    <figure class="landing-visual" aria-hidden="true">
+      <span class="sprite"></span>
+    </figure>
+
+  </section>
   {% endif %}
 
 

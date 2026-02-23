@@ -285,6 +285,7 @@ def month_calendar(year, month):
         next_year = year
     return render_template("month_calendar.html", calendar=calendar_year, year=year, month=month, month_name=month_name, today=today, prev_month=prev_month, prev_year=prev_year, next_month=next_month, next_year=next_year)
 
+#monthly calendar view - to be improved
 @app.route("/month_calendar")
 @login_required
 def calendar():
@@ -346,23 +347,26 @@ def build_week_calendar(user_id):
                 })
     return calendar
 
+'''This builds a simplified weekly status summary for the dashboard.
+It shows whether the user has any meds scheduled/ marked as taken or not'''
 def build_week_status(user_id):
     detailed_calendar = build_week_calendar(user_id)
     status_calendar = {}
     for day, meds in detailed_calendar.items():
-        if not meds:
+        if not meds: #if no medications scheduled that day:
             status_calendar[day] = {
-                "all_taken": False,
-                "has_meds": False
+                "all_taken": False, #no meds taken
+                "has_meds": False #no meds scheduled
             }
         else:
-            all_taken = all(med["taken"] for med in meds)
+            all_taken = all(med["taken"] for med in meds) #checks if all meds for that day are marked taken
             status_calendar[day] = {
                 "all_taken": all_taken,
                 "has_meds": True
             }
     return status_calendar
 
+'''this is a build of a proper month-style grid. Needs more work done for this part - maybe put as an option to view whole month in log medication'''
 def build_month_calendar(user_id, year, month):
     db = get_db()
     first_weekday, days_in_month = pycalendar.monthrange(year, month)
@@ -420,6 +424,7 @@ def log_medication_week():
     calendar = build_week_calendar(g.user["user_id"])
     return render_template("log_medication.html", calendar=calendar)
 
+#This shows the detailed weekly calendar with medications and allows users to log meds as taken or not
 @app.route("/log_medication/<int:user_medication_id>", methods=["POST"])
 @login_required
 def log_medication(user_medication_id):

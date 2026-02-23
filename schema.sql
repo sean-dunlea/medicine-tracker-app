@@ -82,6 +82,19 @@ CREATE TABLE medication_logs (
     datetime_taken TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- This stores when the user marks a medication as taken
 );
 
+-- This stores notifications
+DROP TABLE IF EXISTS notifications;
+
+CREATE TABLE notifications (
+    notification_id INTEGER PRIMARY KEY, 
+    user_id INTEGER NOT NULL, -- This is the receiver of the notification
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    is_read INTEGER DEFAULT 0, -- 0 means unread, 1 means read
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
 DROP TABLE IF EXISTS invites;
 
 -- Table to differentiate the sender and receiver of invites

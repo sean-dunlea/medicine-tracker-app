@@ -147,6 +147,20 @@ def send_email_notification(username, title, body):
         except Exception as e:
             print(f"Error sending email to {recipient}: {e}")
 
+def store_notification(username, title, body):
+    db = get_db()
+    user = db.execute("""
+                      SELECT user_id
+                      FROM users
+                      WHERE username = ?;
+                      """, (username,)).fetchone()
+    if user:
+        db.execute("""
+                   INSERT INTO notifications (user_id, title, body)
+                   VALUES (?, ?, ?);
+                   """, (user["user_id"], title, body))
+        db.commit()
+
 # I decided to modularise the reminder_scheduler as it was getting quite large and complex.
 
 # This returns all medications that are scheduled for now. They're filtered by user timezone and frequency.
@@ -178,21 +192,24 @@ def should_notify_user(medication, user_current_time):
 # This will send the push and email notifications to the user (if relevant)
 def notify_user(medication):
     username = medication["username"]
+    title = "Medication Reminder 💊"
+    body = f"Hey, {username}! It's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}. Keep up the great work!"
     notification_sent = False
     if medication["push_notifications_enabled"]:
         send_push_notification(
             username=username,
-            title="Medication Reminder 💊",
-            body=f"Hey, {username}! It's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}. Keep up the great work!"
+            title=title,
+            body=body
         )
         notification_sent = True
     if medication["email_notifications_enabled"] and medication["email"]:
         send_email_notification(
             username=username,
-            title="Medication Reminder 💊",
-            body=f"Hello, {username},\n\nThis is a friendly reminder that it's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}.\n\nStay healthy and keep up the great work!"
+            title=title,
+            body=body
         )
         notification_sent = True
+    store_notification(username, title, body)
     return notification_sent
 
 # This sends notifications to all the user's MediMates
@@ -215,6 +232,7 @@ def notify_medimates(user_id, title, body):
                 title = title,
                 body = body
             )
+        store_notification(medimate["username"], title, body)
 
 # This checks if a user has not marked a medication as taken within 1 hour of when it's due
 # and notifies their MediMates
@@ -417,6 +435,46 @@ def index():
         calendar = None
     return render_template("index.html", title="Home", calendar=calendar)
 
+@app.route("/notification_centre")
+@login_required
+def notification_centre():
+    db = get_db()
+    username = session["username"]
+    user = db.execute("""
+                      SELECT *
+                      FROM users
+                      WHERE username = ?;
+                      """, (username,)).fetchone()
+    if user:
+        user_id = user["user_id"]
+        notifications = db.execute("""
+                                   SELECT *
+                                   FROM notifications
+                                   WHERE user_id = ?
+                                   ORDER BY created_at DESC;
+                                   """, (user_id,)).fetchall()
+    return render_template("notification_centre.html", title="Notification Centre", notifications=notifications)
+
+@app.route("/notification_centre/mark_read/<int:notification_id>", methods=["POST"])
+@login_required
+def mark_notification_as_read(notification_id):
+    db = get_db()
+    username = session["username"]
+    user = db.execute("""
+                      SELECT *
+                      FROM users
+                      WHERE username = ?;
+                      """, (username,)).fetchone()
+    if user:
+        user_id = user["user_id"]
+        db.execute("""
+                UPDATE notifications
+                SET is_read = 1
+                WHERE notification_id = ? AND user_id = ?
+                """, (notification_id, user_id))
+        db.commit()
+    return redirect( url_for("notification_centre") )
+
 # This displays the weekly calendar in log medication
 @app.route("/log_medication")
 @login_required
@@ -445,7 +503,7 @@ def log_medication(user_medication_id):
         # This notifies the user's MediMates that they have taken their medication
         user = db.execute("""
                           SELECT u.user_id, u.username
-                          FROM users u JOIN medications m ON m.user_id = m.user_id
+                          FROM users u JOIN medications m ON m.user_id = u.user_id
                           WHERE m.user_medication_id = ?
                           """, (user_medication_id,)).fetchone()
         if user:
@@ -799,6 +857,7 @@ def accept_request(friend1):
     body = f"{friend2} has accepted your MediMate request!"
     send_email_notification(friend1, title, body)
     send_push_notification(friend1, title, body)
+    store_notification(friend1, title, body)
 
     invites = db.execute("""
                          SELECT *
@@ -822,6 +881,7 @@ def reject_request(sender):
     body = f"{user} has rejected your MediMate request."
     send_email_notification(sender, title, body)
     send_push_notification(sender, title, body)
+    store_notification(sender, title, body)
     invites = db.execute("""
                          SELECT *
                          FROM invites
@@ -866,6 +926,7 @@ def medimates():
             body = f"{user} has sent you a MediMate request!"
             send_email_notification(receiver, title, body)
             send_push_notification(receiver, title, body)
+            store_notification(receiver, title, body)
         else:
             form.username.errors.append("This user does not exist.")
 

@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-{% block top_nav %}
-{% endblock %}
 {% block page_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 {% endblock %}
@@ -13,16 +11,6 @@
   <section class="welcome">
     <p>Welcome back, <strong>{{ session.get("username") }}</strong></p>
   </section>
-  <!-- This is the homepage bottom nav in the index page. If you are adding another link, please add it to the nav in base.html as well! -->
-  <nav class="nav">
-    <a class="btn secondary" href="{{ url_for('add_medication') }}">Add Medication</a>
-    <a class="btn secondary" href="{{ url_for('history') }}">History</a>
-    <a class="btn secondary" href="{{ url_for('medimates') }}">MediMates</a>
-    <a class="btn secondary" href="{{ url_for('log_symptom') }}">Symptoms Log</a>
-    <a class="btn secondary" href="{{ url_for('profile') }}">My Profile</a>
-    <a class="btn secondary" href="{{ url_for('settings') }}">Settings</a>
-    <a class="btn secondary" href="{{ url_for('logout') }}">Logout</a>
-  </nav>
 
   {% if calendar %}
   <section>

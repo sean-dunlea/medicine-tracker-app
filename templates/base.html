@@ -13,6 +13,7 @@
     {% block top_nav %}
         <nav class="nav">
             {% if session.get("username") %}
+                <a class="btn secondary" href="{{ url_for('index') }}">Home</a>
                 <a class="btn secondary" href="{{ url_for('add_medication') }}">Add Medication</a>
                 <a class="btn secondary" href="{{ url_for('history') }}">History</a>
                 <a class="btn secondary" href="{{ url_for('medimates') }}">MediMates</a>

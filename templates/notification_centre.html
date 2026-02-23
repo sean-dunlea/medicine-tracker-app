@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block main_content %}
+
+<main id="notification_centre">
+    <h1>Notification Centre</h1>
+    <ul>
+        {% for notification in notifications %}
+                <li class="{{ 'unread' if not notification.read else '' }}">
+                    <strong>{{ notification.title }}: {{ notification.body }}</strong>
+                    <small>{{ notification.created_at }}</small>
+                    {% if not notification.is_read %}
+                        <form method="POST" action="{{ url_for('mark_notification_as_read', notification_id=notification.notification_id) }}">
+                            <button type="submit">
+                                Mark as Read
+                            </button>
+                        </form>
+                    {% endif %}
+                </li>
+        {% endfor %}
+    </ul>
+</main>
+
+{% endblock %}

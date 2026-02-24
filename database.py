@@ -40,7 +40,7 @@ def initialise_drugbank():
         return
     # This only runs if the table does not already exist
     print("Initialising DrugBank tables...")
-    with open("drugbank.sql", "r") as f:
+    with open("drugbank.sql", "r", encoding="utf-8") as f: #put in utf-8 to prevent windows default encoding issue
         cursor.executescript(f.read())
     db.commit()
     db.close()

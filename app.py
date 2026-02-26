@@ -147,7 +147,7 @@ def send_email_notification(username, title, body):
         except Exception as e:
             print(f"Error sending email to {recipient}: {e}")
 
-def store_notification(username, title, body):
+def store_notification(username, title, body, user_medication_id=None):
     db = get_db()
     user = db.execute("""
                       SELECT user_id
@@ -156,9 +156,9 @@ def store_notification(username, title, body):
                       """, (username,)).fetchone()
     if user:
         db.execute("""
-                   INSERT INTO notifications (user_id, title, body)
-                   VALUES (?, ?, ?);
-                   """, (user["user_id"], title, body))
+                   INSERT INTO notifications (user_id, user_medication_id, title, body)
+                   VALUES (?, ?, ?, ?);
+                   """, (user["user_id"], user_medication_id, title, body))
         db.commit()
 
 # I decided to modularise the reminder_scheduler as it was getting quite large and complex.
@@ -209,49 +209,104 @@ def notify_user(medication):
             body=body
         )
         notification_sent = True
-    store_notification(username, title, body)
+    store_notification(username, title, body, medication["user_medication_id"])
     return notification_sent
 
 # This sends notifications to all the user's MediMates
-def notify_medimates(user_id, title, body):
+def notify_medimates(username, title, body, user_medication_id=None):
     db = get_db()
     medimates = db.execute("""
-                           SELECT u2.username, u2.email
-                           FROM friends f JOIN users u2 ON (f.friend1 = u2.username OR f.friend2 = u2.username)
-                           WHERE (f.friend1 = ? OR f.friend2 = ?) AND (u2.user_id != ?)
-                           """, (user_id, user_id, user_id)).fetchall()
+                           SELECT u.username, u.email
+                           FROM friends f JOIN users u ON u.username = f.friend2
+                           WHERE f.friend1 = ?
+                           """, (username,)).fetchall()
     for medimate in medimates:
-        send_push_notification(
-            username=medimate["username"],
-            title = title,
-            body = body
-        )
+        send_push_notification(medimate["username"], title, body)
         if medimate["email"]:
-            send_email_notification(
-                username = medimate["username"],
-                title = title,
-                body = body
-            )
-        store_notification(medimate["username"], title, body)
+            send_email_notification(medimate["username"], title, body)
+        store_notification(medimate["username"], title, body, user_medication_id)
 
-# This checks if a user has not marked a medication as taken within 1 hour of when it's due
-# and notifies their MediMates
-def check_if_overdue_and_notify_medimates(medication, user_current_time):
+# This is a helper function to determine whether a medication is overdue (by an hour) or not.
+def is_medication_overdue(medication, user_current_time):
     db = get_db()
     scheduled_time = datetime.strptime(medication["time_of_day"], "%H:%M").time()
     scheduled_dt = datetime.combine(user_current_time.date(), scheduled_time)
     user_timezone = pytz.timezone(medication["timezone"]) if medication["timezone"] else pytz.utc
-    scheduled_dt = user_timezone.localize(scheduled_dt.replace(tzinfo=None))
-    # This check if med was already logged
+    if scheduled_dt.tzinfo is None:
+        scheduled_dt = user_timezone.localize(scheduled_dt)
     log_exists = db.execute("""
-                            SELECT 1 FROM medication_logs
+                            SELECT 1
+                            FROM medication_logs 
                             WHERE user_medication_id = ? AND scheduled_date = ? AND time_of_day = ?
                             """, (medication["user_medication_id"], user_current_time.date(), medication["time_of_day"])).fetchone()
-    # This checks if 1 hour has passed and the medication is still not logged. If so, it notifies their MediMates.
-    if not log_exists and user_current_time >= scheduled_dt + timedelta(hours=1):
+    if not log_exists:
+        return user_current_time >= scheduled_dt + timedelta(hours=1)
+    else:
+        return False
+
+# This checks if a user has not marked a medication as taken within 1 hour of when it's due
+# and notifies their MediMates.
+def check_if_overdue_and_notify_medimates(medication, user_current_time):
+    if is_medication_overdue(medication, user_current_time):
+        db = get_db()
+        already_sent = db.execute("""
+                                  SELECT 1
+                                  FROM overdue_notifications_sent
+                                  WHERE user_medication_id = ? AND scheduled_date = ?
+                                  """, (medication["user_medication_id"], user_current_time.date())).fetchone()
+        if already_sent:
+            return
         title = "Medication Missed! 💊"
         body = f"{medication['username']} hasn’t marked their medication as taken yet."
-        notify_medimates(medication["user_id"], title, body)
+        notify_medimates(medication["username"], title, body, medication["user_medication_id"])
+        db.execute("""
+                   INSERT INTO overdue_notifications_sent (user_medication_id, scheduled_date)
+                   VALUES (?, ?)
+                   """, (medication["user_medication_id"], user_current_time.date()))
+        db.commit()
+
+# This allows users to re-remind their MediMate to take their medication if required
+@app.route("/remind_medimate/<int:user_medication_id>", methods=["POST"])
+@login_required
+def remind_medimate(user_medication_id):
+    db = get_db()
+    # This gets the medication information and its owner
+    medication = db.execute("""
+                            SELECT m.user_medication_id, m.user_id, m.medication_name, m.dosage_amount, m.dosage_unit, u.username, u.timezone, mt.time_of_day
+                            FROM medications m JOIN users u ON m.user_id = u.user_id
+                            JOIN medication_times mt ON m.user_medication_id = mt.user_medication_id
+                            WHERE m.user_medication_id = ?
+                            """, (user_medication_id,)).fetchone()
+    if medication:
+        medimate_username = medication["username"]
+        # This ensures that they are actually MediMates
+        is_medimate = db.execute("""
+                                 SELECT 1
+                                 FROM friends
+                                 WHERE (friend1 = ? AND friend2 = ?) OR (friend1 = ? AND friend2 = ?)
+                                 """, (session["username"], medimate_username, medimate_username, session["username"])).fetchone()
+        if is_medimate:
+            current_time_utc = datetime.now(timezone.utc)
+            user_timezone = pytz.timezone(medication["timezone"]) if medication["timezone"] else pytz.utc
+            user_current_time = current_time_utc.astimezone(user_timezone)
+            if is_medication_overdue(medication, user_current_time):
+                already_reminded = db.execute("""
+                                              SELECT 1
+                                              FROM medimate_reminders_sent
+                                              WHERE user_medication_id = ? AND reminded_by = ? AND scheduled_date = ?;
+                                              """, (user_medication_id, session["username"], user_current_time.date())).fetchone()
+                if not already_reminded:
+                    title = "Your MediMate is reminding you! 💊"
+                    body = f"{session['username']} is reminding you that it's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}!"
+                    send_push_notification(medimate_username, title, body)
+                    send_email_notification(medimate_username, title, body)
+                    store_notification(medimate_username, title, body, user_medication_id)
+                    db.execute("""
+                               INSERT INTO medimate_reminders_sent (user_medication_id, reminded_by, scheduled_date)
+                               VALUES (?, ?, ?);
+                               """, (user_medication_id, session["username"], user_current_time.date()))
+                    db.commit()
+    return redirect( url_for("notification_centre") )
 
 # This function checks every minute which medications are due
 def reminder_scheduler():
@@ -509,7 +564,7 @@ def log_medication(user_medication_id):
         if user:
             title = "Medication Taken! 💊"
             body = f"{user['username']} has just taken their medication!"
-            notify_medimates(user["user_id"], title, body)
+            notify_medimates(user["username"], title, body, user_medication_id)
     return redirect( url_for("log_medication_week") )
 
 @app.route("/set_timezone", methods=["POST"])
@@ -534,11 +589,7 @@ def set_timezone():
 @app.route("/test_push_notification", methods=["GET", "POST"])
 @login_required
 def test_push_notification():
-    send_push_notification(
-        username=session["username"],
-        title="Test",
-        body="This is a test"
-    )
+    send_push_notification(session["username"], "Test", "This is a test")
     return render_template("test_push_notification.html", title="Test Push Notification")
 
 @app.route("/test_email_notification", methods=["GET", "POST"])

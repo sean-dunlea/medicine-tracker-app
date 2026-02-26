@@ -1,5 +1,6 @@
 serviceAccountKey.json
 flask_session/
+app.db
 __pycache__/
 tempCodeRunnerFile.py
 .DS_Store

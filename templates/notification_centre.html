@@ -15,6 +15,14 @@
                             </button>
                         </form>
                     {% endif %}
+                    <!-- This is a re-remind button -->
+                    {% if notification.user_medication_id %}
+                        <form method="POST" action="{{ url_for('remind_medimate', user_medication_id=notification.user_medication_id) }}">
+                            <button type="submit">
+                                Re-Remind MediMate
+                            </button>
+                        </form>
+                    {% endif %}
                 </li>
         {% endfor %}
     </ul>

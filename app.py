@@ -163,6 +163,16 @@ def store_notification(username, title, body, user_medication_id=None):
 
 # I decided to modularise the reminder_scheduler as it was getting quite large and complex.
 
+# The overall workflow is:
+#   1. Get all active medications.
+#   2. Convert the current UTC time into each user's local timezone.
+#   3. Check if a medication is due right now.
+#   4. Send reminders (push/email) if needed.
+#   5. Prevent duplicate reminders.
+#   6. Detect overdue medications (if over an hour late).
+#   7. Notify the user's MediMates if overdue.
+#   8. Prevent duplicate overdue notifications.
+
 # This returns all medications that are scheduled for now. They're filtered by user timezone and frequency.
 def get_medications(current_time_utc):
     db = get_db()
@@ -174,7 +184,10 @@ def get_medications(current_time_utc):
                              """, (current_time_utc.date(), current_time_utc.date())).fetchall()
     return medications
 
-# This checks if a reminder should be sent to the user or not based on the frequency and time
+# This checks if a reminder should be sent to the user or not based on the frequency and time.
+# If frequency type is set to weekly, the weekday must match with the current day. If set to monthly,
+# the day_of_month must match. If set to as needed, we never auto-remind. If set to daily, we fall
+# through to time match.
 def should_notify_user(medication, user_current_time):
     current_weekday = user_current_time.weekday()
     current_day_of_month = user_current_time.day
@@ -212,7 +225,8 @@ def notify_user(medication):
     store_notification(username, title, body, medication["user_medication_id"])
     return notification_sent
 
-# This sends notifications to all the user's MediMates
+# This sends notifications to all the user's MediMates. It's used when a medication
+# is overdue and a MediMate manually re-reminds them. 
 def notify_medimates(username, title, body, user_medication_id=None):
     db = get_db()
     medimates = db.execute("""
@@ -227,6 +241,9 @@ def notify_medimates(username, title, body, user_medication_id=None):
         store_notification(medimate["username"], title, body, user_medication_id)
 
 # This is a helper function to determine whether a medication is overdue (by an hour) or not.
+# All comparison's are done in the user's local timezone and we localise scheduled_dt to prevent
+# naive datetime bugs. It returns True if overdue and False if not overdue or already logged
+# as taken.
 def is_medication_overdue(medication, user_current_time):
     db = get_db()
     scheduled_time = datetime.strptime(medication["time_of_day"], "%H:%M").time()
@@ -245,7 +262,8 @@ def is_medication_overdue(medication, user_current_time):
         return False
 
 # This checks if a user has not marked a medication as taken within 1 hour of when it's due
-# and notifies their MediMates.
+# and notifies their MediMates. It also records that the overdue notification was actually
+# sent to avoid sending repeated overdue alerts every minute.
 def check_if_overdue_and_notify_medimates(medication, user_current_time):
     if is_medication_overdue(medication, user_current_time):
         db = get_db()
@@ -265,7 +283,9 @@ def check_if_overdue_and_notify_medimates(medication, user_current_time):
                    """, (medication["user_medication_id"], user_current_time.date()))
         db.commit()
 
-# This allows users to re-remind their MediMate to take their medication if required
+# This allows users to manually re-remind their MediMate to take their medication if it's overdue
+# by an hour. It has some safety checks to make sure they are actually friends, confirm medication
+# is overdue, and prevents duplicate reminders from the same person on the same scheduled date.
 @app.route("/remind_medimate/<int:user_medication_id>", methods=["POST"])
 @login_required
 def remind_medimate(user_medication_id):
@@ -308,7 +328,11 @@ def remind_medimate(user_medication_id):
                     db.commit()
     return redirect( url_for("notification_centre") )
 
-# This function checks every minute which medications are due
+# This is the main background job. It runs once every minute via the background scheduler.
+# For every active medication, it converts the current UTC time to the user's timezone (to ensure
+# they get the reminder at their local time), checks if a reminder should be sent now, prevents
+# duplicate notifications being sent using the medication_reminders_sent table, sends reminders
+# if required, checks if a medication is overdue and notifies the user's MediMates if so.
 def reminder_scheduler():
     with app.app_context():
         current_time_utc = datetime.now(timezone.utc)
@@ -334,6 +358,12 @@ def reminder_scheduler():
                         db.commit()
             # This checks if the medication is overdue and notifies MediMates if so.
             check_if_overdue_and_notify_medimates(medication, user_current_time)
+
+# This background scheduler runs reminder_scheduler() automatically in the background once every minute
+# (this doesn't stop the app from serving requests). By running it every minute we ensure we don't miss a 
+# scheduled time (since medications are matched at minute precision / HH:MM). replace_existing = True 
+# ensures only one reminder_scheduler job is active even if the app reloads. The scheduler starts when the 
+# app starts and continues running as long as the the server process is alive.
 scheduler = BackgroundScheduler()
 scheduler.add_job(reminder_scheduler, "interval", minutes=1, replace_existing=True)
 scheduler.start()

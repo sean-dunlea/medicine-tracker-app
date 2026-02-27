@@ -17,10 +17,24 @@
       <h1 id="signup-title">Create Account</h1>
       <span>Register with username & password</span>
 
+      <!-- The reason error messages weren't being displayed is because it was missing error blocks. Feel free
+       to style them however you want. -->
       {{ registration_form.email() }}
+      {% for error in registration_form.email.errors %}
+        {{ error }}
+      {% endfor %}
       {{ registration_form.username() }}
+      {% for error in registration_form.username.errors %}
+        {{ error }}
+      {% endfor %}
       {{ registration_form.password() }}
+      {% for error in registration_form.password.errors %}
+        {{ error }}
+      {% endfor %}
       {{ registration_form.confirm_password() }}
+      {% for error in registration_form.confirm_password.errors %}
+        {{ error }}
+      {% endfor %}
 
       {{ registration_form.submit() }}
     </form>
@@ -35,8 +49,13 @@
       <span>Welcome back</span>
 
       {{ login_form.identifier() }}
+      {% for error in login_form.identifier.errors %}
+        {{ error }}
+      {% endfor %}
       {{ login_form.password() }}
-
+      {% for error in login_form.password.errors %}
+        {{ error }}
+      {% endfor %}
       {{ login_form.submit() }}
     </form>
   </section>

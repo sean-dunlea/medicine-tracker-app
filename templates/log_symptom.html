@@ -20,26 +20,41 @@
         <p>
           {{ form.symptom_name.label }}
           {{ form.symptom_name() }}
+          {% for error in form.symptom_name.errors %}
+            {{ error }}
+          {% endfor %}
         </p>
 
         <p>
           {{ form.severity.label }}
           {{ form.severity() }}
+          {% for error in form.severity.errors %}
+            {{ error }}
+          {% endfor %}
         </p>
 
         <p>
           {{ form.symptom_date.label }}
           {{ form.symptom_date() }}
+          {% for error in form.symptom_date.errors %}
+            {{ error }}
+          {% endfor %}
         </p>
 
         <p>
           {{ form.symptom_time.label }}
           {{ form.symptom_time() }}
+          {% for error in form.symptom_time.errors %}
+            {{ error }}
+          {% endfor %}
         </p>
 
         <p>
           {{ form.notes.label }}
           {{ form.notes() }}
+          {% for error in form.notes.errors %}
+            {{ error }}
+          {% endfor %}
         </p>
 
         <p>

@@ -13,6 +13,9 @@
         <p>
             {{ email_form.hidden_tag() }}
             {{ email_form.email() }}
+            {% for error in email_form.email.errors %}
+                {{ error }}
+            {% endfor %}
         </p>
         <p>
             {{ email_form.submit() }}
@@ -22,10 +25,16 @@
             <p>
                 {{ password_form.current_password.label() }}
                 {{ password_form.current_password() }}
+                {% for error in password_form.current_password.errors %}
+                    {{ error }}
+                {% endfor %}
             </p>
             <p>
                 {{ password_form.new_password.label }}
                 {{ password_form.new_password() }}
+                {% for error in password_form.new_password.errors %}
+                    {{ error }}
+                {% endfor %}
             </p>
             <p>
                 {{ password_form.submit() }}

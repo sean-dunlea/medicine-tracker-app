@@ -74,25 +74,28 @@
 
                 {% for time_entry in form.time_entries %}
                 <section class="time_entry">
+                    <!-- I needed to re-add the class names so my JavaScript would work -->
                     {{ time_entry.time_of_day.label }}
-                    {{ time_entry.time_of_day(step=300) }}
+                    {{ time_entry.time_of_day(class="time_of_day", step=300) }}
                     {% for error in time_entry.time_of_day.errors %}
                         {{ error }}
                     {% endfor %}
 
                     {{ time_entry.weekday.label }}
-                    {{ time_entry.weekday() }}
+                    {{ time_entry.weekday(class="weekday") }}
                     {% for error in time_entry.weekday.errors %}
                         {{ error }}
                     {% endfor %}
 
                     {{ time_entry.day_of_month.label }}
-                    {{ time_entry.day_of_month() }}
+                    {{ time_entry.day_of_month(class="day_of_month") }}
                     {% for error in time_entry.day_of_month.errors %}
                         {{ error }}
                     {% endfor %}
                 </section>
                 {% endfor %}
+                <!-- This is needed to add more time options -->
+                <button type="button" id="add_time" class="add-time-btn">+ Add Another Time</button>
 
                 <footer class="step-footer">
                     <button type="button" class="back-btn">Back</button>

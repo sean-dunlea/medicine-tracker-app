@@ -189,17 +189,25 @@ def get_medications(current_time_utc):
 # the day_of_month must match. If set to as needed, we never auto-remind. If set to daily, we fall
 # through to time match.
 def should_notify_user(medication, user_current_time):
-    current_weekday = user_current_time.weekday()
-    current_day_of_month = user_current_time.day
     frequency_type = medication["frequency_type"]
     medication_time = datetime.strptime(medication["time_of_day"], "%H:%M").time()
     current_time_only = user_current_time.time().replace(second=0, microsecond=0)
-    if frequency_type == "weekly" and medication["weekday"] != current_weekday:
-        return False
-    if frequency_type == "monthly" and medication["day_of_month"] != current_day_of_month:
-        return False
     if frequency_type == "as_needed":
         return False
+    if frequency_type == "weekly":
+        if medication["weekday"] is None:
+            return False
+        if medication["weekday"] != user_current_time.weekday():
+            return False
+    if frequency_type == "monthly":
+        if medication["day_of_month"] is None:
+            return False
+        current_year = user_current_time.year
+        current_month = user_current_time.month
+        last_day_of_current_month = pycalendar.monthrange(current_year, current_month)[1]
+        scheduled_day = min(medication["day_of_month"], last_day_of_current_month)
+        if scheduled_day != user_current_time.day:
+            return False
     return medication_time == current_time_only
 
 # This will send the push and email notifications to the user (if relevant)
@@ -499,6 +507,15 @@ def build_month_calendar(user_id, year, month):
             elif medication["frequency_type"] == "weekly":
                 if medication["weekday"] == current_day.weekday():
                     include = True
+            # I just added this small block so that if the user has a medication scheduled for example,
+            # the 30th or 31st, and that day doesn't exist in the current month, then it will be automatically
+            # moved to the last day of the current month.
+            elif medication["frequency_type"] == "monthly":
+                if medication["day_of_month"] is not None:
+                    last_day = pycalendar.monthrange(current_day.year, current_day.month)[1]
+                    scheduled_day = min(medication["day_of_month"], last_day)
+                    if scheduled_day == current_day.day:
+                        include = True
             if include:
                 day_meds.append({
                     "name": medication["medication_name"],

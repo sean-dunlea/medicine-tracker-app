@@ -27,7 +27,7 @@ class RegistrationForm(FlaskForm):
 class TimeEntryForm(Form):
     time_of_day = TimeField("Time of Day", validators=[Optional()])
     weekday = SelectField("Weekday", choices=[("0", "Monday"), ("1", "Tuesday"), ("2", "Wednesday"), ("3", "Thursday"), ("4", "Friday"), ("5", "Saturday"), ("6", "Sunday")], validators=[Optional()], default="")
-    day_of_month = IntegerField("Day of Month", validators=[Optional()])
+    day_of_month = SelectField("Day of Month", choices=[(str(i), str(i)) for i in range(1, 32)], coerce=int, validators=[Optional()])
 
 class AddMedicationForm(FlaskForm):
     medication_name = StringField("Medication Name", validators=[InputRequired()], render_kw={"placeholder": "Paracetamol"})

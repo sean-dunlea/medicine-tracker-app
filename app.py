@@ -874,48 +874,7 @@ def history():
                                 ORDER BY start_date DESC;
                                 """, (user_id,),).fetchall()
     return render_template("history.html", title="Medication History", medications=medications)
-
-#@app.route("/add_mate", methods=["GET", "POST"])
-#@login_required
-#def add_mate():
-#    response = ""
-#    form = AddMateForm()
-#    if form.validate_on_submit():
-#        sender = session["username"]
-#        receiver = form.username.data
-#        if sender == receiver:
-#            form.username.errors.append("You cannot invite yourself.")
-#            return render_template("add_mate.html", title="Add Mates", form=form, response=response)
-#        db = get_db()
-#        existing_user = db.execute("""
-#                                SELECT *
-#                                FROM users
-#                                WHERE username = ?;
-#                                """, (receiver,)).fetchone()
-#        
-#        existing_invite = db.execute("""
-#                                     SELECT *
-#                                     FROM invites
-#                                     WHERE sender = ? AND receiver = ?;
-#                                     """, (sender, receiver,)).fetchone()
-#        if existing_invite is not None:
-#            form.username.errors.append("You have already sent this user an invite.")
-#        elif existing_user is not None:
-#            db.execute("""
-#                       INSERT INTO invites (sender, receiver)
-#                       VALUES
-#                       (?, ?);
-#                       """, (sender, receiver,))
-#            db.commit()
-#            response = "Mate Request Sent"
-#            title = "New Mate Request! 💊"
-#            body = f"{sender} has sent you a MediMate request!"
-#            send_email_notification(receiver, title, body)
-#            send_push_notification(receiver, title, body)
-#        else:
-#            form.username.errors.append("This user does not exist.")
-#    return render_template("add_mate.html", title="Add Mates", form=form, response=response)
-    
+   
 @app.route("/cancel_request/<string:receiver>")
 @login_required
 def cancel_request(receiver):
@@ -1016,8 +975,42 @@ def medimates():
                                      FROM invites
                                      WHERE sender = ? AND receiver = ?;
                                      """, (user, receiver,)).fetchone()
-        if existing_invite is not None:
+        
+        existing_friend = db.execute("""
+                                     SELECT *
+                                     FROM friends
+                                     WHERE friend1 = ? AND friend2 = ?;
+                                     """, (user, receiver,)).fetchone()
+        
+        mutual_invite = db.execute("""
+                                     SELECT *
+                                     FROM invites
+                                     WHERE sender = ? AND receiver = ?;
+                                     """, (receiver, user,)).fetchone()
+        
+        if existing_friend is not None:
+            form.username.errors.append("You are already friends with this user.")
+        elif existing_invite is not None:
             form.username.errors.append("You have already sent this user an invite.")
+        elif mutual_invite is not None:
+            db.execute("""
+                INSERT INTO friends (friend1, friend2)
+                VALUES
+                (?, ?);
+                """, (user, receiver,))
+    
+            db.execute("""
+                INSERT INTO friends (friend1, friend2)
+                VALUES
+                (?, ?);
+                """, (receiver, user,))
+            
+            db.execute("""
+               DELETE FROM invites
+               WHERE sender = ? AND receiver = ?;
+               """, (receiver, user,))
+            db.commit()
+            response = "This user has also sent you an invite. You are now MediMates!"
         elif existing_user is not None:
             db.execute("""
                        INSERT INTO invites (sender, receiver)

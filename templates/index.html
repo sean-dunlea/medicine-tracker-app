@@ -12,6 +12,17 @@
     <p>Welcome back, <strong>{{ session.get("username") }}</strong></p>
   </section>
 
+  <section class="streak">
+    <h2> Current Streak: {{ streak }} 🔥</h2>
+    {% if streak > 0 %}
+      <p class="streak-counter">Keep going 💪
+      </p>
+      {% if streak >= 7 %}
+        <p class="streak-message">You're on fire! 🔥🔥🔥</p> {% endif %}
+    {% else %}
+      <p class="streak-empty">No streak yet 💔</p>
+    {% endif %}
+  </section>
   {% if calendar %}
   <section>
     <h2>This Week</h2>
@@ -20,6 +31,7 @@
     <a class="btn" href="{{ url_for('log_medication_week') }}">Log Medication</a>
   </section>
   {% endif %}
+
 
 <button id="enable_notifications" type="button">Enable Notifications</button>
 

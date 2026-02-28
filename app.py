@@ -534,14 +534,82 @@ def build_month_calendar(user_id, year, month):
         })
     return calendar
 
+def calculate_streak(user_id):
+    db = get_db()
+    today = date.today()
+    streak_total = 0
+    current_day = today
+    # This will get earliest medication start date
+    earliest_med = db.execute("""
+        SELECT MIN(start_date) as earliest
+        FROM medications
+        WHERE user_id = ?
+    """, (user_id,)).fetchone()
+    if not earliest_med or not earliest_med["earliest"]:
+        return 0
+    earliest_start = datetime.strptime(
+        earliest_med["earliest"], "%Y-%m-%d"
+    ).date()
+    while current_day >= earliest_start:
+        meds = db.execute("""
+            SELECT m.user_medication_id, mt.time_of_day, 
+                   m.frequency_type, mt.weekday, mt.day_of_month
+            FROM medications m
+            JOIN medication_times mt 
+            ON m.user_medication_id = mt.user_medication_id
+            WHERE m.user_id = ?
+            AND m.start_date <= ?
+            AND (m.end_date IS NULL OR m.end_date >= ?)
+        """, (user_id, current_day, current_day)).fetchall()
+        # This part filters by frequency
+        filtered_meds = []
+        for med in meds:
+            include = False
+            if med["frequency_type"] == "daily":
+                include = True
+            elif med["frequency_type"] == "weekly":
+                if med["weekday"] == current_day.weekday():
+                    include = True
+            elif med["frequency_type"] == "monthly":
+                if med["day_of_month"] == current_day.day:
+                    include = True
+            if include:
+                filtered_meds.append(med)
+        # If no meds scheduled that day, then skip
+        if not filtered_meds:
+            current_day -= timedelta(days=1)
+            continue
+        # This checks if all meds are taken
+        all_taken = True
+        for med in filtered_meds:
+            log = db.execute("""
+                SELECT 1 FROM medication_logs
+                WHERE user_medication_id = ?
+                AND scheduled_date = ?
+                AND time_of_day = ?
+            """, (med["user_medication_id"], current_day, med["time_of_day"])).fetchone()
+            if not log:
+                all_taken = False
+                break
+        if all_taken:
+            streak_total += 1
+            current_day -= timedelta(days=1)
+        else:
+            break
+    return streak_total
+
 # This is the home page route.
 @app.route("/")
 def index():
+    calendar = None
+    current_streak = 0
     if g.user:
         calendar = build_week_status(g.user["user_id"])
+        current_streak = calculate_streak(g.user["user_id"])
     else:
         calendar = None
-    return render_template("index.html", title="Home", calendar=calendar)
+        streak = 0
+    return render_template("index.html", title="Home", calendar=calendar, streak=current_streak)
 
 @app.route("/notification_centre")
 @login_required

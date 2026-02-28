@@ -46,6 +46,12 @@ app.config.update(
 )
 mail = Mail(app)
 
+# This is needed to generate AI-powered personalised health insights
+import requests
+OPEN_ROUTER_API_KEY = os.environ.get("OPEN_ROUTER_API_KEY")
+OPEN_ROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+headers = {"Authorization": f"Bearer {OPEN_ROUTER_API_KEY}"}
+
 Session(app)
 
 # Ensures the database connection is closed after each request.
@@ -1068,8 +1074,6 @@ def remove_medimate(friend):
                     WHERE friend1 = ?""", (user,))
     return redirect(url_for("medimates"))
 
-    
-
 #users can log their symptoms
 @app.route("/log_symptom", methods=["GET", "POST"])
 @login_required
@@ -1134,6 +1138,84 @@ def history_report():
                           """, (user["user_id"],)).fetchall()
     total_meds = len(medications)
     return render_template("medication_report.html", user=user, medications=medications, total_meds=total_meds, generated_on=datetime.now())
+
+# This is for generating AI weekly summaries
+# The way it works is by getting all the user's medication logs and symptom logs from the past week, formatting
+# them into a summary prompt to give to the AI, asking the AI to write a weekly health summary and then returning
+# it for display.
+def generate_weekly_health_summary(user_id):
+    db = get_db()
+    # This gets the last 7 days
+    today = date.today()
+    week_start = today - timedelta(days=6)
+    # This gets the medication logs
+    medications = db.execute("""
+                             SELECT m.medication_name, ml.scheduled_date, ml.time_of_day
+                             FROM medication_logs ml
+                             JOIN medications m ON ml.user_medication_id = m.user_medication_id
+                             WHERE m.user_id = ? AND ml.scheduled_date BETWEEN ? AND ?
+                             ORDER BY ml.scheduled_date ASC
+                             """, (user_id, week_start, today)).fetchall()
+    # This gets the symptom logs
+    symptoms = db.execute("""
+                          SELECT symptom_name, severity, symptom_date
+                          FROM symptoms
+                          WHERE user_id = ? AND symptom_date BETWEEN ? AND ?
+                          ORDER BY symptom_date ASC
+                          """, (user_id, week_start, today)).fetchall()
+    # This will start to build the information needed to give the AI
+    summary_data = "Weekly Health Data:\n\nMedication Taken:\n"
+    if medications:
+        for medication in medications:
+            summary_data += f"{medication['medication_name']} on {medication['scheduled_date']} at {medication['time_of_day']}"
+    else:
+        summary_data += "No medication logged.\n"
+    summary_data += "\nSymptoms Experienced:\n"
+    if symptoms:
+        for symptom in symptoms:
+            summary_data += f"{symptom['symptom_name']} (Severity: {symptom['severity']}) on {symptom['symptom_date']}\n"
+    else:
+        summary_data += "No symptoms logged.\n"
+    # This builds the prompt to give the AI
+    prompt = f"""
+              You are a friendly health assistant. Summarise the following user's weekly health data in a concise, positive, and
+              understandable paragraph, giving gently reminders or encouragements if needed:
+              {summary_data}
+              """
+    # This calls the OpenRouter API
+    try:
+        response = requests.post(
+            OPEN_ROUTER_API_URL,
+            headers=headers,
+            json={
+                "model": "gpt-4o-mini",
+                "messages": [{"role": "user", "content": prompt}]
+            },
+            timeout=15
+        )
+        data = response.json()
+        if "choices" in data and len(data["choices"]) > 0:
+            summary = data["choices"][0]["message"]["content"]
+        else:
+            summary = f"AI summary is temporarily unavailable. API returned unexpected response: {data}\n\n{summary_data}"
+    except Exception as e:
+        summary = f"AI summary is temporarily unavailable. Reason: {str(e)}\n\n{summary_data}"
+    return summary
+
+@app.route("/weekly_summary")
+@login_required
+def weekly_summary():
+    db = get_db()
+    username = session["username"]
+    user = db.execute("""
+                      SELECT *
+                      FROM users
+                      WHERE username = ?;
+                      """, (username,)).fetchone()
+    if user:
+        user_id = user["user_id"]
+        summary = generate_weekly_health_summary(user_id)
+        return render_template("weekly_summary.html", title="Weekly Health Summary", summary=summary)
 
 #Profile section showing amount of mates 
 @app.route("/profile")

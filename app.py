@@ -156,10 +156,6 @@ def send_email_notification(username, title, body):
         except Exception as e:
             print(f"Error sending email to {recipient}: {e}")
 
-# Store notification also now stores notification_type to store what kind of event
-# triggered the notification ("self_reminder" if it's a user's own scheduled reminder, 
-# "overdue_alert" if a MediMate is notified because a user missed their dose, "medimate_reminder"
-# if it's a manual re-reminder and "general" if it's default or for future use)
 def store_notification(username, title, body, user_medication_id=None):
     db = get_db()
     user = db.execute("""

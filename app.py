@@ -656,7 +656,7 @@ def mark_notification_as_read(notification_id):
     return redirect( url_for("notification_centre") )
 
 # This displays the weekly calendar in log medication
-@app.route("/log_medication")
+@app.route("/log_medication_week")
 @login_required
 def log_medication_week():
     calendar = build_week_calendar(g.user["user_id"])

@@ -153,7 +153,11 @@ def send_email_notification(username, title, body):
         except Exception as e:
             print(f"Error sending email to {recipient}: {e}")
 
-def store_notification(username, title, body, user_medication_id=None):
+# Store notification also now stores notification_type to store what kind of event
+# triggered the notification ("self_reminder" if it's a user's own scheduled reminder, 
+# "overdue_alert" if a MediMate is notified because a user missed their dose, "medimate_reminder"
+# if it's a manual re-reminder and "general" if it's default or for future use)
+def store_notification(username, title, body, user_medication_id=None, notification_type="general"):
     db = get_db()
     user = db.execute("""
                       SELECT user_id
@@ -162,9 +166,9 @@ def store_notification(username, title, body, user_medication_id=None):
                       """, (username,)).fetchone()
     if user:
         db.execute("""
-                   INSERT INTO notifications (user_id, user_medication_id, title, body)
-                   VALUES (?, ?, ?, ?);
-                   """, (user["user_id"], user_medication_id, title, body))
+                   INSERT INTO notifications (user_id, notification_type, user_medication_id, title, body)
+                   VALUES (?, ?, ?, ?, ?);
+                   """, (user["user_id"], notification_type, user_medication_id, title, body))
         db.commit()
 
 # I decided to modularise the reminder_scheduler as it was getting quite large and complex.
@@ -236,7 +240,7 @@ def notify_user(medication):
             body=body
         )
         notification_sent = True
-    store_notification(username, title, body, medication["user_medication_id"])
+    store_notification(username, title, body, medication["user_medication_id"], "self_reminder")
     return notification_sent
 
 # This sends notifications to all the user's MediMates. It's used when a medication
@@ -252,7 +256,7 @@ def notify_medimates(username, title, body, user_medication_id=None):
         send_push_notification(medimate["username"], title, body)
         if medimate["email"]:
             send_email_notification(medimate["username"], title, body)
-        store_notification(medimate["username"], title, body, user_medication_id)
+        store_notification(medimate["username"], title, body, user_medication_id, "overdue_alert")
 
 # This is a helper function to determine whether a medication is overdue (by an hour) or not.
 # All comparison's are done in the user's local timezone and we localise scheduled_dt to prevent
@@ -334,7 +338,7 @@ def remind_medimate(user_medication_id):
                     body = f"{session['username']} is reminding you that it's time for {medication['dosage_amount']} {medication['dosage_unit']} of {medication['medication_name']}!"
                     send_push_notification(medimate_username, title, body)
                     send_email_notification(medimate_username, title, body)
-                    store_notification(medimate_username, title, body, user_medication_id)
+                    store_notification(medimate_username, title, body, user_medication_id, "medimate_reminder")
                     db.execute("""
                                INSERT INTO medimate_reminders_sent (user_medication_id, reminded_by, scheduled_date)
                                VALUES (?, ?, ?);

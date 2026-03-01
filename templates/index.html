@@ -12,6 +12,17 @@
     <p>Welcome back, <strong>{{ session.get("username") }}</strong></p>
   </section>
 
+<!-- CALENDAR -->
+  {% if calendar %}
+  <section>
+    <h2>This Week</h2>
+    {% include "week_calendar.html" %}
+    <a class="btn" href="{{ url_for('calendar') }}">View Full Calendar</a>
+    <a class="btn" href="{{ url_for('log_medication_week') }}">Log Medication</a>
+  </section>
+  {% endif %}
+
+<!-- STREAK -->
   <section class="streak">
     <h2> Current Streak: {{ streak }} 🔥</h2>
     {% if streak > 0 %}
@@ -23,19 +34,25 @@
       <p class="streak-empty">No streak yet 💔</p>
     {% endif %}
   </section>
-  {% if calendar %}
-  <section>
-    <h2>This Week</h2>
-    {% include "week_calendar.html" %}
-    <a class="btn" href="{{ url_for('calendar') }}">View Full Calendar</a>
-    <a class="btn" href="{{ url_for('log_medication_week') }}">Log Medication</a>
-  </section>
-  {% endif %}
 
+<!-- PROGRESS CHART -->
+  {% if chart_data %}
+  <section class="progress-chart">
+      <h2>Progress for {{ month_name }}</h2>
+
+      <script id="progress-data" type="application/json">
+          {{ chart_data | tojson }}
+      </script>
+
+      <div class="chart-container">
+          <canvas id="progressChart" style="height: 400px;"></canvas>
+      </div>
+  </section>
+{% endif %}
 
 <button id="enable_notifications" type="button">Enable Notifications</button>
 
-
+<!-- IF THE USER DOES NOT LOG IN: -->
   {% else %}
   <section class="landing">
 

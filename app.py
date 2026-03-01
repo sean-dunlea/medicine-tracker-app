@@ -598,18 +598,98 @@ def calculate_streak(user_id):
             break
     return streak_total
 
+def get_adherence_data(user_id, start_date=None, end_date=None):
+    db = get_db()
+    if not start_date or not end_date:
+        today = date.today()
+        start_date = today - timedelta(days=29)
+        end_date = today
+    results = []
+    current_day = start_date
+    today = date.today()
+    while current_day <= end_date:
+        if current_day > today:
+            results.append({
+                "date": current_day.strftime("%Y-%m-%d"),
+                "adherence": None
+            })
+            current_day += timedelta(days=1)
+            continue
+        meds = db.execute("""
+            SELECT m.user_medication_id, mt.time_of_day,
+                   m.frequency_type, mt.weekday, mt.day_of_month
+            FROM medications m
+            JOIN medication_times mt
+            ON m.user_medication_id = mt.user_medication_id
+            WHERE m.user_id = ?
+            AND m.start_date <= ?
+            AND (m.end_date IS NULL OR m.end_date >= ?)
+        """, (
+            user_id,
+            current_day.strftime("%Y-%m-%d"),
+            current_day.strftime("%Y-%m-%d")
+        )).fetchall()
+        scheduled = 0
+        taken = 0
+        for med in meds:
+            include = False
+            if med["frequency_type"] == "daily":
+                include = True
+            elif med["frequency_type"] == "weekly":
+                if med["weekday"] == current_day.weekday():
+                    include = True
+            elif med["frequency_type"] == "monthly":
+                if med["day_of_month"] == current_day.day:
+                    include = True
+            if include:
+                scheduled += 1
+                log = db.execute("""
+                    SELECT 1 FROM medication_logs
+                    WHERE user_medication_id = ?
+                    AND scheduled_date = ?
+                    AND time_of_day = ?
+                """, (
+                    med["user_medication_id"],
+                    current_day.strftime("%Y-%m-%d"),
+                    med["time_of_day"]
+                )).fetchone()
+                if log:
+                    taken += 1
+        if scheduled > 0:
+            adherence = round((taken / scheduled) * 100)
+        else:
+            adherence = 0
+        results.append({
+            "date": current_day.strftime("%Y-%m-%d"),
+            "adherence": adherence
+        })
+        current_day += timedelta(days=1)
+    return results
+
 # This is the home page route.
 @app.route("/")
 def index():
-    calendar = None
+    calendar_status = None
     current_streak = 0
+    chart_data = []
+    month_name = None
     if g.user:
-        calendar = build_week_status(g.user["user_id"])
-        current_streak = calculate_streak(g.user["user_id"])
-    else:
-        calendar = None
-        streak = 0
-    return render_template("index.html", title="Home", calendar=calendar, streak=current_streak)
+        user_id = g.user["user_id"]
+        calendar_status = build_week_status(user_id)
+        current_streak = calculate_streak(user_id)
+        today = date.today()
+        start_date = date(today.year, today.month, 1)
+        last_day = pycalendar.monthrange(today.year, today.month)[1]
+        end_date = date(today.year, today.month, last_day)
+        month_name = pycalendar.month_name[today.month]
+        chart_data = get_adherence_data(
+            user_id,
+            start_date,
+            end_date
+        )
+    return render_template(
+        "index.html", title="Home", calendar=calendar_status, streak=current_streak, chart_data=chart_data, month_name=month_name
+    )
 
 @app.route("/notification_centre")
 @login_required

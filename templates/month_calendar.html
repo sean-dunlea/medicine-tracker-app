@@ -2,34 +2,46 @@
 
 {% block main_content %}
 
-<div class="calendar-container">
+<main class="calendar-container">
 
-    <div class="calendar-header">
-        <a href="{{ url_for('month_calendar', year=prev_year, month=prev_month) }}" class="arrow">&#8249;</a>
+    <header class="calendar-header">
+        <a href="{{ url_for('month_calendar', year=prev_year, month=prev_month) }}" 
+           class="arrow" 
+           aria-label="Previous month">
+           &#8249;
+        </a>
+
         <h2>{{ month_name }} {{ year }}</h2>
-        <a href="{{ url_for('month_calendar', year=next_year, month=next_month) }}" class="arrow">&#8250;</a>
-    </div>
 
-    <div class="weekdays">
-        <div>S</div>
-        <div>M</div>
-        <div>T</div>
-        <div>W</div>
-        <div>T</div>
-        <div>F</div>
-        <div>S</div>
-    </div>
+        <a href="{{ url_for('month_calendar', year=next_year, month=next_month) }}" 
+           class="arrow" 
+           aria-label="Next month">
+           &#8250;
+        </a>
+    </header>
 
-    <div class="calendar-grid">
+    <section class="weekdays" aria-label="Weekday headings">
+        <span>S</span>
+        <span>M</span>
+        <span>T</span>
+        <span>W</span>
+        <span>T</span>
+        <span>F</span>
+        <span>S</span>
+    </section>
+
+    <section class="calendar-grid" aria-label="Calendar days">
         {% for day in calendar %}
-            <div class="calendar-day
+            <article class="calendar-day
                 {% if not day.in_month %}faded{% endif %}
                 {% if day.date == today %}today{% endif %}">
-                {{ day.date.day }}
-            </div>
+                <time datetime="{{ day.date }}">
+                    {{ day.date.day }}
+                </time>
+            </article>
         {% endfor %}
-    </div>
+    </section>
 
-</div>
+</main>
 
 {% endblock %}

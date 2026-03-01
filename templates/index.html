@@ -31,39 +31,6 @@
             📅 Calendar
           </a>
         </nav>
-      </section>
-      {% endif %}
-
-      {% if chart_data %}
-      <section class="progress-chart">
-      <h2>Progress for {{ month_name }}</h2>
-
-      <script id="progress-data" type="application/json">
-          {{ chart_data | tojson }}
-      </script>
-
-      <div class="chart-container">
-          <canvas id="progressChart" style="height: 400px;"></canvas>
-      </div>
-      </section>
-{% endif %}
-
-    </main>
-
-  </section>
-
-
-<!-- IF THE USER DOES NOT LOG IN: -->
-  {% else %}
-  <section class="landing">
-
-    <!-- LEFT CONTENT -->
-    <article class="landing-content">
-      <header>
-        <h1 class="animated-title">
-          <span class="medi">Medi</span><span class="mate">Mate</span>
-        </h1>
-        <p class="subtitle">Medication Made Manageable.</p>
       </header>
 
       {% include "week_calendar.html" %}
@@ -73,7 +40,7 @@
     <!-- Stats -->
     <section class="stats-row">
 
-      <article class="stat-card">
+      <article class="card">
         <section class="streak">
           <h2>Current Streak: {{ streak }} 🔥</h2>
           {% if streak > 0 %}
@@ -87,46 +54,60 @@
         </section>
       </article>
 
-      <article class="stat-card">
+      <article class="card">
         <h2>Adherence</h2>
         <p class="stat-number">92%</p>
       </article>
 
-      <article class="stat-card">
+      <article class="card">
         <h2>Active Medications</h2>
         <p class="stat-number">3</p>
       </article>
 
     </section>
+    <!-- Chart -->
+    {% if chart_data %}
+    <section class="progress-chart">
+      <h2>Progress for {{ month_name }}</h2>
 
+      <script id="progress-data" type="application/json">
+        {{ chart_data | tojson }}
+      </script>
+
+      <figure class="chart-container">
+        <canvas id="progressChart" style="height: 400px;"></canvas>
+      </figure>
+    </section>
+    {% endif %}
   </main>
 
+  {% else %}
 
-{% else %}
-<section class="landing">
+  <!-- LANDING PAGE (Logged Out) -->
+  <section class="landing">
 
-  <!-- LEFT CONTENT -->
-  <article class="landing-content">
-    <header>
-      <h1 class="animated-title">
-        <span class="medi">Medi</span><span class="mate">Mate</span>
-      </h1>
-      <p class="subtitle">Medication Made Manageable.</p>
-    </header>
+    <article class="landing-content">
+      <header>
+        <h1 class="animated-title">
+          <span class="medi">Medi</span><span class="mate">Mate</span>
+        </h1>
+        <p class="subtitle">Medication Made Manageable.</p>
+      </header>
 
-    <nav aria-label="Get started">
-      <a class="btn cta-btn" href="{{ url_for('login') }}">
-        Get Started
-      </a>
-    </nav>
-  </article>
+      <nav aria-label="Get started">
+        <a class="btn cta-btn" href="{{ url_for('login') }}">
+          Get Started
+        </a>
+      </nav>
+    </article>
 
-  <!-- RIGHT ANIMATION -->
-  <figure class="landing-visual" aria-hidden="true">
-    <span class="sprite"></span>
-  </figure>
+    <figure class="landing-visual" aria-hidden="true">
+      <span class="sprite"></span>
+    </figure>
+
+  </section>
+
+  {% endif %}
 
 </section>
-{% endif %}
-
 {% endblock %}

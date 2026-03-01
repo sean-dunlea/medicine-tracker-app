@@ -2,52 +2,79 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
-      {% block page_css %}{% endblock %}
-    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+  <meta charset="utf-8" />
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  {% block page_css %}{% endblock %}
+  <meta name="viewport" content="initial-scale=1.0, width=device-width" />
 </head>
 
 <body>
-    {% block top_nav %}
-        <nav class="nav">
-            {% if session.get("username") %}
-                <a class="btn secondary" href="{{ url_for('index') }}">Home</a>
-                <a class="btn secondary" href="{{ url_for('add_medication') }}">Add Medication</a>
-                <a class="btn secondary" href="{{ url_for('history') }}">History</a>
-                <a class="btn secondary" href="{{ url_for('medimates') }}">MediMates</a>
-                <a class="btn secondary" href="{{ url_for('log_symptom') }}">Symptoms Log</a>
-                <a class="btn secondary" href="{{ url_for('profile') }}">My Profile</a>
-                <a class="btn secondary" href="{{ url_for('notification_centre') }}">Notification Centre</a>
-                <a class="btn secondary" href="{{ url_for('weekly_summary') }}">AI Weekly Health Summary</a>
-                <a class="btn secondary" href="{{ url_for('settings') }}">Settings</a>
-                <a class="btn secondary" href="{{ url_for('logout') }}">Logout</a>
-            {% endif %}     
-        </nav>
-    {% endblock %}
-    <main>
-        {% block main_content %}
-        {% endblock %}
-    </main>
-    <footer>
-        <p>&copy; 2026 MediMate</p>
+  {% block top_nav %}
+
+  {% if session.get("username") %}
+  <!--TOPBAR -->
+  <header class="topbar">
+    <nav class="topbar-left" aria-label="User controls">
+      <button id="menuToggle" class="icon-btn" aria-label="Open menu">☰</button>
+      <a href="{{ url_for('profile') }}" class="icon-btn" aria-label="Profile">🪪</a>
+      <a href="{{ url_for('settings') }}" class="icon-btn" aria-label="Settings">⚙️</a>
+    </nav>
+
+    <h1 class="logo">
+      <span class="medi">Medi</span><span class="mate">Mate</span>
+    </h1>
+  </header>
+
+  <!--SIDEBAR -->
+  <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('calendar') }}">Calendar</a></li>
+        <li><a href="{{ url_for('add_medication') }}">Add Medication</a></li>
+        <li><a href="{{ url_for('log_medication_week') }}">Log Medication</a></li>
+        <li><a href="{{ url_for('history') }}">History</a></li>
+        <li><a href="{{ url_for('medimates') }}">MediMates</a></li>
+        <li><a href="{{ url_for('log_symptom') }}">Symptoms Log</a></li>
+        <li><a href="{{ url_for('notification_centre') }}">Notification Centre</a></li>
+        <li><a href="{{ url_for('weekly_summary') }}">AI Weekly Summary</a></li>
+      </ul>
+    </nav>
+
+    <footer class="sidebar-footer">
+      <a href="{{ url_for('logout') }}" class="logout-btn">
+        <span class="logout-icon">➜]</span>
+        <span>Logout</span>
+      </a>
     </footer>
-    <script type="module" src="{{ url_for('static', filename='main.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='firebase.js') }}"></script>
-    {% block page_js %}{% endblock %}
+  </aside>
+
+  {% endif %}
+
+  {% endblock %}
+  <main>
+    {% block main_content %}
+    {% endblock %}
+  </main>
+  <footer>
+    <p>&copy; 2026 MediMate</p>
+  </footer>
+  <script type="module" src="{{ url_for('static', filename='main.js') }}"></script>
+  <script type="module" src="{{ url_for('static', filename='firebase.js') }}"></script>
+  {% block page_js %}{% endblock %}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ url_for('static', filename='chart.js') }}"></script>
 </body>
 {% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class="flash_messages">
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+{% if messages %}
+<ul class="flash_messages">
+  {% for message in messages %}
+  <li>{{ message }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
 {% endwith %}
 
 

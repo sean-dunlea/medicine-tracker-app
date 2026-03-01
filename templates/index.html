@@ -5,35 +5,65 @@
 {% endblock %}
 
 {% block main_content %}
-<main id="index" >
+<section id="index">
 
   {% if session.get("username") %}
-  <section class="welcome">
-    <p>Welcome back, <strong>{{ session.get("username") }}</strong></p>
+
+    <!-- Dashboard Content -->
+    <main class="dashboard-content">
+
+      <!-- Welcome -->
+      <section class="welcome">
+        <p>Welcome back, <strong>{{ session.get("username") }}</strong></p>
+        <button id="enable_notifications" type="button">Enable Notifications</button>
+      </section>
+
+      <!-- Stats -->
+      <section class="stats-row">
+
+        <article class="stat-card">
+          <section class="streak">
+            <h2>Current Streak: {{ streak }} 🔥</h2>
+            {% if streak > 0 %}
+            <p class="streak-counter">Keep going 💪</p>
+            {% if streak >= 7 %}
+            <p class="streak-message">You're on fire! 🔥🔥🔥</p>
+            {% endif %}
+            {% else %}
+            <p class="streak-empty">No streak yet 💔</p>
+            {% endif %}
+          </section>
+        </article>
+
+        <article class="stat-card">
+          <h2>Adherence</h2>
+          <p class="stat-number">92%</p>
+        </article>
+
+        <article class="stat-card">
+          <h2>Active Medications</h2>
+          <p class="stat-number">3</p>
+        </article>
+
+      </section>
+
+      <!-- Week Overview -->
+      {% if calendar %}
+      <section class="week-section">
+        <h2>This Week</h2>
+        {% include "week_calendar.html" %}
+
+        <nav class="week-actions">
+          <a class="btn" href="{{ url_for('calendar') }}">View Full Calendar</a>
+          <a class="btn secondary" href="{{ url_for('log_medication_week') }}">Log Medication</a>
+        </nav>
+      </section>
+      {% endif %}
+
+    </main>
+
   </section>
 
-  <section class="streak">
-    <h2> Current Streak: {{ streak }} 🔥</h2>
-    {% if streak > 0 %}
-      <p class="streak-counter">Keep going 💪
-      </p>
-      {% if streak >= 7 %}
-        <p class="streak-message">You're on fire! 🔥🔥🔥</p> {% endif %}
-    {% else %}
-      <p class="streak-empty">No streak yet 💔</p>
-    {% endif %}
-  </section>
-  {% if calendar %}
-  <section>
-    <h2>This Week</h2>
-    {% include "week_calendar.html" %}
-    <a class="btn" href="{{ url_for('calendar') }}">View Full Calendar</a>
-    <a class="btn" href="{{ url_for('log_medication_week') }}">Log Medication</a>
-  </section>
-  {% endif %}
-
-
-<button id="enable_notifications" type="button">Enable Notifications</button>
 
 
   {% else %}
@@ -63,6 +93,4 @@
   </section>
   {% endif %}
 
-
-</main>
 {% endblock %}

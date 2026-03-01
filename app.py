@@ -1388,9 +1388,9 @@ def profile():
     mates = db.execute(
         """
         SELECT COUNT(*) FROM friends
-        WHERE friend1 =? OR friend2 = ?
+        WHERE friend1 = ?
         """,
-        (session["username"], session["username"]),
+        (session["username"],),
     ).fetchone()[0]
     return render_template("profile.html", user=user, mates=mates)
 

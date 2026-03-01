@@ -87,7 +87,6 @@ DROP TABLE IF EXISTS notifications;
 CREATE TABLE notifications (
     notification_id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL, -- This is the receiver of the notification
-    notification_type TEXT NOT NULL DEFAULT "general",
     user_medication_id INTEGER,
     title TEXT NOT NULL,
     body TEXT NOT NULL,

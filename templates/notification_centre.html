@@ -5,7 +5,7 @@
     <h1>Notification Centre</h1>
     <ul>
         {% for notification in notifications %}
-                <li class="{{ 'unread' if not notification.read else '' }}">
+                <li class="{{ 'unread' if not notification.is_read else '' }}">
                     <strong>{{ notification.title }}: {{ notification.body }}</strong>
                     <small>{{ notification.created_at }}</small>
                     {% if not notification.is_read %}
@@ -16,7 +16,7 @@
                         </form>
                     {% endif %}
                     <!-- This is a re-remind button -->
-                    {% if notification.notification_type == "overdue_alert" %}
+                    {% if notification.overdue %}
                         <form method="POST" action="{{ url_for('remind_medimate', user_medication_id=notification.user_medication_id) }}">
                             <button type="submit">
                                 Re-Remind MediMate

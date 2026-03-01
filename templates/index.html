@@ -31,6 +31,39 @@
             📅 Calendar
           </a>
         </nav>
+      </section>
+      {% endif %}
+
+      {% if chart_data %}
+      <section class="progress-chart">
+      <h2>Progress for {{ month_name }}</h2>
+
+      <script id="progress-data" type="application/json">
+          {{ chart_data | tojson }}
+      </script>
+
+      <div class="chart-container">
+          <canvas id="progressChart" style="height: 400px;"></canvas>
+      </div>
+      </section>
+{% endif %}
+
+    </main>
+
+  </section>
+
+
+<!-- IF THE USER DOES NOT LOG IN: -->
+  {% else %}
+  <section class="landing">
+
+    <!-- LEFT CONTENT -->
+    <article class="landing-content">
+      <header>
+        <h1 class="animated-title">
+          <span class="medi">Medi</span><span class="mate">Mate</span>
+        </h1>
+        <p class="subtitle">Medication Made Manageable.</p>
       </header>
 
       {% include "week_calendar.html" %}

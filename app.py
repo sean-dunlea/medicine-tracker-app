@@ -1359,6 +1359,16 @@ def settings():
         db.commit()
         flash("Email updated successfully")
         return redirect(url_for("settings"))
+
+    if preferences_form.submit.data and preferences_form.validate_on_submit():
+        db.execute(
+            """UPDATE users SET allow_mates_activity = ? WHERE user_id = ?""",
+            (preferences_form.allow_mates_activity.data, user["user_id"]),
+        )
+        db.commit()
+        flash("Privacy preference updated successfully")
+        return redirect(url_for("settings"))
+
     
     if password_form.submit.data and password_form.validate_on_submit():
         if not check_password_hash(user["password"], password_form.current_password.data):

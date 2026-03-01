@@ -9,6 +9,7 @@
     <section>
         <h2>Account</h2>
         <p>Email</p>
+        <form method="POST">
         {{ email_form.hidden_tag() }}
         <p>
             {{ email_form.hidden_tag() }}
@@ -20,6 +21,8 @@
         <p>
             {{ email_form.submit() }}
         </p>
+        </form>
+        
         <form method ="POST">
             {{ password_form.hidden_tag() }}
             <p>
@@ -48,8 +51,14 @@
 
     <section>
         <h2>Privacy</h2>
+        <form method="POST">
+            {{ preferences_form.hidden_tag() }}
         <p>Allow your mates to view your activity</p>
         {{ preferences_form.allow_mates_activity }}
+        <p>
+        {{ preferences_form.submit() }}
+        </p>
+        </form>
     </section>
 
   {% if session.get("username") %}

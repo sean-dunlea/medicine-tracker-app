@@ -1,18 +1,27 @@
-<div class="week-grid">
+<section class="week-strip">
 {% for day, info in calendar.items() %}
-    {% if info.has_meds %}
-        {% if info.all_taken %}
-            {% set status_class = "day-complete" %}
-        {% else %}
-            {% set status_class = "day-missed" %}
-        {% endif %}
+    
+    {% if info.has_meds and not info.all_taken %}
+      {% set status_class = "segment-missed" %}
+      {% set status_word = "Missed" %}
     {% else %}
-        {% set status_class = "day-empty" %}
+      {% set status_class = "segment-complete" %}
+      {% set status_word = "Taken" if info.has_meds else "" %}
     {% endif %}
 
-    <div class="day-card {{ status_class }}">
-        <div class="day-name">{{ day.strftime("%a") }}</div>
-        <div class="day-number">{{ day.day }}</div>
-    </div>
+    <article class="day-card {{ status_class }}">
+        <header class="day-name">
+            {{ day.strftime("%a") }}
+        </header>
+
+        <p class="day-number">
+            {{ day.day }}
+        </p>
+
+        {% if status_word %}
+        <p class="status-label">{{ status_word }}</p>
+        {% endif %}
+    </article>
+
 {% endfor %}
-</div>
+</section>

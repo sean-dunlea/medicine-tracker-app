@@ -9,88 +9,91 @@
 
   {% if session.get("username") %}
 
-    <!-- Dashboard Content -->
-    <main class="dashboard-content">
+  <main class="dashboard-content">
 
-      <!-- Welcome -->
-      <section class="welcome">
-        <p>Welcome back, <strong>{{ session.get("username") }}</strong></p>
-        <button id="enable_notifications" type="button">Enable Notifications</button>
-      </section>
+    <!-- Welcome -->
+    <section class="welcome">
+      <p>Welcome back, <strong>{{ session.get("username") }}</strong></p>
+    </section>
 
-      <!-- Stats -->
-      <section class="stats-row">
+    <!-- Week Overview -->
+    <section class="week-section">
 
-        <article class="stat-card">
-          <section class="streak">
-            <h2>Current Streak: {{ streak }} 🔥</h2>
-            {% if streak > 0 %}
-            <p class="streak-counter">Keep going 💪</p>
-            {% if streak >= 7 %}
-            <p class="streak-message">You're on fire! 🔥🔥🔥</p>
-            {% endif %}
-            {% else %}
-            <p class="streak-empty">No streak yet 💔</p>
-            {% endif %}
-          </section>
-        </article>
-
-        <article class="stat-card">
-          <h2>Adherence</h2>
-          <p class="stat-number">92%</p>
-        </article>
-
-        <article class="stat-card">
-          <h2>Active Medications</h2>
-          <p class="stat-number">3</p>
-        </article>
-
-      </section>
-
-      <!-- Week Overview -->
-      {% if calendar %}
-      <section class="week-section">
+      <header class="week-header">
         <h2>This Week</h2>
-        {% include "week_calendar.html" %}
 
         <nav class="week-actions">
-          <a class="btn" href="{{ url_for('calendar') }}">View Full Calendar</a>
-          <a class="btn secondary" href="{{ url_for('log_medication_week') }}">Log Medication</a>
+          <a href="{{ url_for('log_medication_week') }}" class="action-btn primary">
+            + Log Meds
+          </a>
+
+          <a href="{{ url_for('calendar') }}" class="action-btn secondary">
+            📅 Calendar
+          </a>
         </nav>
-      </section>
-      {% endif %}
-
-    </main>
-
-  </section>
-
-
-
-  {% else %}
-  <section class="landing">
-
-    <!-- LEFT CONTENT -->
-    <article class="landing-content">
-      <header>
-        <h1 class="animated-title">
-          <span class="medi">Medi</span><span class="mate">Mate</span>
-        </h1>
-        <p class="subtitle">Medication Made Manageable.</p>
       </header>
 
-      <nav aria-label="Get started">
-        <a class="btn cta-btn" href="{{ url_for('login') }}">
-          Get Started
-        </a>
-      </nav>
-    </article>
+      {% include "week_calendar.html" %}
 
-    <!-- RIGHT ANIMATION -->
-    <figure class="landing-visual" aria-hidden="true">
-      <span class="sprite"></span>
-    </figure>
+    </section>
 
-  </section>
-  {% endif %}
+    <!-- Stats -->
+    <section class="stats-row">
+
+      <article class="stat-card">
+        <section class="streak">
+          <h2>Current Streak: {{ streak }} 🔥</h2>
+          {% if streak > 0 %}
+          <p class="streak-counter">Keep going 💪</p>
+          {% if streak >= 7 %}
+          <p class="streak-message">You're on fire! 🔥🔥🔥</p>
+          {% endif %}
+          {% else %}
+          <p class="streak-empty">No streak yet 💔</p>
+          {% endif %}
+        </section>
+      </article>
+
+      <article class="stat-card">
+        <h2>Adherence</h2>
+        <p class="stat-number">92%</p>
+      </article>
+
+      <article class="stat-card">
+        <h2>Active Medications</h2>
+        <p class="stat-number">3</p>
+      </article>
+
+    </section>
+
+  </main>
+
+
+{% else %}
+<section class="landing">
+
+  <!-- LEFT CONTENT -->
+  <article class="landing-content">
+    <header>
+      <h1 class="animated-title">
+        <span class="medi">Medi</span><span class="mate">Mate</span>
+      </h1>
+      <p class="subtitle">Medication Made Manageable.</p>
+    </header>
+
+    <nav aria-label="Get started">
+      <a class="btn cta-btn" href="{{ url_for('login') }}">
+        Get Started
+      </a>
+    </nav>
+  </article>
+
+  <!-- RIGHT ANIMATION -->
+  <figure class="landing-visual" aria-hidden="true">
+    <span class="sprite"></span>
+  </figure>
+
+</section>
+{% endif %}
 
 {% endblock %}

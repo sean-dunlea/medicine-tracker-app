@@ -186,7 +186,7 @@
 }
 
 .welcome {
-  font-size: 1.2rem;
+  font-size: 3rem;
   font-weight: 500;
   color: var(--text-dark);
   display: flex;
@@ -200,6 +200,7 @@
   padding: 8px 16px;
 }
 
+/*---------stats--------*/
 .stats-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -207,23 +208,7 @@
   flex-shrink: 0;
 }
 
-.stat-card {
-  background: var(--card);
-  padding: 1.8rem;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-  transition: transform 0.2s ease;
-}
 
-.stat-card:hover {
-  transform: translateY(-4px);
-}
-
-.stat-number {
-  font-size: 2.3rem;
-  font-weight: 700;
-  color: var(--primary);
-}
 .streak h2 {
   font-size: 1.4rem;
   margin-bottom: 0.5rem;
@@ -243,11 +228,13 @@
   color: var(--muted);
 }
 
+/*---------week--------*/
+
 .week-section {
   background: var(--card);
   padding: 1.5rem 2rem;
   border-radius: var(--radius-lg);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -257,8 +244,145 @@
   margin-bottom: 1rem;
 }
 
-.week-actions {
-  margin-top: auto;
+.week-header {
   display: flex;
-  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.week-header h2 {
+  margin: 0; /* prevents weird spacing */
+}
+
+.week-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+/*------week pils---------------*/
+
+.week-strip {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: space-between;
+  padding: 1rem 0;
+}
+
+/* ------------------------------------
+   LONG OVAL CAPSULE
+------------------------------------ */
+
+.day-card {
+  flex: 1;
+  position: relative;
+
+  padding: 0.8rem 0.4rem;
+  border-radius: 999px;
+
+  text-align: center;
+  font-weight: 600;
+
+  background: #f4f4f4;
+  overflow: hidden;
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* Top half color */
+.day-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 50%;
+  width: 100%;
+  z-index: 0;
+}
+
+/* Bottom half */
+.day-card::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 50%;
+  width: 100%;
+  background: var(--cream);
+  z-index: 0;
+}
+
+
+/* STATUS COLORS */
+
+/* Taken + Future */
+.segment-complete::before {
+  background: linear-gradient(135deg, #fadd7d, #f3a743);
+}
+
+/* Missed */
+.segment-missed::before {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+}
+
+/*SHINE EFFECT */
+
+.day-card .shine {
+  display: none;
+}
+
+.day-card::marker {
+  display: none;
+}
+
+/* Graphic shine */
+.day-card::before {
+  background-size: 200% 200%;
+}
+
+.day-card::after {
+  background:
+    linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.6),
+      rgba(255, 255, 255, 0.2));
+}
+
+/* TEXT LAYER */
+
+.day-name,
+.day-number,
+.status-label {
+  position: relative;
+  z-index: 2;
+}
+
+.day-name {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.day-number {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.status-label {
+  font-size: 0.65rem;
+  margin-top: 0.2rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/*Red text for missed */
+.segment-missed .status-label {
+  color: var(--primary-dark);
+}
+
+/* HOVER ROTATION*/
+
+.day-card:hover {
+  transform: rotate(-2deg) translateY(-4px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.15);
 }

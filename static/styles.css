@@ -227,7 +227,18 @@ label {
 
 .icon-btn:hover {
   transform: scale(1.1);
+   background: rgba(255, 255, 255, 0.15);
 }
+
+/* Topbar PNG icons */
+.icon-btn img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+  filter: brightness(0) invert(1);
+}
+
 
 .topbar .logo {
   font-size: 2rem;
@@ -433,6 +444,7 @@ label {
   transform: scale(1.03);
   border: none;
 }
+
 
 
 /* Status colours */

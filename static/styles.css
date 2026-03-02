@@ -431,3 +431,24 @@ label {
   transform: scale(1.03);
   border: none;
 }
+
+
+/* Status colours */
+
+/* SUCCESSFULLY COMPLETED */
+/* .calendar-day.complete {
+    background-color: #2ecc71;
+    color: white;
+} */
+
+/* PARTIAL MISS */
+/* .calendar-day.partial {
+    background-color: #f1c40f;
+    color: white;
+} */
+
+/* MISSED */
+/* .calendar-day.missed {
+    background-color: #e74c3c;
+    color: white;
+} */

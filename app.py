@@ -489,6 +489,7 @@ def build_month_calendar(user_id, year, month):
     db = get_db()
     first_weekday, days_in_month = pycalendar.monthrange(year, month)
     first_day = date(year, month, 1)
+    start_grid = first_day - timedelta(days=first_day.weekday())
     medications = db.execute("""
         SELECT m.user_medication_id, m.medication_name,
                m.frequency_type, m.start_date, m.end_date,
@@ -498,41 +499,78 @@ def build_month_calendar(user_id, year, month):
         ON m.user_medication_id = mt.user_medication_id
         WHERE m.user_id = ?
     """, (user_id,)).fetchall()
-    calendar =[]
-    start_grid = first_day - timedelta(days=first_day.weekday())
-    for i in range(42): #this is grid for 6 weeks
+    today = date.today()
+    calendar = []
+
+    for i in range(42):  # 6 week grid
         current_day = start_grid + timedelta(days=i)
-        day_meds = []
+
+        scheduled = 0
+        taken = 0
+
         for medication in medications:
+
             if current_day < medication["start_date"]:
                 continue
             if medication["end_date"] and current_day > medication["end_date"]:
                 continue
+
             include = False
+
             if medication["frequency_type"] == "daily":
                 include = True
+
             elif medication["frequency_type"] == "weekly":
-                if medication["weekday"] == current_day.weekday():
-                    include = True
-            # I just added this small block so that if the user has a medication scheduled for example,
-            # the 30th or 31st, and that day doesn't exist in the current month, then it will be automatically
-            # moved to the last day of the current month.
+                include = medication["weekday"] == current_day.weekday()
+
             elif medication["frequency_type"] == "monthly":
                 if medication["day_of_month"] is not None:
-                    last_day = pycalendar.monthrange(current_day.year, current_day.month)[1]
-                    scheduled_day = min(medication["day_of_month"], last_day)
-                    if scheduled_day == current_day.day:
-                        include = True
+                    last_day = pycalendar.monthrange(
+                        current_day.year,
+                        current_day.month
+                    )[1]
+                    scheduled_day = min(
+                        medication["day_of_month"],
+                        last_day
+                    )
+                    include = scheduled_day == current_day.day
+
             if include:
-                day_meds.append({
-                    "name": medication["medication_name"],
-                    "time": medication["time_of_day"]
-                })
+                scheduled += 1
+
+                log = db.execute("""
+                    SELECT 1 FROM medication_logs
+                    WHERE user_medication_id = ?
+                    AND scheduled_date = ?
+                    AND time_of_day = ?
+                """, (
+                    medication["user_medication_id"],
+                    current_day,
+                    medication["time_of_day"]
+                )).fetchone()
+
+                if log:
+                    taken += 1
+
+        # Determine day status
+        if scheduled == 0:
+            status = "none"
+        elif taken == scheduled:
+            status = "complete"
+        elif taken > 0:
+            status = "partial"
+        else:
+            status = "missed"
+
         calendar.append({
             "date": current_day,
             "in_month": current_day.month == month,
-            "medications": day_meds
+            "scheduled": scheduled,
+            "taken": taken,
+            "status": status,
+            "is_today": current_day == today
         })
+
     return calendar
 
 def calculate_streak(user_id):

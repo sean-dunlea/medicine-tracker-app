@@ -1,51 +1,70 @@
-<!-- this displays the calendar for the 7 days -->
 {% extends "base.html" %}
 
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='log_meds.css') }}">
+{% endblock %}
+
 {% block main_content %}
-    <table>
-        <thead>
-            <tr>
-                {% for day in calendar.keys() %}
-                    <th>{{ day.strftime("%A %d %b") }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
+<section class="log">
 
-        <tbody>
-            {% set max_rows = calendar.values() | map('length') | max %}
-            {% for i in range(max_rows) %}
-            <tr>
-                {% for day, meds in calendar.items() %}
-                    <td>
-                        {% if meds|length > i %}
-                            {% set med = meds[i] %}
-                            {{ med.medication_name }}<br>
-                            {{ med.time_of_day }}<br>
+    <header>
+        <h1>Log Your Medication</h1>
+        <p>Stay consistent. Track your weekly doses below.</p>
+    </header>
 
-                            {% if med.taken %}
-                                <button disabled>Taken</button>
+    <section class="days">
 
-                            {% elif med.can_take %}
-                                <!-- <form method="POST"
-                                    action="{{ url_for('log_medication', user_medication_id=med.user_medication_id) }}">
-                                    <button type="submit">Mark as Taken</button>
-                                </form> -->
-                                <form method="POST"
-                                    action="{{ url_for('log_medication', user_medication_id=med.user_medication_id) }}">
-                                    <input type="hidden" name="scheduled_date" value="{{ day.isoformat() }}">
-                                    <input type="hidden" name="time_of_day" value="{{ med.time_of_day }}">
-                                    <button type="submit">Mark as Taken</button>
-                                </form>
+        {% for day, meds in calendar.items() %}
+        {% set taken = meds | selectattr("taken") | list | length %}
+        {% set total = meds | length %}
 
-                            {% else %}
-                                <button disabled>Not Yet</button>
-                            {% endif %}
+        <section class="day">
 
+            <header>
+                <h2>{{ day.strftime("%A") }}</h2>
+                <small>{{ day.strftime("%d %b") }}</small>
+            </header>
+
+            {% if total %}
+                <div class="bar" style="--p: {{ (taken * 100 // total) if total else 0 }}%"></div>
+
+                <ul>
+                    {% for med in meds %}
+                    <li class="{% if med.taken %}done{% endif %}">
+                        <span>
+                            {{ med.medication_name }}
+                            <small>{{ med.time_of_day }}</small>
+                        </span>
+
+                        {% if med.taken %}
+                            <button class="pill done" disabled>✓</button>
+
+                        {% elif med.can_take %}
+                            <form method="POST"
+                                  action="{{ url_for('log_medication', user_medication_id=med.user_medication_id) }}">
+                                <input type="hidden" name="scheduled_date" value="{{ day.isoformat() }}">
+                                <input type="hidden" name="time_of_day" value="{{ med.time_of_day }}">
+                                <button type="submit" class="pill"></button>
+                            </form>
+
+                        {% else %}
+                            <button class="pill off" disabled></button>
                         {% endif %}
-                    </td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                {% if taken == total %}
+                    <p class="complete">All done 🎉</p>
+                {% endif %}
+            {% else %}
+                <p class="empty">No medications scheduled.</p>
+            {% endif %}
+
+        </section>
+        {% endfor %}
+
+    </section>
+
+</section>
 {% endblock %}

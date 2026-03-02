@@ -1,0 +1,123 @@
+.history {
+    padding: 60px 40px;
+}
+
+/* Header */
+.history>header {
+    margin-bottom: 50px;
+}
+
+.history h1 {
+    font-size: 2rem;
+    margin-bottom: 6px;
+    color: var(--text-dark);
+}
+
+.history header p {
+    margin-bottom: 20px;
+}
+
+/* Grid layout like log days */
+.med-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+}
+
+@media (max-width: 1200px) {
+    .med-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .med-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Card styling inspired by .day */
+.med-card {
+    background: var(--card);
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 12px 30px rgba(90, 74, 66, 0.08);
+    transition: transform 0.2s ease;
+}
+
+.med-card:hover {
+    transform: translateY(-6px);
+}
+
+/* Card header */
+.med-card>header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.med-card h2 {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+/* Detail list */
+.med-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.med-card li {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.med-card li span {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.med-card li strong {
+    text-align: right;
+}
+
+/* Delete button cleaner */
+.delete-btn {
+    background: none;
+    border: none;
+    padding: 6px;
+
+    display: inline-grid;
+    place-items: center;
+
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+/* Bigger icon */
+.delete-btn img {
+    width: 26px;
+    /* increased */
+    height: 26px;
+    object-fit: contain;
+
+    /* Primary red */
+    filter: brightness(0) saturate(100%) invert(33%) sepia(74%) saturate(600%) hue-rotate(340deg) brightness(90%) contrast(95%);
+
+    transition: filter 0.2s ease;
+}
+
+/* Dark red hover */
+.delete-btn:hover img {
+    filter: brightness(0) saturate(100%) invert(12%) sepia(95%) saturate(900%) hue-rotate(340deg) brightness(75%) contrast(100%);
+}
+
+.delete-btn:hover {
+    transform: scale(1.1);
+}

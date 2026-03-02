@@ -1,28 +1,63 @@
 {% extends "base.html" %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='history.css') }}">
+{% endblock %}
+
 {% block main_content %}
+<main class="history container">
 
-<h1>Medication History</h1>
-<button onclick="window.print()">Print / Save as PDF</button>
-{% if medications %}
-  {% for med in medications %}
-    <div class="card">
-      <form method="POST"
-        action = "{{ url_for('delete_medication', user_medication_id=med.user_medication_id) }}"
-        class="delete-form"
-        onsubmit="return confirm('Are you sure you want to delete this medication?');">
-      <button type="submit" class="delete-btn">🗑</button></form>
-<!-- ATTRIBUTION: bin emoji is taken from https://emojidb.org/trash-emojis -->
+  <header>
+    <h1>Your Medications</h1>
+    <p class="text-muted">All medications currently added to your profile.</p>
+    <button type="button" onclick="window.print()">Print / Save as PDF</button>
+  </header>
 
-      <strong>{{ med.medication_name }}</strong><br>
-      <p>Dosage: {{ med.dosage_amount }} {{ med.dosage_unit }}</p>
-      <p>Frequency: {{ med.frequency_count }} time(s) {{ med.frequency_type }}</p>
-      {% if med.instructions %}
-        <p>Instructions: {{ med.instructions }}</p>
-      {% endif %}
-    </div>
-  {% endfor %}
-{% else %}
-  <p>No medications added yet.</p>
-{% endif %}
+  {% if medications %}
+  <section class="med-grid" aria-label="Medication list">
 
+    {% for med in medications %}
+    <article class="med-card">
+
+      <header>
+        <h2>{{ med.medication_name }}</h2>
+
+        <form method="POST" action="{{ url_for('delete_medication', user_medication_id=med.user_medication_id) }}"
+          onsubmit="return confirm('Are you sure you want to delete this medication?');">
+
+          <button type="submit" class="delete-btn" aria-label="Delete medication">
+            <img src="{{ url_for('static', filename='icons/bin.png') }}" alt="">
+          </button>
+
+        </form>
+      </header>
+
+      <ul>
+        <li>
+          <span>Dosage</span>
+          <strong>{{ med.dosage_amount }} {{ med.dosage_unit }}</strong>
+        </li>
+
+        <li>
+          <span>Frequency</span>
+          <strong>{{ med.frequency_count }} time(s) {{ med.frequency_type }}</strong>
+        </li>
+
+        {% if med.instructions %}
+        <li>
+          <span>Instructions</span>
+          <strong>{{ med.instructions }}</strong>
+        </li>
+        {% endif %}
+      </ul>
+
+    </article>
+    {% endfor %}
+
+  </section>
+  {% else %}
+  <p class="empty">No medications added yet.</p>
+  {% endif %}
+
+</main>
 {% endblock %}

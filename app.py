@@ -1267,7 +1267,7 @@ def medimates():
             form.username.errors.append("This user does not exist.")
 
     medimates = db.execute("""
-                    SELECT f.friend2, u.user_id, u.allow_mates_activity
+                    SELECT f.friend2, u.user_id, u.allow_mates_activity, u.profile_picture
                     FROM friends AS f
                     JOIN users AS u ON f.friend2 = u.username
                     WHERE f.friend1 = ?""", (user,))

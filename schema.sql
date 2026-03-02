@@ -12,7 +12,9 @@ CREATE TABLE users (
     password TEXT NOT NULL,
     profile_picture TEXT,
     allow_mates_activity BOOLEAN DEFAULT 1,
-    timezone TEXT -- Stored here to send push notifications at user's local time
+    timezone TEXT, -- Stored here to send push notifications at user's local time
+    weekly_summary TEXT,
+    weekly_summary_generated_date DATE
 );
 
 DROP TABLE IF EXISTS fcm_tokens;

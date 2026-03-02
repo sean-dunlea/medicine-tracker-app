@@ -1392,6 +1392,15 @@ def generate_weekly_health_summary(user_id):
     db = get_db()
     # This gets the last 7 days
     today = date.today()
+    # This checks if the summary has already been generated today
+    user = db.execute("""
+                      SELECT weekly_summary, weekly_summary_generated_date
+                      FROM users
+                      WHERE user_id = ?;
+                      """, (user_id,)).fetchone()
+    if user and user["weekly_summary"] and str(user["weekly_summary_generated_date"]) == str(today):
+        return user["weekly_summary"]
+    # Otherwise, generate new summary
     week_start = today - timedelta(days=6)
     # This gets the medication logs
     medications = db.execute("""
@@ -1412,7 +1421,7 @@ def generate_weekly_health_summary(user_id):
     summary_data = "Weekly Health Data:\n\nMedication Taken:\n"
     if medications:
         for medication in medications:
-            summary_data += f"{medication['medication_name']} on {medication['scheduled_date']} at {medication['time_of_day']}"
+            summary_data += f"{medication['medication_name']} on {medication['scheduled_date']} at {medication['time_of_day']}\n"
     else:
         summary_data += "No medication logged.\n"
     summary_data += "\nSymptoms Experienced:\n"
@@ -1445,22 +1454,14 @@ def generate_weekly_health_summary(user_id):
             summary = f"AI summary is temporarily unavailable. API returned unexpected response: {data}\n\n{summary_data}"
     except Exception as e:
         summary = f"AI summary is temporarily unavailable. Reason: {str(e)}\n\n{summary_data}"
+    # This saves the new summary and today's date
+    db.execute("""
+               UPDATE users
+               SET weekly_summary = ?, weekly_summary_generated_date = ?
+               WHERE user_id = ?
+               """, (summary, today, user_id))
+    db.commit()
     return summary
-
-@app.route("/weekly_summary")
-@login_required
-def weekly_summary():
-    db = get_db()
-    username = session["username"]
-    user = db.execute("""
-                      SELECT *
-                      FROM users
-                      WHERE username = ?;
-                      """, (username,)).fetchone()
-    if user:
-        user_id = user["user_id"]
-        summary = generate_weekly_health_summary(user_id)
-        return render_template("weekly_summary.html", title="Weekly Health Summary", summary=summary)
 
 #Profile section showing amount of mates 
 @app.route("/profile")
@@ -1479,7 +1480,9 @@ def profile():
         """,
         (session["username"],),
     ).fetchone()[0]
-    return render_template("profile.html", user=user, mates=mates,mode="view")
+    # This generates the AI weekly summary
+    weekly_summary = generate_weekly_health_summary(user["user_id"])
+    return render_template("profile.html", user=user, mates=mates,mode="view", weekly_summary=weekly_summary)
 
 #Profile picture
 @app.route("/profile/edit", methods=["GET", "POST"])

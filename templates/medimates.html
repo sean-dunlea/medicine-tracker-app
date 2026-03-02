@@ -13,6 +13,13 @@
                     Remove Medimate
                 </a>
             </td>
+            <td>
+            {% if mate["allow_mates_activity"] %}
+                <a href="{{ url_for('medimate_meds', friend_id=mate['user_id']) }}">
+                See medications
+                </a>
+            {% endif %}
+            </td>
         </tr>
     {% endfor %}
 </table>

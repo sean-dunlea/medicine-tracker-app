@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<h1>Medimates Meds</h1>
+
+<table>
+    {% for med in meds %}
+        <tr>
+            <td>Medication: {{ med["username"] }}</td>
+            <td>
+                {{ med["medication_name"] }}
+            </td>
+            <td>
+                Unit: {{ med["dosage_unit"] }}
+            </td>
+            <td>
+                Start date: {{ med["start_date"] }}
+            </td>
+            <td>
+                End date: {{ med["end_date"] }}
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

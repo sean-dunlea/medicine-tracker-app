@@ -16,10 +16,21 @@
             <!-- Progress Navigation -->
             <nav aria-label="Medication form progress">
                 <ol class="progress-steps">
-                    <li class="step-circle active" data-step="1">1</li>
-                    <li class="step-circle" data-step="2">2</li>
-                    <li class="step-circle" data-step="3">3</li>
-                    <li class="step-circle" data-step="4">4</li>
+                    <li class="step-circle active" data-step="1">
+                        <img src="{{ url_for('static', filename='icons/pill.png') }}" alt="">
+                    </li>
+
+                    <li class="step-circle" data-step="2">
+                        <img src="{{ url_for('static', filename='icons/clock.png') }}" alt="">
+                    </li>
+
+                    <li class="step-circle" data-step="3">
+                        <img src="{{ url_for('static', filename='icons/calendar.png') }}" alt="">
+                    </li>
+
+                    <li class="step-circle" data-step="4">
+                        <img src="{{ url_for('static', filename='icons/bell.png') }}" alt="">
+                    </li>
                 </ol>
             </nav>
         </header>
@@ -34,7 +45,7 @@
                 {{ form.medication_name.label }}
                 {{ form.medication_name(id="medication_name_field") }}
                 {% for error in form.medication_name.errors %}
-                    {{ error }}
+                {{ error }}
                 {% endfor %}
 
                 <ul id="suggested_medication_names_list"></ul>
@@ -42,13 +53,13 @@
                 {{ form.dosage_amount.label }}
                 {{ form.dosage_amount() }}
                 {% for error in form.dosage_amount.errors %}
-                    {{ error }}
+                {{ error }}
                 {% endfor %}
 
                 {{ form.dosage_unit.label }}
                 {{ form.dosage_unit() }}
                 {% for error in form.dosage_unit.errors %}
-                    {{ error }}
+                {{ error }}
                 {% endfor %}
 
                 <footer class="step-footer">
@@ -63,13 +74,13 @@
                 {{ form.frequency_count.label }}
                 {{ form.frequency_count() }}
                 {% for error in form.frequency_count.errors %}
-                    {{ error }}
+                {{ error }}
                 {% endfor %}
 
                 {{ form.frequency_type.label }}
                 {{ form.frequency_type() }}
                 {% for error in form.frequency_type.errors %}
-                    {{ error }}
+                {{ error }}
                 {% endfor %}
 
                 {% for time_entry in form.time_entries %}
@@ -78,19 +89,19 @@
                     {{ time_entry.time_of_day.label }}
                     {{ time_entry.time_of_day(class="time_of_day", step=300) }}
                     {% for error in time_entry.time_of_day.errors %}
-                        {{ error }}
+                    {{ error }}
                     {% endfor %}
 
                     {{ time_entry.weekday.label }}
                     {{ time_entry.weekday(class="weekday") }}
                     {% for error in time_entry.weekday.errors %}
-                        {{ error }}
+                    {{ error }}
                     {% endfor %}
 
                     {{ time_entry.day_of_month.label }}
                     {{ time_entry.day_of_month(class="day_of_month") }}
                     {% for error in time_entry.day_of_month.errors %}
-                        {{ error }}
+                    {{ error }}
                     {% endfor %}
                 </section>
                 {% endfor %}
@@ -110,19 +121,19 @@
                 {{ form.start_date.label }}
                 {{ form.start_date() }}
                 {% for error in form.start_date.errors %}
-                    {{ error }}
+                {{ error }}
                 {% endfor %}
 
                 {{ form.end_date.label }}
                 {{ form.end_date() }}
                 {% for error in form.end_date.errors %}
-                    {{ error }}
+                {{ error }}
                 {% endfor %}
 
                 {{ form.instructions.label }}
                 {{ form.instructions() }}
                 {% for error in form.instructions.errors %}
-                    {{ error }}
+                {{ error }}
                 {% endfor %}
 
                 <footer class="step-footer">
@@ -135,17 +146,17 @@
             <fieldset class="form-step">
                 <legend>Notifications</legend>
 
-                {{ form.push_notifications_enabled.label }}
-                {{ form.push_notifications_enabled() }}
-                {% for error in form.push_notifications_enabled.errors %}
-                    {{ error }}
-                {% endfor %}
+                <label class="checkbox-row">
+                    Push Notifications?
+                    {{ form.push_notifications_enabled(class="checkbox-input") }}
+                    
+                </label>
 
-                {{ form.email_notifications_enabled.label }}
-                {{ form.email_notifications_enabled() }}
-                {% for error in form.email_notifications_enabled.errors %}
-                    {{ error }}
-                {% endfor %}
+                <label class="checkbox-row">
+                    Email Notifications?
+                    {{ form.email_notifications_enabled(class="checkbox-input") }}
+                    
+                </label>
 
                 <footer class="step-footer">
                     <button type="button" class="back-btn">Back</button>

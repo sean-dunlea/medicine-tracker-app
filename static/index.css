@@ -318,7 +318,7 @@
 
 /* Taken + Future */
 .segment-complete::before {
-  background: linear-gradient(135deg, #fadd7d, #f3a743);
+  background: linear-gradient(135deg, var(--yellow-light), var(--yellow));
 }
 
 /* Missed */

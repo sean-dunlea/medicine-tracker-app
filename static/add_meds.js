@@ -5,10 +5,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const nextButtons = form.querySelectorAll(".next-btn");
     const backButtons = form.querySelectorAll(".back-btn");
     const circles = document.querySelectorAll(".step-circle");
+    const progress = document.querySelector(".progress-steps");
 
     let currentStep = 0;
 
     function updateSteps() {
+
         // Show correct fieldset
         steps.forEach((step, index) => {
             step.classList.toggle("active", index === currentStep);
@@ -16,14 +18,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Update progress circles
         circles.forEach((circle, index) => {
-            if (index <= currentStep) {
-                circle.classList.add("active");
-            } else {
-                circle.classList.remove("active");
-            }
+            circle.classList.toggle("active", index <= currentStep);
         });
+
+        // Update progress fill line
+        const percent = (currentStep / (steps.length - 1)) * 100;
+        progress.style.setProperty("--fill-width", percent + "%");
     }
 
+    // Initial state
+    updateSteps();
+
+    // Next buttons
     nextButtons.forEach(button => {
         button.addEventListener("click", function () {
             if (currentStep < steps.length - 1) {
@@ -34,6 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    // Back buttons
     backButtons.forEach(button => {
         button.addEventListener("click", function () {
             if (currentStep > 0) {

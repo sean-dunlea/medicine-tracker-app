@@ -7,6 +7,9 @@
 <table>
     {% for mate in medimates %}
         <tr>
+            <td>
+                <img src="{{ url_for('static', filename='avatars/' + mate['profile_picture']) }}" alt="Avatar option" width="60" height="60">
+            </td>
             <td>{{ mate["friend2"] }}</td>
             <td>
                 <a href="{{ url_for('remove_medimate', friend=mate['friend2'])}}">

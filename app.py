@@ -707,61 +707,56 @@ def get_adherence_data(user_id, start_date=None, end_date=None):
 
 # This is the home page route.
 @app.route("/")
+@login_required
 def index():
     calendar_status = None
     current_streak = 0
     chart_data = []
     month_name = None
-    if g.user:
-        db = get_db()
-        user_id = g.user["user_id"]
-        calendar_status = build_week_status(user_id)
-        current_streak = calculate_streak(user_id)
-        today = date.today()
-        start_date = date(today.year, today.month, 1)
-        last_day = pycalendar.monthrange(today.year, today.month)[1]
-        end_date = date(today.year, today.month, last_day)
-        month_name = pycalendar.month_name[today.month]
-        chart_data = get_adherence_data(
-            user_id,
-            start_date,
-            end_date
-        )
-        total_scheduled = 0
-        total_taken = 0
-
-        for day in chart_data:
-            if day["adherence"] is not None:
-                # We need scheduled + taken from database instead of %
-                day_date = day["date"]
-
-                scheduled_count = db.execute("""
-                    SELECT COUNT(*) 
-                    FROM medications m
-                    JOIN medication_times mt 
-                    ON m.user_medication_id = mt.user_medication_id
-                    WHERE m.user_id = ?
-                    AND m.start_date <= ?
-                    AND (m.end_date IS NULL OR m.end_date >= ?)
-                """, (user_id, day_date, day_date)).fetchone()[0]
-
-                taken_count = db.execute("""
-                    SELECT COUNT(*)
-                    FROM medication_logs ml
-                    JOIN medications m
-                    ON ml.user_medication_id = m.user_medication_id
-                    WHERE m.user_id = ?
-                    AND ml.scheduled_date = ?
-                """, (user_id, day_date)).fetchone()[0]
-
-                total_scheduled += scheduled_count
-                total_taken += taken_count
-
-        if total_scheduled > 0:
-            average_adherence = round((total_taken / total_scheduled) * 100)
-        else:
-            average_adherence = 0
-        active_medications = db.execute("""SELECT COUNT(*) FROM medications WHERE user_id = ? AND  (end_date IS NULL OR end_date >= ?)""", (user_id, today)).fetchone()[0]
+    db = get_db()
+    user_id = g.user["user_id"]
+    calendar_status = build_week_status(user_id)
+    current_streak = calculate_streak(user_id)
+    today = date.today()
+    start_date = date(today.year, today.month, 1)
+    last_day = pycalendar.monthrange(today.year, today.month)[1]
+    end_date = date(today.year, today.month, last_day)
+    month_name = pycalendar.month_name[today.month]
+    chart_data = get_adherence_data(
+        user_id,
+        start_date,
+        end_date
+    )
+    total_scheduled = 0
+    total_taken = 0
+    for day in chart_data:
+        if day["adherence"] is not None:
+            # We need scheduled + taken from database instead of %
+            day_date = day["date"]
+            scheduled_count = db.execute("""
+                SELECT COUNT(*) 
+                FROM medications m
+                JOIN medication_times mt 
+                ON m.user_medication_id = mt.user_medication_id
+                WHERE m.user_id = ?
+                AND m.start_date <= ?
+                AND (m.end_date IS NULL OR m.end_date >= ?)
+            """, (user_id, day_date, day_date)).fetchone()[0]
+            taken_count = db.execute("""
+                SELECT COUNT(*)
+                FROM medication_logs ml
+                JOIN medications m
+                ON ml.user_medication_id = m.user_medication_id
+                WHERE m.user_id = ?
+                AND ml.scheduled_date = ?
+            """, (user_id, day_date)).fetchone()[0]
+            total_scheduled += scheduled_count
+            total_taken += taken_count
+    if total_scheduled > 0:
+        average_adherence = round((total_taken / total_scheduled) * 100)
+    else:
+        average_adherence = 0
+    active_medications = db.execute("""SELECT COUNT(*) FROM medications WHERE user_id = ? AND  (end_date IS NULL OR end_date >= ?)""", (user_id, today)).fetchone()[0]
     return render_template(
         "index.html", title="Home", calendar=calendar_status, streak=current_streak, chart_data=chart_data, month_name=month_name, average_adherence=average_adherence, active_medications=active_medications
     )
@@ -1267,7 +1262,7 @@ def medimates():
             form.username.errors.append("This user does not exist.")
 
     medimates = db.execute("""
-                    SELECT f.friend2, u.user_id, u.allow_mates_activity
+                    SELECT f.friend2, u.user_id, u.allow_mates_activity, u.profile_picture
                     FROM friends AS f
                     JOIN users AS u ON f.friend2 = u.username
                     WHERE f.friend1 = ?""", (user,))

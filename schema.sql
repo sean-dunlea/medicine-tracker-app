@@ -10,7 +10,7 @@ CREATE TABLE users (
     email TEXT UNIQUE NOT NULL,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    profile_picture TEXT,
+    profile_picture TEXT DEFAULT "avatar1.png",
     allow_mates_activity BOOLEAN DEFAULT 1,
     timezone TEXT -- Stored here to send push notifications at user's local time
 );
@@ -152,3 +152,7 @@ CREATE TABLE symptoms (
 
 DROP TABLE IF EXISTS drugbank_drugs;
 DROP TABLE IF EXISTS drugbank_products;
+
+
+SELECT * FROM users
+SELECT * FROM medications

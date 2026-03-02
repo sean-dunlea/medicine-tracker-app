@@ -1479,7 +1479,7 @@ def profile():
         """,
         (session["username"],),
     ).fetchone()[0]
-    return render_template("profile.html", user=user, mates=mates)
+    return render_template("profile.html", user=user, mates=mates,mode="view")
 
 #Profile picture
 @app.route("/profile/edit", methods=["GET", "POST"])
@@ -1501,7 +1501,7 @@ def edit_profile():
             )
             db.commit()
         return redirect(url_for("profile"))
-    return render_template("edit_profile.html", user=user, avatars=avatars)
+    return render_template("profile.html", user=user, avatars=avatars, mode="edit")
 
 #Settings includes privacy feature allowing the user to show their activity to their mates, and also change their email and password
 @app.route("/settings", methods=["GET", "POST"])

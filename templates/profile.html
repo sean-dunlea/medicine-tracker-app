@@ -1,29 +1,60 @@
 {% extends "base.html" %}
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+{% endblock %}
 
 {% block main_content %}
 
-<!-- Profle pictures can be seen once the designs for the avatars are done -->
-<main id="profile">
+<main class="account">
+
     <header>
+        {% if mode == "edit" %}
+        <h1>Choose Your Avatar</h1>
+        {% else %}
         <h1>{{ user.username }}</h1>
+        {% endif %}
     </header>
 
-    <section> 
-        <a href="{{ url_for('edit_profile') }}" class="btn">Change Avatar</a>
-        {% if user.profile_picture %}
-        <img src="{{ url_for('static', filename='avatars/' + user.profile_picture) }}"
-        alt="Profile picture"
-        width="150">
-        {% else %}
-        <img src="{{ url_for('static', filename='avatars/avatar1.png') }}"
-        alt="Default profile picture"
-        width="150">
-         {% endif %}
-    </section>
+
+    {% if mode == "edit" %}
+
+    <form method="POST">
+        <fieldset>
+            <legend>Select an avatar</legend>
+
+            {% for avatar in avatars %}
+            <label>
+                <input type="radio" name="avatar" value="{{ avatar }}" {% if user.profile_picture==avatar %}checked{%
+                    endif %}>
+                <img src="{{ url_for('static', filename='avatars/' + avatar) }}" alt="Avatar option" width="150">
+            </label>
+            {% endfor %}
+
+        </fieldset>
+
+        <button type="submit">Save</button>
+    </form>
+
+    {% else %}
 
     <section>
-        <p><strong>Mates:</strong> {{ mates }}</p>
+        {% if user.profile_picture %}
+        <img src="{{ url_for('static', filename='avatars/' + user.profile_picture) }}" alt="Profile picture"
+            width="260">
+        {% else %}
+        <img src="{{ url_for('static', filename='avatars/avatar1.png') }}" alt="Default profile picture" width="260">
+        {% endif %}
     </section>
+
+    <a href="{{ url_for('edit_profile') }}" class="btn">Change Avatar</a>
+
+    <section class="account-mates" aria-label="Account statistics">
+        <span class="mates-number">{{ mates }}</span>
+        <span class="mates-label">Mates</span>
+    </section>
+
+    {% endif %}
+
 </main>
 
 {% endblock %}

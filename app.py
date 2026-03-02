@@ -713,6 +713,7 @@ def index():
     chart_data = []
     month_name = None
     if g.user:
+        db = get_db()
         user_id = g.user["user_id"]
         calendar_status = build_week_status(user_id)
         current_streak = calculate_streak(user_id)
@@ -726,8 +727,43 @@ def index():
             start_date,
             end_date
         )
+        total_scheduled = 0
+        total_taken = 0
+
+        for day in chart_data:
+            if day["adherence"] is not None:
+                # We need scheduled + taken from database instead of %
+                day_date = day["date"]
+
+                scheduled_count = db.execute("""
+                    SELECT COUNT(*) 
+                    FROM medications m
+                    JOIN medication_times mt 
+                    ON m.user_medication_id = mt.user_medication_id
+                    WHERE m.user_id = ?
+                    AND m.start_date <= ?
+                    AND (m.end_date IS NULL OR m.end_date >= ?)
+                """, (user_id, day_date, day_date)).fetchone()[0]
+
+                taken_count = db.execute("""
+                    SELECT COUNT(*)
+                    FROM medication_logs ml
+                    JOIN medications m
+                    ON ml.user_medication_id = m.user_medication_id
+                    WHERE m.user_id = ?
+                    AND ml.scheduled_date = ?
+                """, (user_id, day_date)).fetchone()[0]
+
+                total_scheduled += scheduled_count
+                total_taken += taken_count
+
+        if total_scheduled > 0:
+            average_adherence = round((total_taken / total_scheduled) * 100)
+        else:
+            average_adherence = 0
+        active_medications = db.execute("""SELECT COUNT(*) FROM medications WHERE user_id = ? AND  (end_date IS NULL OR end_date >= ?)""", (user_id, today)).fetchone()[0]
     return render_template(
-        "index.html", title="Home", calendar=calendar_status, streak=current_streak, chart_data=chart_data, month_name=month_name
+        "index.html", title="Home", calendar=calendar_status, streak=current_streak, chart_data=chart_data, month_name=month_name, average_adherence=average_adherence, active_medications=active_medications
     )
 
 @app.route("/notification_centre")

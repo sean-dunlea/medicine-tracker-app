@@ -280,8 +280,9 @@ def is_medication_overdue(medication, user_current_time):
         return False
 
 # This checks if a user has not marked a medication as taken within 1 hour of when it's due
-# and notifies their MediMates. It also records that the overdue notification was actually
-# sent to avoid sending repeated overdue alerts every minute.
+# and notifies their MediMates. It records that the overdue notification was actually
+# sent to avoid sending repeated overdue alerts every minute. Now, it also marks the user's
+# AI generated summary as outdated.
 def check_if_overdue_and_notify_medimates(medication, user_current_time):
     if is_medication_overdue(medication, user_current_time):
         db = get_db()
@@ -291,6 +292,13 @@ def check_if_overdue_and_notify_medimates(medication, user_current_time):
                         INSERT INTO overdue_notifications_sent (user_medication_id, scheduled_date)
                         VALUES (?, ?);
                         """, (medication["user_medication_id"], user_current_time.date()))
+            # I needed to add this part to mark the user's AI generated summary as outdated so it can
+            # be re-generated next time they visit the index page.
+            db.execute("""
+                       UPDATE users
+                       SET weekly_summary_outdated = 1
+                       WHERE user_id = ?
+                       """, (medication["user_id"],))
             db.commit()
             # This notifies MediMates only after successful insert
             title = "Medication Missed! 💊"
@@ -757,8 +765,10 @@ def index():
     else:
         average_adherence = 0
     active_medications = db.execute("""SELECT COUNT(*) FROM medications WHERE user_id = ? AND  (end_date IS NULL OR end_date >= ?)""", (user_id, today)).fetchone()[0]
+    # This generates the AI weekly summary
+    weekly_summary = generate_weekly_health_summary(user_id)
     return render_template(
-        "index.html", title="Home", calendar=calendar_status, streak=current_streak, chart_data=chart_data, month_name=month_name, average_adherence=average_adherence, active_medications=active_medications
+        "index.html", title="Home", calendar=calendar_status, streak=current_streak, chart_data=chart_data, month_name=month_name, average_adherence=average_adherence, active_medications=active_medications, weekly_summary=weekly_summary
     )
 
 # This provides the number of unread notifications to be shown in the nav bar next to
@@ -1460,14 +1470,14 @@ def generate_weekly_health_summary(user_id):
         return user["weekly_summary"]
     # If it's outdated, generate new summary
     week_start = today - timedelta(days=6)
-    # This gets the medication logs
-    medications = db.execute("""
-                             SELECT m.medication_name, ml.scheduled_date, ml.time_of_day
-                             FROM medication_logs ml
-                             JOIN medications m ON ml.user_medication_id = m.user_medication_id
-                             WHERE m.user_id = ? AND ml.scheduled_date BETWEEN ? AND ?
-                             ORDER BY ml.scheduled_date ASC
-                             """, (user_id, week_start, today)).fetchall()
+    # This gets all scheduled medications for the week
+    scheduled_medications = db.execute("""
+                                       SELECT m.medication_name, m.user_medication_id, ml.time_of_day, ml.scheduled_date
+                                       FROM medications m LEFT JOIN medication_logs ml ON m.user_medication_id = ml.user_medication_id
+                                       AND ml.scheduled_date BETWEEN ? AND ?
+                                       WHERE m.user_id = ?
+                                       ORDER BY ml.scheduled_date ASC;
+                                       """, (week_start, today, user_id)).fetchall()
     # This gets the symptom logs
     symptoms = db.execute("""
                           SELECT symptom_name, severity, symptom_date
@@ -1477,11 +1487,16 @@ def generate_weekly_health_summary(user_id):
                           """, (user_id, week_start, today)).fetchall()
     # This will start to build the information needed to give the AI
     summary_data = "Weekly Health Data:\n\nMedication Taken:\n"
-    if medications:
-        for medication in medications:
-            summary_data += f"{medication['medication_name']} on {medication['scheduled_date']} at {medication['time_of_day']}\n"
+    if scheduled_medications:
+        for medication in scheduled_medications:
+            # This checks if the log exists
+            if medication["scheduled_date"]:
+                summary_data += f"{medication['medication_name']} taken on {medication['scheduled_date']} at {medication['time_of_day']}\n"
+            # Otherwise, it was scheduled but not taken
+            else:
+                summary_data += f"{medication['medication_name']} was scheduled but not logged this week\n"
     else:
-        summary_data += "No medication logged.\n"
+        summary_data += "No medications were scheduled this week.\n"
     summary_data += "\nSymptoms Experienced:\n"
     if symptoms:
         for symptom in symptoms:
@@ -1538,9 +1553,7 @@ def profile():
         """,
         (session["username"],),
     ).fetchone()[0]
-    # This generates the AI weekly summary
-    weekly_summary = generate_weekly_health_summary(user["user_id"])
-    return render_template("profile.html", user=user, mates=mates,mode="view", weekly_summary=weekly_summary)
+    return render_template("profile.html", user=user, mates=mates,mode="view")
 
 #Profile picture
 @app.route("/profile/edit", methods=["GET", "POST"])

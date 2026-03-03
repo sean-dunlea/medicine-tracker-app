@@ -7,9 +7,9 @@
 <table>
     {% for med in meds %}
         <tr>
-            <td>Medication: {{ med["username"] }}</td>
+            <td>Medication: {{ med["medication_name"] }}</td>
             <td>
-                {{ med["medication_name"] }}
+                Amount: {{ med["dosage_amount"] }}
             </td>
             <td>
                 Unit: {{ med["dosage_unit"] }}
@@ -19,6 +19,24 @@
             </td>
             <td>
                 End date: {{ med["end_date"] }}
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
+<h1>Symptoms</h1>
+<table>
+    {% for symptom in symptoms %}
+        <tr>
+            <td>Symptom: {{ symptom["symptom_name"] }}</td>
+            <td>
+                Severity: {{ symptom["severity"] }}
+            </td>
+            <td>
+                Date experienced: {{ symptom["symptom_date"] }}
+            </td>
+            <td>
+                Notes: {{ symptom["notes"] }}
             </td>
         </tr>
     {% endfor %}

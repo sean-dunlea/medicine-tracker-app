@@ -1355,7 +1355,7 @@ def remove_medimate(friend):
                     WHERE friend1 = ?""", (user,))
     return redirect(url_for("medimates"))
 
-@app.route("/medimate_medimate/<int:friend_id>")
+@app.route("/medimate_meds/<int:friend_id>")
 @login_required
 def medimate_meds(friend_id):
     db = get_db()
@@ -1364,7 +1364,12 @@ def medimate_meds(friend_id):
                     FROM users AS u
                     JOIN medications AS m ON m.user_id = u.user_id
                     WHERE  u.user_id = ? AND u.allow_mates_activity == 1""", (friend_id,)).fetchall()
-    return render_template("medimate_meds.html", title="Medimates Meds", meds=meds)
+    symptoms = db.execute("""
+                    SELECT u.username, s.symptom_name, s.severity, s.symptom_date, s.notes
+                    FROM users AS u
+                    JOIN symptoms AS s ON s.user_id = u.user_id
+                    WHERE  u.user_id = ? AND u.allow_mates_activity == 1""", (friend_id,)).fetchall()
+    return render_template("medimate_meds.html", title="Medimates Meds", meds=meds, symptoms=symptoms)
 
 
 #users can log their symptoms

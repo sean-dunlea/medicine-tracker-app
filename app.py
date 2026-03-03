@@ -1110,7 +1110,7 @@ def add_medication():
                                VALUES (?, ?, ?, ?);
                                """, (user_medication_id, time_value, weekday, day_of_month))
                 db.commit()
-                return redirect( url_for("history") )
+                return redirect( url_for("my_medications") )
     return render_template("add_medication.html", title="Add Medication", form=form)
 
 @app.route("/delete_medication/<int:user_medication_id>", methods=["POST"])
@@ -1122,7 +1122,7 @@ def delete_medication(user_medication_id):
     db.execute("""DELETE FROM medication_logs WHERE user_medication_id = ?""", (user_medication_id,))
     db.execute("""DELETE FROM medications WHERE user_medication_id = ? AND user_id = ?""",(user_medication_id, g.user["user_id"]))
     db.commit()
-    return redirect(url_for("history"))
+    return redirect(url_for("my_medications"))
 
 @app.route("/query_medications", methods=["GET"])
 def query_medications():
@@ -1151,9 +1151,9 @@ def query_medications():
         return jsonify(results)
     return jsonify([])
 
-@app.route("/history")
+@app.route("/my_medications")
 @login_required
-def history():
+def my_medications():
     db = get_db()
     username = session["username"]
     user = db.execute("""
@@ -1168,7 +1168,7 @@ def history():
                                 WHERE user_id = ?
                                 ORDER BY start_date DESC;
                                 """, (user_id,),).fetchall()
-    return render_template("history.html", title="Medication History", medications=medications)
+    return render_template("my_medications.html", title="My Medications", medications=medications)
    
 @app.route("/cancel_request/<string:receiver>")
 @login_required
@@ -1434,9 +1434,9 @@ def symptom_report():
     total_symptoms = len(symptoms)
     return render_template("symptom_report.html", user=user, symptoms=symptoms, total_symptoms=total_symptoms, generated_on=datetime.now())
 
-@app.route("/history/report")
+@app.route("/medication/report")
 @login_required
-def history_report():
+def medication_report():
     db = get_db()
     user = db.execute("""
                       SELECT * 

@@ -1,25 +1,20 @@
 {% extends "base.html" %}
+
 {% block page_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
 {% endblock %}
 
 {% block main_content %}
-
-<main class="account"> 
-
-    <header>
-        {% if mode == "edit" %}
-        <h1>Choose Your Avatar</h1>
-        {% else %}
-        <h1>{{ user.username }}</h1>
-        {% endif %}
-    </header>
+<section class="account">
 
 
     {% if mode == "edit" %}
 
-    <form method="POST">
-        <fieldset>
+    <form method="POST" class="edit-form">
+
+        <h1 class="edit-title">Choose Your Avatar</h1>
+
+        <fieldset class="avatar-grid">
             <legend>Select an avatar</legend>
 
             {% for avatar in avatars %}
@@ -29,7 +24,6 @@
                 <img src="{{ url_for('static', filename='avatars/' + avatar) }}" alt="Avatar option" width="150">
             </label>
             {% endfor %}
-
         </fieldset>
 
         <button type="submit">Save</button>
@@ -37,89 +31,90 @@
 
     {% else %}
 
-    <section>
-        <img src="{{ url_for('static', filename='avatars/' + user.profile_picture) }}" alt="Profile picture"
-            width="260">
-    </section>
+    <section class="account-grid">
 
-    <a href="{{ url_for('edit_profile') }}" class="btn">Change Avatar</a>
+        <!-- LEFT SIDE -->
+        <section class="account-left">
 
-    <section class="account-mates" aria-label="Account statistics">
-        <span class="mates-number">{{ mates }}</span>
-        <span class="mates-label">Mates</span>
-    </section>
+            <h1>{{ user.username }}</h1>
 
-    <h1>Settings</h1>
-    
+            <img src="{{ url_for('static', filename='avatars/' + user.profile_picture) }}" alt="Profile picture"
+                width="260">
 
-    <section>
-        <h2>Account</h2>
-        <p>Email</p>
-        <form method="POST">
-        {{ email_form.hidden_tag() }}
-        <p>
-            {{ email_form.hidden_tag() }}
-            {{ email_form.email() }}
-            {% for error in email_form.email.errors %}
-                {{ error }}
-            {% endfor %}
-        </p>
-        <p>
-            {{ email_form.submit() }}
-        </p>
-        </form>
-        
-        <form method="POST">
-            {{ password_form.hidden_tag() }}
-            <p>
-                {{ password_form.current_password.label() }}
-                {{ password_form.current_password() }}
-                {% for error in password_form.current_password.errors %}
-                    {{ error }}
-                {% endfor %}
-            </p>
-            <p>
-                {{ password_form.new_password.label }}
-                {{ password_form.new_password() }}
-                {% for error in password_form.new_password.errors %}
-                    {{ error }}
-                {% endfor %}
-            </p>
-            <p>
-                {{ password_form.submit() }}
-            </p>           
-        </form>
+            <a href="{{ url_for('edit_profile') }}" class="btn">
+                Change Avatar
+            </a>
 
-        <form method="POST">
-            <button name="delete_account" type="submit" class="btn secondary">Delete Account</button>
-        </form>
-    </section>
+            <section class="account-mates" aria-label="Account statistics">
+                <span class="mates-number">{{ mates }}</span>
+                <span class="mates-label">Mates</span>
+            </section>
 
-    <section>
-        <h2>Privacy</h2>
-        <form method="POST">
-            {{ preferences_form.hidden_tag() }}
-        <p>Allow your mates to view your activity</p>
-        {{ preferences_form.allow_mates_activity }}
-        <p>
-        {{ preferences_form.submit() }}
-        </p>
-        </form>
-    </section>
+        </section>
 
-    <section id="notifications" class="card">
-      <h2>Reminders</h2>
-      <p class="muted">
-        Enable push notifications to get dose reminders on this device.
-      </p>
-      <button id="enable_notifications" type="button">
-        Enable Notifications
-      </button>
-      <p id="notif_status" class="muted"></p>
+        <!-- RIGHT SIDE -->
+        <section class="account-right">
+
+            <h1>Settings</h1>
+
+            <section id="notifications">
+                <h2>Reminders</h2>
+                <p class="text-muted">
+                    Enable push notifications to get dose reminders on this device.
+                </p>
+                <button class="btn" type="button">
+                    Enable Notifications
+                </button>
+                <p id="notif_status" class="text-muted"></p>
+            </section>
+
+            <section>
+                <h2>Account</h2>
+                <p>Email</p>
+
+                <form method="POST">
+                    {{ email_form.hidden_tag() }}
+                    {{ email_form.email() }}
+                    {{ email_form.submit() }}
+                </form>
+
+                <form method="POST">
+                    {{ password_form.hidden_tag() }}
+                    {{ password_form.current_password.label() }}
+                    {{ password_form.current_password() }}
+                    {{ password_form.new_password.label }}
+                    {{ password_form.new_password() }}
+                    {{ password_form.submit() }}
+                </form>
+
+                <form method="POST">
+                    <button name="delete_account" type="submit" class="delete-btn">
+                        Delete Account
+                    </button>
+                </form>
+            </section>
+
+            <section>
+                <h2>Privacy</h2>
+                <form method="POST">
+                    {{ preferences_form.hidden_tag() }}
+
+                    <label class="privacy-toggle">
+                        <span>Allow your mates to view your activity</span>
+                        {{ preferences_form.allow_mates_activity }}
+                    </label>
+
+                    {{ preferences_form.submit(class_="btn") }}
+                </form>
+            </section>
+
+
+
+        </section>
+
     </section>
 
     {% endif %}
 
-</main>
-
+</section>
 {% endblock %}

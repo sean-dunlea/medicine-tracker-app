@@ -47,7 +47,15 @@
         <li><a href="{{ url_for('history') }}">History</a></li>
         <li><a href="{{ url_for('medimates') }}">MediMates</a></li>
         <li><a href="{{ url_for('log_symptom') }}">Symptoms Log</a></li>
-        <li><a href="{{ url_for('notification_centre') }}">Notification Centre</a></li>
+        <li>
+          <a href="{{ url_for('notification_centre') }}">
+            Notification Centre
+            {% if unread_notification_count > 0 %}
+              ({{ unread_notification_count }})
+            {% endif %}
+          </a>
+        </li>
+</a>
       </ul>
     </nav>
 

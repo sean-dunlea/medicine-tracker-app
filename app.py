@@ -1505,8 +1505,13 @@ def generate_weekly_health_summary(user_id):
         summary_data += "No symptoms logged.\n"
     # This builds the prompt to give the AI
     prompt = f"""
-              You are a friendly health assistant. Summarise the following user's weekly health data in a concise, positive, and
-              understandable paragraph, giving gently reminders or encouragements if needed:
+              You are a friendly health assistant.
+              Summarise the following user's weekly health data in a concise, supportive, and understandable paragraph:
+                - Clearly distinguish between medications that were taken and those that were missed.
+                - Give encouragement only where doses were taken, and gentle reminders where doses were missed.
+                - Reword extreme or alarming symptoms gently while keeping them accurate.
+                - Avoid overpraising if any medications were missed.
+              Here is the summary data: 
               {summary_data}
               """
     # This calls the OpenRouter API

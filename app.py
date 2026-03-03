@@ -841,7 +841,6 @@ def log_medication(user_medication_id):
                 INSERT OR IGNORE INTO medication_logs (user_medication_id, scheduled_date, time_of_day)
                 VALUES (?, ?, ?);
                 """, (user_medication_id, scheduled_date, time_of_day))
-        db.commit()
         # This notifies the user's MediMates that they have taken their medication
         user = db.execute("""
                           SELECT u.user_id, u.username
@@ -849,9 +848,16 @@ def log_medication(user_medication_id):
                           WHERE m.user_medication_id = ?
                           """, (user_medication_id,)).fetchone()
         if user:
+            # This marks the weekly summary as outdated
+            db.execute("""
+                    UPDATE users
+                    SET weekly_summary_outdated = 1
+                    WHERE user_id = ?;
+                    """, (user["user_id"],))
             title = "Medication Taken! 💊"
             body = f"{user['username']} has just taken their medication!"
             notify_medimates(user["username"], title, body, user_medication_id)
+        db.commit()
     return redirect( url_for("log_medication_week") )
 
 @app.route("/set_timezone", methods=["POST"])
@@ -1331,6 +1337,11 @@ def log_symptom():
                    VALUES (?, ?, ?, ?, ?, ?)
                    """, (user["user_id"], form.symptom_name.data, int(form.severity.data), form.symptom_date.data,
                          form.symptom_time.data.strftime("%H:%M"), form.notes.data,),)
+        db.execute("""
+                   UPDATE users
+                   SET weekly_summary_outdated = 1
+                   WHERE user_id = ?
+                   """, (user["user_id"],))
         db.commit()
         return redirect(url_for("log_symptom"))
     symptoms = db.execute("""
@@ -1387,15 +1398,15 @@ def generate_weekly_health_summary(user_id):
     db = get_db()
     # This gets the last 7 days
     today = date.today()
-    # This checks if the summary has already been generated today
+    # This checks if the summary is up to date
     user = db.execute("""
-                      SELECT weekly_summary, weekly_summary_generated_date
+                      SELECT weekly_summary, weekly_summary_outdated
                       FROM users
                       WHERE user_id = ?;
                       """, (user_id,)).fetchone()
-    if user and user["weekly_summary"] and str(user["weekly_summary_generated_date"]) == str(today):
+    if user and user["weekly_summary"] and not user["weekly_summary_outdated"]:
         return user["weekly_summary"]
-    # Otherwise, generate new summary
+    # If it's outdated, generate new summary
     week_start = today - timedelta(days=6)
     # This gets the medication logs
     medications = db.execute("""
@@ -1449,12 +1460,12 @@ def generate_weekly_health_summary(user_id):
             summary = f"AI summary is temporarily unavailable. API returned unexpected response: {data}\n\n{summary_data}"
     except Exception as e:
         summary = f"AI summary is temporarily unavailable. Reason: {str(e)}\n\n{summary_data}"
-    # This saves the new summary and today's date
+    # This saves the new summary and sets the weekly summary as up to date.
     db.execute("""
                UPDATE users
-               SET weekly_summary = ?, weekly_summary_generated_date = ?
+               SET weekly_summary = ?, weekly_summary_outdated = 0
                WHERE user_id = ?
-               """, (summary, today, user_id))
+               """, (summary, user_id))
     db.commit()
     return summary
 

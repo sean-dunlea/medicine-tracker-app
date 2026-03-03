@@ -14,7 +14,7 @@ CREATE TABLE users (
     allow_mates_activity BOOLEAN DEFAULT 1,
     timezone TEXT, -- Stored here to send push notifications at user's local time
     weekly_summary TEXT,
-    weekly_summary_generated_date DATE
+    weekly_summary_outdated BOOLEAN DEFAULT 1
 );
 
 DROP TABLE IF EXISTS fcm_tokens;
@@ -154,7 +154,3 @@ CREATE TABLE symptoms (
 
 DROP TABLE IF EXISTS drugbank_drugs;
 DROP TABLE IF EXISTS drugbank_products;
-
-
-SELECT * FROM users
-SELECT * FROM medications

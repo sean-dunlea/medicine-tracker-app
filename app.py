@@ -1154,21 +1154,26 @@ def query_medications():
 @app.route("/my_medications")
 @login_required
 def my_medications():
+    today = date.today()
     db = get_db()
     username = session["username"]
     user = db.execute("""
                     SELECT user_id FROM users WHERE username = ?;
                     """, (username,),).fetchone()
-    medications = []
-    if user:
-        user_id = user["user_id"]
-        medications = db.execute("""
-                                SELECT *
-                                FROM medications
-                                WHERE user_id = ?
-                                ORDER BY start_date DESC;
-                                """, (user_id,),).fetchall()
-    return render_template("my_medications.html", title="My Medications", medications=medications)
+    user_id = user["user_id"]
+    current_medications = db.execute("""
+                            SELECT *
+                            FROM medications
+                            WHERE user_id = ? and end_date >= ?
+                            ORDER BY start_date DESC;
+                            """, (user_id, today,),).fetchall()
+    past_medications = db.execute("""
+                            SELECT *
+                            FROM medications
+                            WHERE user_id = ? and end_date < ?
+                            ORDER BY start_date DESC;
+                            """, (user_id, today),).fetchall()
+    return render_template("my_medications.html", title="My Medications", current_medications=current_medications, past_medications=past_medications)
    
 @app.route("/cancel_request/<string:receiver>")
 @login_required

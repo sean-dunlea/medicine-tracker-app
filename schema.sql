@@ -154,3 +154,6 @@ CREATE TABLE symptoms (
 
 DROP TABLE IF EXISTS drugbank_drugs;
 DROP TABLE IF EXISTS drugbank_products;
+
+SELECT *
+FROM users

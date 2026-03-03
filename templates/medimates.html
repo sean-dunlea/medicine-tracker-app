@@ -52,6 +52,9 @@
 <table>
     {% for invite in invites %}
         <tr>
+            <td>
+                <img src="{{ url_for('static', filename='avatars/' + invite['profile_picture']) }}" alt="Avatar option" width="60" height="60">
+            </td>
             <td>{{ invite["sender"] }}</td>
             <td>
                 <a href="{{ url_for('accept_request', friend1=invite['sender'])}}">
@@ -70,6 +73,9 @@
 <table>
     {% for request in pending_requests %}
         <tr>
+            <td>
+                <img src="{{ url_for('static', filename='avatars/' + request['profile_picture']) }}" alt="Avatar option" width="60" height="60">
+            </td>
             <td>{{ request["receiver"] }}</td>
             <td>
                 <a href="{{ url_for('cancel_request', receiver=request['receiver'])}}">

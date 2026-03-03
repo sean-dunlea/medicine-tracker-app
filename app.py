@@ -1274,12 +1274,14 @@ def medimates():
                     WHERE f.friend1 = ?""", (user,))
     
     invites = db.execute("""
-                    SELECT *
-                    FROM invites
+                    SELECT i.sender, u.profile_picture
+                    FROM invites AS i
+                    JOIN users AS u ON i.sender = u.username
                     WHERE receiver = ?""", (user,))
     pending_requests = db.execute("""
-                    SELECT *
-                    FROM invites
+                    SELECT i.receiver, u.profile_picture
+                    FROM invites AS i
+                    JOIN users AS u ON i.receiver = u.username
                     WHERE sender = ?""", (user,))
     
 

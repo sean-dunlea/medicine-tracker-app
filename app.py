@@ -1542,9 +1542,12 @@ def generate_weekly_health_summary(user_id):
     return summary
 
 #Profile section showing amount of mates 
-@app.route("/profile")
+@app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
+    email_form = ChangeEmailForm(prefix="email")
+    password_form = ChangePasswordForm(prefix="password")
+    preferences_form = PreferencesForm(prefix="prefs")
     db = get_db()
     user = db.execute(
         "SELECT * FROM users WHERE username = ?",
@@ -1558,7 +1561,42 @@ def profile():
         """,
         (session["username"],),
     ).fetchone()[0]
-    return render_template("profile.html", user=user, mates=mates,mode="view")
+
+    if request.method == "GET":
+        email_form.email.data = user["email"]
+        preferences_form.allow_mates_activity.data = bool(user["allow_mates_activity"])
+    if email_form.submit.data and email_form.validate_on_submit():
+        db.execute(
+            "UPDATE users SET email = ? WHERE user_id = ?",
+            (email_form.email.data, user["user_id"]),
+        )
+        db.commit()
+        flash("Email updated successfully")
+        return redirect(url_for("profile"))
+
+    if preferences_form.submit.data and preferences_form.validate_on_submit():
+        db.execute(
+            """UPDATE users SET allow_mates_activity = ? WHERE user_id = ?""",
+            (preferences_form.allow_mates_activity.data, user["user_id"]),
+        )
+        db.commit()
+        flash("Privacy preference updated successfully")
+        return redirect(url_for("profile"))
+
+    
+    if password_form.submit.data and password_form.validate_on_submit():
+        if not check_password_hash(user["password"], password_form.current_password.data):
+            password_form.current_password.errors.append("Incorrect current password")
+        else:
+            new_hash = generate_password_hash(password_form.new_password.data)
+            db.execute(
+                "UPDATE users SET password = ? WHERE user_id = ?",
+                (new_hash, user["user_id"]),
+            )
+            db.commit()
+            flash("Password changed successfully")
+            return redirect(url_for("profile"))
+    return render_template("profile.html", user=user, mates=mates, email_form=email_form, password_form=password_form, preferences_form=preferences_form, mode="view")
 
 #Profile picture
 @app.route("/profile/edit", methods=["GET", "POST"])
@@ -1583,57 +1621,6 @@ def edit_profile():
     return render_template("profile.html", user=user, avatars=avatars, mode="edit")
 
 #Settings includes privacy feature allowing the user to show their activity to their mates, and also change their email and password
-@app.route("/settings", methods=["GET", "POST"])
-@login_required
-def settings():
-    db = get_db()
-    user = db.execute(
-        "SELECT * FROM users WHERE username = ?",
-        (session["username"],)
-    ).fetchone()
-    email_form = ChangeEmailForm(prefix="email")
-    password_form = ChangePasswordForm(prefix="password")
-    preferences_form = PreferencesForm(prefix="prefs")
-    if request.method == "GET":
-        email_form.email.data = user["email"]
-        preferences_form.allow_mates_activity.data = bool(user["allow_mates_activity"])
-    if email_form.submit.data and email_form.validate_on_submit():
-        db.execute(
-            "UPDATE users SET email = ? WHERE user_id = ?",
-            (email_form.email.data, user["user_id"]),
-        )
-        db.commit()
-        flash("Email updated successfully")
-        return redirect(url_for("settings"))
 
-    if preferences_form.submit.data and preferences_form.validate_on_submit():
-        db.execute(
-            """UPDATE users SET allow_mates_activity = ? WHERE user_id = ?""",
-            (preferences_form.allow_mates_activity.data, user["user_id"]),
-        )
-        db.commit()
-        flash("Privacy preference updated successfully")
-        return redirect(url_for("settings"))
-
-    
-    if password_form.submit.data and password_form.validate_on_submit():
-        if not check_password_hash(user["password"], password_form.current_password.data):
-            password_form.current_password.errors.append("Incorrect current password")
-        else:
-            new_hash = generate_password_hash(password_form.new_password.data)
-            db.execute(
-                "UPDATE users SET password = ? WHERE user_id = ?",
-                (new_hash, user["user_id"]),
-            )
-            db.commit()
-            flash("Password changed successfully")
-            return redirect(url_for("settings"))
-    return render_template(
-        "settings.html",
-        email_form=email_form,
-        password_form=password_form,
-        preferences_form=preferences_form,
-        user=user,
-    )
 if __name__ == "__main__":
     app.run(debug=True)

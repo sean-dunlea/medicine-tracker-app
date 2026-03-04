@@ -1,100 +1,124 @@
 {% extends "base.html" %}
 
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='symptom_log.css') }}">
+{% endblock %}
+
 {% block main_content %}
+
 <main id="symptom_log">
 
-  <header>
-    <h1>Symptom Log</h1>
-    <p>Record symptoms and track how you’re feeling over time.</p>
+  <!-- LOG SYMPTOM CARD -->
+  <section class="modal-card">
+
+    <header class="form-header">
+      <h2>Log a Symptom</h2>
+      <p>Record how you're feeling today.</p>
+    </header>
+
+    <section class="form-section">
+      <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+
+        <fieldset>
+          <legend>Symptom details</legend>
+
+          <label>
+            {{ form.symptom_name.label }}
+            {{ form.symptom_name() }}
+            {% for error in form.symptom_name.errors %}
+            <small class="error">{{ error }}</small>
+            {% endfor %}
+          </label>
+
+          <label>
+            {{ form.severity.label }}
+            {{ form.severity() }}
+            {% for error in form.severity.errors %}
+            <small class="error">{{ error }}</small>
+            {% endfor %}
+          </label>
+
+          <label>
+            {{ form.symptom_date.label }}
+            {{ form.symptom_date() }}
+          </label>
+
+          <label>
+            {{ form.symptom_time.label }}
+            {{ form.symptom_time() }}
+          </label>
+
+          <label>
+            {{ form.notes.label }}
+            {{ form.notes() }}
+          </label>
+
+            {{ form.submit(class="submit-btn") }}
+          
+
+        </fieldset>
+      </form>
+    </section>
+
+  </section>
+
+  <!-- HISTORY SECTION  -->
+ <section class="modal-card">
+
+  <header class="form-header">
+    <h2>Symptom History</h2>
+    <a href="{{ url_for('symptom_report') }}" style="color:white; font-weight:600; text-decoration:none;">
+      Share Report
+    </a>
   </header>
 
-  <section>
-    <h2>Add a symptom</h2>
+  <section class="form-section">
 
-    <form method="POST" novalidate>
-      {{ form.hidden_tag() }}
-
-      <fieldset> <!-- using fieldset + legend for accessibility screen reader to be implemented later -->
-        <legend>Symptom details</legend>
-
-        <p>
-          {{ form.symptom_name.label }}
-          {{ form.symptom_name() }}
-          {% for error in form.symptom_name.errors %}
-            {{ error }}
-          {% endfor %}
-        </p>
-
-        <p>
-          {{ form.severity.label }}
-          {{ form.severity() }}
-          {% for error in form.severity.errors %}
-            {{ error }}
-          {% endfor %}
-        </p>
-
-        <p>
-          {{ form.symptom_date.label }}
-          {{ form.symptom_date() }}
-          {% for error in form.symptom_date.errors %}
-            {{ error }}
-          {% endfor %}
-        </p>
-
-        <p>
-          {{ form.symptom_time.label }}
-          {{ form.symptom_time() }}
-          {% for error in form.symptom_time.errors %}
-            {{ error }}
-          {% endfor %}
-        </p>
-
-        <p>
-          {{ form.notes.label }}
-          {{ form.notes() }}
-          {% for error in form.notes.errors %}
-            {{ error }}
-          {% endfor %}
-        </p>
-
-        <p>
-          {{ form.submit() }}
-        </p>
-      </fieldset>
-    </form>
-  </section>
-  
-  <section>
-    <h2>Symptom history</h2>
-    <a href="{{ url_for('symptom_report') }}">Share Report</a>
     {% if symptoms %}
-      <ul>
+      <ul style="list-style:none; padding:0; margin:0;">
         {% for symptom in symptoms %}
-          <li>
-            <article>
-              <strong>{{ symptom.symptom_name }}</strong><br>
-              Date: {{ symptom.symptom_date }}
+          <li style="padding: var(--spacing-lg) 0; border-bottom: 1px solid rgba(0,0,0,0.06);">
+            
+            <strong style="display:block; color: var(--primary-dark); margin-bottom:6px;">
+              {{ symptom.symptom_name }}
+            </strong>
+
+            <p style="margin:0 0 4px; color: var(--muted); font-size:0.9rem;">
+              {{ symptom.symptom_date }}
               {% if symptom.symptom_time %}
                 at {{ symptom.symptom_time }}
               {% endif %}
-              <br>
+            </p>
+
+            <p style="margin:0 0 4px;">
               Severity: {{ symptom.severity }}
+            </p>
 
-              {% if symptom.medication_name %}
-                <br>Medication: {{ symptom.medication_name }}
-              {% endif %}
+            {% if symptom.medication_name %}
+              <p style="margin:0 0 4px;">
+                Medication: {{ symptom.medication_name }}
+              </p>
+            {% endif %}
 
-              {% if symptom.notes %}
-                <br><em>{{ symptom.notes }}</em>
-              {% endif %}
-            </article>
+            {% if symptom.notes %}
+              <p style="margin-top:6px; font-style:italic; color: var(--muted);">
+                {{ symptom.notes }}
+              </p>
+            {% endif %}
+
           </li>
         {% endfor %}
       </ul>
     {% else %}
-      <p>No symptoms logged yet.</p>
+      <p style="font-style:italic; color: var(--muted);">
+        No symptoms logged yet.
+      </p>
     {% endif %}
+
   </section>
 
+</section>
 </main>
+
 {% endblock %}

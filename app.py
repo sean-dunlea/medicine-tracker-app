@@ -564,7 +564,7 @@ def build_month_calendar(user_id, year, month):
         if scheduled == 0:
             status = "none"
         elif taken == scheduled:
-            status = "complete"
+            status = "taken"
         elif taken > 0:
             status = "partial"
         else:

@@ -5,18 +5,16 @@
 <main class="calendar-container">
 
     <header class="calendar-header">
-        <a href="{{ url_for('month_calendar', year=prev_year, month=prev_month) }}" 
-           class="arrow" 
-           aria-label="Previous month">
-           &#8249;
+        <a href="{{ url_for('month_calendar', year=prev_year, month=prev_month) }}" class="arrow"
+            aria-label="Previous month">
+            &#8249;
         </a>
 
         <h2>{{ month_name }} {{ year }}</h2>
 
-        <a href="{{ url_for('month_calendar', year=next_year, month=next_month) }}" 
-           class="arrow" 
-           aria-label="Next month">
-           &#8250;
+        <a href="{{ url_for('month_calendar', year=next_year, month=next_month) }}" class="arrow"
+            aria-label="Next month">
+            &#8250;
         </a>
     </header>
 
@@ -32,14 +30,18 @@
 
     <section class="calendar-grid" aria-label="Calendar days">
         {% for day in calendar %}
-            <article class="calendar-day
-                {{ day.status }}
-                {% if not day.in_month %}faded{% endif %}
-                {% if day.date == today %}today{% endif %}">
-                <time datetime="{{ day.date }}">
-                    {{ day.date.day }}
-                </time>
-            </article>
+        <article class="calendar-day
+        {% if day.in_month %}{{ day.status }}{% endif %}
+        {% if not day.in_month %}faded{% endif %}
+        {% if day.date == today %}today{% endif %}">
+
+            <time datetime="{{ day.date }}">
+                {{ day.date.day }}
+            </time>
+
+            <span class="status-label"></span>
+
+        </article>
         {% endfor %}
     </section>
 

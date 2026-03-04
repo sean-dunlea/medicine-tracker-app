@@ -1,5 +1,5 @@
 .log {
-    background: var(--bg);
+     background-color: var(--bg);
     padding: 60px 40px;
     margin: 0 auto;
 }

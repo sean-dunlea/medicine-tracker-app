@@ -43,6 +43,21 @@ body {
   min-height: 100vh;
 }
 
+/*bg class for non-index pages*/
+.bg-main {
+  background-image: url("/static/bg2.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.bg-home {
+  background-image: url("/static/bg.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
 /* Typography */
 h1,
 h2,
@@ -305,6 +320,10 @@ select {
 .logout-btn:hover {
   background: var(--muted);
   color: var(--cream);
+}
+
+ul {
+  list-style: none;
 }
 
 /* ============================================

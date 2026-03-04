@@ -9,7 +9,8 @@
   <meta name="viewport" content="initial-scale=1.0, width=device-width" />
 </head>
 
-<body>
+<body class="{% if request.endpoint == 'index' 
+and not session.get('username') %}bg-home{% else %}bg-main{% endif %}">
   {% block top_nav %}
 
   {% if session.get("username") %}
@@ -47,11 +48,11 @@
           <a href="{{ url_for('notification_centre') }}">
             Notification Centre
             {% if unread_notification_count > 0 %}
-              ({{ unread_notification_count }})
+            ({{ unread_notification_count }})
             {% endif %}
           </a>
         </li>
-</a>
+        </a>
       </ul>
     </nav>
 

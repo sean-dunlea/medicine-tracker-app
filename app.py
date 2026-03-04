@@ -715,14 +715,16 @@ def get_adherence_data(user_id, start_date=None, end_date=None):
 
 # This is the home page route.
 @app.route("/")
-@login_required
 def index():
+    if g.user is None: # Changed this so that when the user is logged out it goes to the landing Get Started Page instead of the login page
+        return render_template("index.html", title="Home")
+    db = get_db()
+    user_id = g.user["user_id"]
     calendar_status = None
     current_streak = 0
     chart_data = []
     month_name = None
-    db = get_db()
-    user_id = g.user["user_id"]
+
     calendar_status = build_week_status(user_id)
     current_streak = calculate_streak(user_id)
     today = date.today()

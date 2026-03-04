@@ -1,89 +1,157 @@
 {% extends "base.html" %}
 
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='medimates.css') }}">
+{% endblock %}
+
 {% block main_content %}
 
-<h1>MediMates</h1>
+<main class="medimates">
 
-<table>
-    {% for mate in medimates %}
-        <tr>
-            <td>
-                <img src="{{ url_for('static', filename='avatars/' + mate['profile_picture']) }}" alt="Avatar option" width="60" height="60">
-            </td>
-            <td>{{ mate["friend2"] }}</td>
-            <td>
-                <a href="{{ url_for('remove_medimate', friend=mate['friend2'])}}">
-                    Remove Medimate
-                </a>
-            </td>
-            <td>
-            {% if mate["allow_mates_activity"] %}
-                <a href="{{ url_for('medimate_meds', friend_id=mate['user_id']) }}">
-                See medications
-                </a>
+    <!-- PRIMARY: CURRENT MATES -->
+    <section class="card primary-section">
+
+        <header class="form-header">
+            <h2>Your MediMates</h2>
+            <p>View and manage your connected mates.</p>
+        </header>
+
+        {% if medimates %}
+        <ul class="mate-list">
+            {% for mate in medimates %}
+            <li>
+                <article class="mate-row">
+
+                    <header class="mate-identity">
+                        <img src="{{ url_for('static', filename='avatars/' + mate['profile_picture']) }}" alt=""
+                            class="mate-avatar">
+                        <h3 class="mate-name">{{ mate["friend2"] }}</h3>
+                    </header>
+
+                    <nav class="mate-actions" aria-label="Mate actions">
+                        {% if mate["allow_mates_activity"] %}
+                        <a class="action-btn primary" href="{{ url_for('medimate_meds', friend_id=mate['user_id']) }}">
+                            View Meds
+                        </a>
+                        {% endif %}
+
+                        <a class="action-btn subtle" href="{{ url_for('remove_medimate', friend=mate['friend2']) }}">
+                            Remove
+                        </a>
+                    </nav>
+
+                </article>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">You haven’t added any MediMates yet.</p>
+        {% endif %}
+    </section>
+
+
+    <!-- SECONDARY HUB -->
+    <section class="secondary-hub">
+
+        <!-- ADD MATE -->
+        <section class="card">
+            <header>
+                <h2>Add Medimate</h2>
+            </header>
+
+            <form method="POST" novalidate class="add-mate-form">
+                {{ form.hidden_tag() }}
+
+                <label>
+                    {{ form.username.label }}
+                    {{ form.username() }}
+                </label>
+
+                {{ form.submit(class="submit-btn") }}
+            </form>
+
+            {% if response %}
+            <p class="response-text">{{ response }}</p>
             {% endif %}
-            </td>
-        </tr>
-    {% endfor %}
-</table>
+        </section>
 
-<h1>Add Medimate</h1>
 
-<form action="" method="POST" novalidate>
+        <!-- INCOMING REQUESTS -->
+        <section class="card">
+            <header>
+                <h2>Incoming Requests</h2>
+            </header>
 
-        {{ form.hidden_tag() }}
+            {% if invites %}
+            <ul class="mate-list">
+                {% for invite in invites %}
+                <li>
+                    <article class="mate-row compact">
 
-        {{ form.username.label }}
-        {{ form.username() }}
+                        <header class="mate-identity">
+                            <img src="{{ url_for('static', filename='avatars/' + invite['profile_picture']) }}" alt=""
+                                class="mate-avatar small">
+                            <h3 class="mate-name">{{ invite["sender"] }}</h3>
+                        </header>
 
-        {% for error in form.username.errors %}
-            {{ error }}
-        {% endfor %}
+                        <nav class="mate-actions" aria-label="Request actions">
+                            <a class="action-btn primary"
+                                href="{{ url_for('accept_request', friend1=invite['sender']) }}">
+                                ✓
+                            </a>
 
-        <br />
+                            <a class="action-btn subtle"
+                                href="{{ url_for('reject_request', sender=invite['sender']) }}">
+                                ✕
+                            </a>
+                        </nav>
 
-        {{ form.submit() }}
+                    </article>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="empty-state">No incoming requests.</p>
+            {% endif %}
+        </section>
 
-    </form>
-    <p>{{ response }}</p>
 
-<h1>Mate Requests</h1>
+        <!-- PENDING REQUESTS -->
+        <section class="card">
+            <header>
+                <h2>Pending Requests</h2>
+            </header>
 
-<table>
-    {% for invite in invites %}
-        <tr>
-            <td>
-                <img src="{{ url_for('static', filename='avatars/' + invite['profile_picture']) }}" alt="Avatar option" width="60" height="60">
-            </td>
-            <td>{{ invite["sender"] }}</td>
-            <td>
-                <a href="{{ url_for('accept_request', friend1=invite['sender'])}}">
-                    Accept Request
-                </a>
-                <a href="{{ url_for('reject_request', sender=invite['sender'])}}">
-                    Reject Request
-                </a>
-            </td>
-        </tr>
-    {% endfor %}
-</table>
+            {% if pending_requests %}
+            <ul class="mate-list">
+                {% for request in pending_requests %}
+                <li>
+                    <article class="mate-row compact">
 
-<h1>Pending Mate Requests</h1>
+                        <header class="mate-identity">
+                            <img src="{{ url_for('static', filename='avatars/' + request['profile_picture']) }}" alt=""
+                                class="mate-avatar small">
+                            <h3 class="mate-name">{{ request["receiver"] }}</h3>
+                        </header>
 
-<table>
-    {% for request in pending_requests %}
-        <tr>
-            <td>
-                <img src="{{ url_for('static', filename='avatars/' + request['profile_picture']) }}" alt="Avatar option" width="60" height="60">
-            </td>
-            <td>{{ request["receiver"] }}</td>
-            <td>
-                <a href="{{ url_for('cancel_request', receiver=request['receiver'])}}">
-                    Cancel Request
-                </a>
-            </td>
-        </tr>
-    {% endfor %}
-</table>
+                        <nav class="mate-actions" aria-label="Pending request actions">
+                            <a class="action-btn subtle"
+                                href="{{ url_for('cancel_request', receiver=request['receiver']) }}">
+                                ✕
+                            </a>
+                        </nav>
+
+                    </article>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="empty-state">No pending requests.</p>
+            {% endif %}
+        </section>
+
+    </section>
+
+</main>
 
 {% endblock %}

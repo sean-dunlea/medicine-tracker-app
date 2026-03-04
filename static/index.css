@@ -386,3 +386,12 @@
   transform: rotate(-2deg) translateY(-4px);
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.15);
 }
+
+/* AI title with star */
+.ai-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+

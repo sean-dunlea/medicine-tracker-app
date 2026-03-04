@@ -35,8 +35,19 @@
 
       {% include "week_calendar.html" %}
 
+      <!-- This is the AI generated summary -->
     </section>
-
+    <section class="ai">
+      <article class="card">
+        <h2 class="ai-title">
+          <img src="{{ url_for('static', filename='icons/star.png') }}" alt="AI Summary" class="ai-star">
+          Weekly Summary
+        </h2>
+        {% if weekly_summary %}
+        {{ weekly_summary }}
+        {% endif %}
+      </article>
+    </section>
     <!-- Stats -->
     <section class="stats-row">
 
@@ -109,10 +120,7 @@
 
   {% endif %}
 
-  <!-- This is the AI generated summary -->
-  {% if weekly_summary %}
-    {{ weekly_summary }}
-  {% endif %}
+
 
 </section>
 {% endblock %}

@@ -1,31 +1,58 @@
 {% extends "base.html" %}
 {% block main_content %}
 
-<main id="notification_centre">
-    <h1>Notification Centre</h1>
-    <ul>
+<main id="notification_centre" class="container">
+
+    <h1 class="mb-lg">Notification Centre</h1>
+
+    {% if notifications %}
+    <ul class="notification-list">
         {% for notification in notifications %}
-                <li class="{{ 'unread' if not notification.is_read else '' }}">
-                    <strong>{{ notification.title }}: {{ notification.body }}</strong>
-                    <small>{{ notification.created_at }}</small>
-                    {% if not notification.is_read %}
-                        <form method="POST" action="{{ url_for('mark_notification_as_read', notification_id=notification.notification_id) }}">
-                            <button type="submit">
-                                Mark as Read
-                            </button>
-                        </form>
-                    {% endif %}
-                    <!-- This is a re-remind button -->
-                    {% if notification.overdue %}
-                        <form method="POST" action="{{ url_for('remind_medimate', user_medication_id=notification.user_medication_id) }}">
-                            <button type="submit">
-                                Re-Remind MediMate
-                            </button>
-                        </form>
-                    {% endif %}
-                </li>
+        <li class="card mb-md {{ 'unread' if not notification.is_read else '' }}">
+
+            <header class="mb-sm">
+                <h3 class="mb-sm">
+                    {{ notification.title }}
+                </h3>
+                <p class="text-muted">
+                    {{ notification.body }}
+                </p>
+                <small class="text-muted">
+                    {{ notification.created_at }}
+                </small>
+            </header>
+
+            <section class="mt-md">
+
+                {% if not notification.is_read %}
+                <form method="POST"
+                      action="{{ url_for('mark_notification_as_read', notification_id=notification.notification_id) }}"
+                      class="mb-sm">
+                    <button type="submit">
+                        Mark as Read
+                    </button>
+                </form>
+                {% endif %}
+
+                {% if notification.overdue %}
+                <form method="POST"
+                      action="{{ url_for('remind_medimate', user_medication_id=notification.user_medication_id) }}">
+                    <button type="submit">
+                        Re-Remind MediMate
+                    </button>
+                </form>
+                {% endif %}
+
+            </section>
+
+        </li>
         {% endfor %}
     </ul>
+
+    {% else %}
+        <p class="text-muted">You have no notifications.</p>
+    {% endif %}
+
 </main>
 
 {% endblock %}

@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <title>{{ title }}</title>
+  <link rel="icon" href="{{ url_for('static', filename='icons/favicon.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
   {% block page_css %}{% endblock %}
   <meta name="viewport" content="initial-scale=1.0, width=device-width" />

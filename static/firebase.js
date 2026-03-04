@@ -106,7 +106,7 @@ if (push_notifications_enabled) {
 onMessage(messaging, (payload) => {
 new Notification(payload.notification.title, {
     body: payload.notification.body,
-    // icon: '/static/icon.png' We can add this later when we have an icon for the app
+    icon: '/static/icons/favicon.png'
     });
 });
 

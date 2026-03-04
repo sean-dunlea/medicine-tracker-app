@@ -1522,6 +1522,8 @@ def generate_weekly_health_summary(user_id):
                 - Give encouragement only where doses were taken, and gentle reminders where doses were missed.
                 - Reword extreme or alarming symptoms gently while keeping them accurate.
                 - Avoid overpraising if any medications were missed.
+                - If the data shows unusually high, potentially unsafe, or inconsistent medication usage, mention it calmly and suggest checking with a healthcare professional.
+                - If a medication is typically considered high-risk or requires careful monitoring, acknowledge that adherence is especially important, without giving medical advice.
               Here is the summary data: 
               {summary_data}
               """

@@ -5,7 +5,7 @@
     justify-content: center;
     align-items: center;
     padding: var(--spacing-xl);
-    background: var(--bg);
+    background-color: var(--bg);
 }
 
 /* ==========================================

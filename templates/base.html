@@ -9,8 +9,7 @@
   <meta name="viewport" content="initial-scale=1.0, width=device-width" />
 </head>
 
-<body class="{% if request.endpoint == 'index' 
-and not session.get('username') %}bg-home{% else %}bg-main{% endif %}">
+<body class="{% block body_class %}bg-main{% endblock %}">
   {% block top_nav %}
 
   {% if session.get("username") %}

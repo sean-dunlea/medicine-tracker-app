@@ -46,16 +46,20 @@ body {
 /*bg class for non-index pages*/
 .bg-main {
   background-image: url("/static/bg2.png");
-  background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .bg-home {
   background-image: url("/static/bg.png");
-  background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.no-bg {
+  background: var(--bg);
 }
 
 /* Typography */

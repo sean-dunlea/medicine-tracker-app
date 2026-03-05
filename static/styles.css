@@ -546,3 +546,11 @@ ul {
     0 0 0 2px var(--primary),
     0 8px 18px rgba(0,0,0,0.1);
 }
+
+/* Activity lists (same style as notifications) */
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}

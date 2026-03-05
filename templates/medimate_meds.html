@@ -1,45 +1,82 @@
 {% extends "base.html" %}
-
 {% block main_content %}
 
-<h1>Medimates Meds</h1>
+<main id="medimate_activity" class="container">
 
-<table>
-    {% for med in meds %}
-        <tr>
-            <td>Medication: {{ med["medication_name"] }}</td>
-            <td>
-                Amount: {{ med["dosage_amount"] }}
-            </td>
-            <td>
-                Unit: {{ med["dosage_unit"] }}
-            </td>
-            <td>
-                Start date: {{ med["start_date"] }}
-            </td>
-            <td>
-                End date: {{ med["end_date"] }}
-            </td>
-        </tr>
-    {% endfor %}
-</table>
+    <!-- MEDICATIONS -->
+    <h2 class="mb-lg">Your Medimate's Medications</h2>
 
-<h1>Symptoms</h1>
-<table>
-    {% for symptom in symptoms %}
-        <tr>
-            <td>Symptom: {{ symptom["symptom_name"] }}</td>
-            <td>
-                Severity: {{ symptom["severity"] }}
-            </td>
-            <td>
-                Date experienced: {{ symptom["symptom_date"] }}
-            </td>
-            <td>
-                Notes: {{ symptom["notes"] }}
-            </td>
-        </tr>
-    {% endfor %}
-</table>
+    {% if meds %}
+    <ul class="activity-list">
+
+        {% for med in meds %}
+        <li class="card mb-md">
+
+            <header class="mb-sm">
+                <h3 class="mb-sm">
+                    {{ med["medication_name"] }}
+                </h3>
+
+                <p>
+                    Dosage: {{ med["dosage_amount"] }} {{ med["dosage_unit"] }}
+                </p>
+
+                <p class="text-muted">
+                    {{ med["start_date"] }} → {{ med["end_date"] }}
+                </p>
+            </header>
+
+        </li>
+        {% endfor %}
+
+    </ul>
+
+    {% else %}
+        <p class="text-muted">No medications shared.</p>
+    {% endif %}
+
+
+
+    <!-- SYMPTOMS -->
+    <h2 class="mb-lg mt-lg">Their Logged Symptoms</h2>
+
+    {% if symptoms %}
+    <ul class="activity-list">
+
+        {% for symptom in symptoms %}
+        <li class="card mb-md">
+
+            <header class="mb-sm">
+
+                <h3 class="mb-sm">
+                    {{ symptom["symptom_name"] }}
+                </h3>
+
+                <p>
+                    Severity: {{ symptom["severity"] }}
+                </p>
+
+                <p class="text-muted">
+                    {{ symptom["symptom_date"] }}
+                </p>
+
+                {% if symptom["notes"] %}
+                <p class="mt-sm">
+                    {{ symptom["notes"] }}
+                </p>
+                {% endif %}
+
+            </header>
+
+        </li>
+        {% endfor %}
+
+    </ul>
+
+    {% else %}
+        <p class="text-muted">No symptoms logged.</p>
+    {% endif %}
+
+</main>
 
 {% endblock %}

@@ -1381,16 +1381,20 @@ def remove_medimate(friend):
 def medimate_meds(friend_id):
     db = get_db()
     meds = db.execute("""
-                    SELECT u.username, m.medication_name, m.dosage_amount, m.dosage_unit, m.start_date, m.end_date
+                    SELECT m.medication_name, m.dosage_amount, m.dosage_unit, m.start_date, m.end_date
                     FROM users AS u
                     JOIN medications AS m ON m.user_id = u.user_id
                     WHERE  u.user_id = ? AND u.allow_mates_activity == 1""", (friend_id,)).fetchall()
     symptoms = db.execute("""
-                    SELECT u.username, s.symptom_name, s.severity, s.symptom_date, s.notes
+                    SELECT s.symptom_name, s.severity, s.symptom_date, s.notes
                     FROM users AS u
                     JOIN symptoms AS s ON s.user_id = u.user_id
                     WHERE  u.user_id = ? AND u.allow_mates_activity == 1""", (friend_id,)).fetchall()
-    return render_template("medimate_meds.html", title="Medimates Meds", meds=meds, symptoms=symptoms)
+    user = db.execute("""
+                    SELECT username
+                    FROM users
+                    WHERE  user_id = ?""", (friend_id,)).fetchone()
+    return render_template("medimate_meds.html", title="Medimates Meds", meds=meds, symptoms=symptoms, user=user)
 
 
 #users can log their symptoms

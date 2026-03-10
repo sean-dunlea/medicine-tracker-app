@@ -4,7 +4,7 @@
 <main id="medimate_activity" class="container">
 
     <!-- MEDICATIONS -->
-    <h2 class="mb-lg">Your Medimate's Medications</h2>
+    <h2 class="mb-lg">{{ user[0] }}'s Medications</h2>
 
     {% if meds %}
     <ul class="activity-list">
@@ -38,7 +38,7 @@
 
 
     <!-- SYMPTOMS -->
-    <h2 class="mb-lg mt-lg">Their Logged Symptoms</h2>
+    <h2 class="mb-lg mt-lg">{{ user[0] }}'s Logged Symptoms</h2>
 
     {% if symptoms %}
     <ul class="activity-list">

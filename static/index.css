@@ -21,7 +21,7 @@
 
 /* Title */
 #index .animated-title {
-  font-size: 6.5rem;
+  font-size: 9rem;
   font-weight: 700;
   display: inline-flex;
   white-space: nowrap;
@@ -46,7 +46,7 @@
 }
 
 #index .subtitle {
-  font-size: 1.7rem;
+  font-size: 2rem;
   color: var(--cream);
   margin-top: 1.5rem;
   max-width: 500px;
@@ -71,11 +71,12 @@
 
 /* Sprite */
 #index .sprite {
-  width: 400px;
-  height: 400px;
+  width: 800px;
+  height: 800px;
 
-  background-image: url("/static/spritesheet.png");
+  background-image: url("/static/spritesheet1.png");
   background-repeat: no-repeat;
+  background-size: 3200px 800px;
 
   animation:
     playSprite 1s steps(3) forwards,
@@ -118,7 +119,7 @@
   }
 
   to {
-    background-position: -1200px 0;
+    background-position: -2400px 0;
   }
 }
 

@@ -321,7 +321,9 @@
 .segment-complete::before {
   background: linear-gradient(135deg, var(--yellow-light), var(--yellow));
 }
-
+.segment-upcoming::before {
+  background: linear-gradient(135deg, var(--muted), var(--muted));
+}
 /* Missed */
 .segment-missed::before {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));

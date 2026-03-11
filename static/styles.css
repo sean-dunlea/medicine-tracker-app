@@ -529,23 +529,41 @@ ul {
   content: "No Meds";
 }
 
-/* ============================================
-   OTHER MONTH
-============================================ */
+/* future */
+.calendar-day.upcoming::before {
+  background: linear-gradient(
+    135deg,
+    var(--yellow-light),
+    var(--muted)
+  );
+
+}
+
+.calendar-day.upcoming .status-label::after {
+  content: "Upcoming";
+}
+  /* TODAY */
+
+.calendar-day.today {
+  box-shadow:
+    0 0 0 2px #1d2cff,
+    0 8px 18px rgba(70, 57, 255, 0.1);
+}
+
+.calendar-day.today .status-label::before {
+  content: "Today";
+  display: block;
+  color: #1d2cff;
+  font-weight: 900;
+  font-size: 0.7rem;
+}
+
+/* OTHER MONTH*/
 
 .calendar-day.faded {
   opacity: 0.45;
 }
 
-/* ============================================
-   TODAY
-============================================ */
-
-.calendar-day.today {
-  box-shadow:
-    0 0 0 2px var(--primary),
-    0 8px 18px rgba(0,0,0,0.1);
-}
 
 /* Activity lists (same style as notifications) */
 

@@ -31,7 +31,7 @@
     <section class="calendar-grid" aria-label="Calendar days">
         {% for day in calendar %}
         <article class="calendar-day
-        {% if day.in_month %}{{ day.status }}{% endif %}
+        {{ day.status }}
         {% if not day.in_month %}faded{% endif %}
         {% if day.date == today %}today{% endif %}">
 

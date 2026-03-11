@@ -563,16 +563,14 @@ def build_month_calendar(user_id, year, month):
         # Determine day status
         if scheduled == 0:
             status = "none"
-        elif current_day == today:
-            status = "Today"
         elif current_day > today:
-            status = "upcoming"
+         status = "upcoming"
         elif taken == scheduled:
             status = "taken"
         elif taken > 0:
-            status = "partial"
+         status = "partial"
         else:
-            status = "missed"
+         status = "missed"
 
         calendar.append({
             "date": current_day,

@@ -1,15 +1,27 @@
+/* =========================
+   ROOT VARIABLES
+========================= */
+
 :root {
   --pill-pink: #fa9191;
   --pill-orange: #e7b075;
   --pill-brown: #b48363;
 }
 
-/* CHANGED: Removed duplicate body background, now in styles.css */
+/* =========================
+   PAGE BEHAVIOUR
+========================= */
+
+/* Only applied on auth pages */
+
 body {
-  overflow: hidden; /* Only for auth pages */
+  overflow: hidden;
 }
 
-/* PILLS */
+/* =========================
+   BACKGROUND FLOATING PILLS
+========================= */
+
 aside.pills {
   position: fixed;
   inset: 0;
@@ -24,9 +36,18 @@ aside.pills span {
 }
 
 @keyframes fall {
-  from { transform: translateY(-80px) rotate(0deg); }
-  to { transform: translateY(110vh) rotate(360deg); }
+
+  from {
+    transform: translateY(-80px) rotate(0deg);
+  }
+
+  to {
+    transform: translateY(110vh) rotate(360deg);
+  }
+
 }
+
+/* Pill shapes */
 
 .capsule {
   width: 22px;
@@ -40,28 +61,42 @@ aside.pills span {
   border-radius: 50%;
 }
 
-/* CONTAINER */
+/* =========================
+   AUTH CONTAINER
+========================= */
+
 main.auth-container {
+  position: relative;
+  z-index: 2;
+
+  width: min(1000px, 92vw);
+  max-width: 100%;
+  min-height: 600px;
+
+  margin: 6rem auto;
+
   background: var(--card);
   border-radius: 30px;
   box-shadow: 0 30px 60px rgba(0,0,0,.15);
-  position: relative;
+
   overflow: hidden;
-  max-width: 100%;
-  width: min(1000px, 92vw);
-  min-height: 600px;
-  margin: 6rem auto;
-  z-index: 2;
 }
 
-/* FORMS */
+/* =========================
+   FORM CONTAINERS
+========================= */
+
 .form-container {
   position: absolute;
   top: 0;
-  height: 100%;
+
   width: 50%;
+  height: 100%;
+
   transition: all .6s ease-in-out;
 }
+
+/* Sign in panel */
 
 .sign-in {
   left: 0;
@@ -71,6 +106,8 @@ main.auth-container {
 .auth-container.active .sign-in {
   transform: translateX(100%);
 }
+
+/* Sign up panel */
 
 .sign-up {
   left: 0;
@@ -84,48 +121,68 @@ main.auth-container {
   z-index: 5;
 }
 
-/* CHANGED: Updated form styles to work with general styles.css */
+/* =========================
+   FORM STRUCTURE
+========================= */
+
 .form-container form {
+  height: 100%;
+  padding: 0 40px;
+
   background: var(--card);
+
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 0 40px;
-  height: 100%;
 }
+
+/* Inputs */
 
 .form-container input {
   margin: 8px 0;
 }
+
+/* Buttons */
 
 .form-container button {
   margin-top: var(--spacing-sm);
   padding: 12px 45px;
 }
 
-/*  TOGGLE  */
+/* =========================
+   TOGGLE PANEL
+========================= */
+
 .toggle-container {
   position: absolute;
   left: 50%;
+
   width: 50%;
   height: 100%;
+
   overflow: hidden;
-  transition: all .6s ease-in-out;
   z-index: 10;
+
+  transition: all .6s ease-in-out;
 }
 
 .auth-container.active .toggle-container {
   transform: translateX(-100%);
 }
 
+/* Sliding panel background */
+
 .toggle {
-  background: var(--primary);
-  color: var(--cream);
   position: relative;
   left: -100%;
+
   width: 200%;
   height: 100%;
+
+  background: var(--primary);
+  color: var(--cream);
+
   transition: all .6s ease-in-out;
 }
 
@@ -133,16 +190,22 @@ main.auth-container {
   transform: translateX(50%);
 }
 
+/* Toggle panels */
+
 .toggle-panel {
   position: absolute;
+
   width: 50%;
   height: 100%;
+
+  padding: var(--spacing-lg);
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   text-align: center;
-  padding: var(--spacing-lg);
 }
 
 .toggle-left {
@@ -157,32 +220,49 @@ main.auth-container {
   right: 0;
 }
 
-/* CHANGED: Added ghost button style for toggle buttons */
+/* =========================
+   TOGGLE BUTTONS
+========================= */
+
 button.ghost {
   background: transparent;
   border: 3px solid white;
 }
 
 button.ghost:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255,255,255,0.1);
 }
 
-/* Style for submit inputs */
+/* =========================
+   SUBMIT BUTTON
+========================= */
+
 .form-container input[type="submit"] {
-  background: linear-gradient(to right, var(--primary), var(--primary-dark));
-  color: white;
-  border: none;
+
+  width: auto;
+
   padding: 12px 45px;
+  margin-top: var(--spacing-sm);
+
+  border: none;
   border-radius: var(--radius-md);
+
   font-weight: 600;
   font-size: 1rem;
+  color: white;
+
   cursor: pointer;
+
+  background: linear-gradient(
+    to right,
+    var(--primary),
+    var(--primary-dark)
+  );
+
   transition: all 0.3s;
-  margin-top: var(--spacing-sm);
-  width: auto; /* Override the 100% width from general input styles */
 }
 
 .form-container input[type="submit"]:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(199, 76, 76, 0.3);
+  box-shadow: 0 4px 12px rgba(199,76,76,0.3);
 }

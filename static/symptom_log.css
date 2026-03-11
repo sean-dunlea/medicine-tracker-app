@@ -1,131 +1,157 @@
-/* ==========================================
+/* =========================
    PAGE LAYOUT
-   ========================================== */
+========================= */
+
 #symptom_log {
-    height: calc(100dvh - 220px); 
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2.5rem;
-    max-width: 1490px;
-    margin: 0 auto;
-    padding: 5rem 2rem 0rem 2rem;
-    background: var(--bg);
+  min-height: calc(100dvh - 220px);
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+
+  max-width: 1490px;
+  margin: 0 auto;
+
+  padding: 5rem 2rem 0;
+  background: var(--bg);
 }
 
-/* History column becomes vertical layout */
+/* =========================
+   MODAL CARDS
+========================= */
+
+.modal-card {
+  width: 100%;
+  min-height: 0;
+
+  background: var(--card);
+  border-radius: var(--radius-xl);
+
+  box-shadow: 0 40px 80px rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+
+/* History column layout */
+
 #symptom_log > .modal-card:last-child {
-    display: flex;
-    flex-direction: column;
-    height: 100%; /* must fill grid row */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-/* Header stays fixed */
+/* Header fixed */
+
 #symptom_log > .modal-card:last-child .form-header {
-    flex-shrink: 0;
+  flex-shrink: 0;
 }
 
 /* Body scrolls */
+
 #symptom_log > .modal-card:last-child .form-section {
-    flex: 1;              
-    overflow-y: auto;     
-    min-height: 0;        
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
-.modal-card {
-    min-height: 0;
-    width: 100%;
-    background: var(--card);
-    border-radius: var(--radius-xl);
-    box-shadow: 0 40px 80px rgba(0,0,0,0.12);
-    overflow: hidden;
-}
+
+/* =========================
+   RESPONSIVE
+========================= */
 
 @media (max-width: 1024px) {
-    #symptom_log {
-        grid-template-columns: 1fr;
-        height: auto;                
-        min-height: auto;   
-    }
+
+  #symptom_log {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
 }
 
-/* ==========================================
+/* =========================
    HEADER
-   ========================================== */
+========================= */
 
 .form-header {
-    background: linear-gradient(
-        to right,
-        var(--primary),
-        var(--primary-dark)
-    );
-    padding: var(--spacing-lg) var(--spacing-xl);
-    color: white;
+  padding: var(--spacing-lg) var(--spacing-xl);
+
+  background: linear-gradient(
+    to right,
+    var(--primary),
+    var(--primary-dark)
+  );
+
+  color: white;
 }
 
 .history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .share-link {
-    color: var(cream);
-    font-weight: 600;
-    text-decoration: none;
+  color: var(--cream);
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .share-link:hover {
-    opacity: 0.85;
+  opacity: 0.85;
 }
 
-/* ==========================================
+/* =========================
    BODY
-   ========================================== */
+========================= */
 
 .form-section {
-    padding: var(--spacing-xl);
-    background: var(--card);
+  padding: var(--spacing-xl);
+  background: var(--card);
 }
 
 fieldset {
-    border: 0;
-    padding: 0;
+  border: 0;
+  padding: 0;
 }
 
 legend {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: var(--spacing-md);
-    color: var(--primary-dark);
+  font-size: 1.1rem;
+  font-weight: 700;
+
+  margin-bottom: var(--spacing-md);
+  color: var(--primary-dark);
 }
 
 label {
-    display: block;
-    margin-bottom: var(--spacing-md);
-    font-weight: 500;
+  display: block;
+  margin-bottom: var(--spacing-md);
+  font-weight: 500;
 }
 
 input,
 select,
 textarea {
-    width: 100%;
-    margin-top: 4px;
+  width: 100%;
+  margin-top: 4px;
 }
 
-/* ==========================================
+/* =========================
    BUTTON
-   ========================================== */
+========================= */
 
 .submit-btn {
-    padding: 10px 18px;
-    border-radius: var(--radius-md);
-    border: 0;
-    background: var(--primary);
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease;
+  padding: 10px 18px;
+
+  border: 0;
+  border-radius: var(--radius-md);
+
+  background: var(--primary);
+  color: white;
+
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: background 0.2s ease;
 }
 
 .submit-btn:hover {
-    background: var(--primary-dark);
+  background: var(--primary-dark);
 }

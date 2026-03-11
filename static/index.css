@@ -40,14 +40,14 @@
   color: var(--cream);
   opacity: 0;
   transform: translateX(-30px);
-  animation: mediSlide 0.5s ease forwards, titlePop 0.25s ease forwards 1s;
+  animation: mediSlide .5s ease forwards, titlePop .25s ease forwards 1s;
 }
 
 #index .animated-title .mate {
   color: var(--primary-dark);
   opacity: 0;
   transform: translateX(30px);
-  animation: mateSlide 0.5s ease forwards 0.5s, titlePop 0.25s ease forwards 1s;
+  animation: mateSlide .5s ease forwards .5s, titlePop .25s ease forwards 1s;
 }
 
 #index .subtitle {
@@ -81,11 +81,11 @@
   width: 800px;
   height: 800px;
 
-  background-image: url("/static/spritesheet1.png");
-  background-repeat: no-repeat;
+  background: url("/static/spritesheet1.png") no-repeat;
   background-size: 3200px 800px;
 
-  animation: playSprite 1s steps(3) forwards, spritePop 0.25s ease forwards 1s;
+  animation: playSprite 1s steps(3) forwards,
+             spritePop .25s ease forwards 1s;
 }
 
 /* =========================
@@ -93,17 +93,11 @@
 ========================= */
 
 @keyframes mediSlide {
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes mateSlide {
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes titlePop {
@@ -114,7 +108,7 @@
 
 @keyframes playSprite {
   from { background-position: 0 0; }
-  to { background-position: -2400px 0; }
+  to   { background-position: -2400px 0; }
 }
 
 @keyframes spritePop {
@@ -126,8 +120,6 @@
 /* =========================
    RESPONSIVE
 ========================= */
-
-/* Tablet */
 
 @media (max-width: 1024px) {
 
@@ -149,9 +141,8 @@
     min-height: 50vh;
     background-size: cover;
   }
-}
 
-/* Mobile */
+}
 
 @media (max-width: 600px) {
 
@@ -172,9 +163,11 @@
 .dashboard-content {
   flex: 1;
   padding: 2rem 3rem;
+
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+
   overflow: hidden;
 }
 
@@ -188,11 +181,11 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.8rem;
+  gap: .8rem;
 }
 
 .enable-btn {
-  font-size: 0.9rem;
+  font-size: .9rem;
   padding: 8px 16px;
 }
 
@@ -219,22 +212,22 @@
 }
 
 .stat-content h3 {
-  font-size: 0.9rem;
+  font-size: .9rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: .05em;
   color: var(--muted);
-  margin-bottom: 0.2rem;
+  margin-bottom: .2rem;
 }
 
 .stat-number {
   font-size: 1.6rem;
   font-weight: 700;
   color: var(--text-dark);
-  animation: statPop 0.4s ease;
+  animation: statPop .4s ease;
 }
 
 .stat-note {
-  font-size: 0.85rem;
+  font-size: .85rem;
 }
 
 .stat-note.muted {
@@ -244,14 +237,8 @@
 /* Stat animation */
 
 @keyframes statPop {
-  0% {
-    transform: scale(0.85);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0% { transform: scale(.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* =========================
@@ -262,7 +249,7 @@
   background: var(--card);
   padding: 1.5rem 2rem;
   border-radius: var(--radius-lg);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
 
   flex: 1;
   display: flex;
@@ -286,14 +273,14 @@
 
 .week-actions {
   display: flex;
-  gap: 0.6rem;
+  gap: .6rem;
 }
 
-/* Week pill strip */
+/* Week strip */
 
 .week-strip {
   display: flex;
-  gap: 0.8rem;
+  gap: .8rem;
   justify-content: space-between;
   padding: 1rem 0;
 }
@@ -306,7 +293,7 @@
   flex: 1;
   position: relative;
 
-  padding: 0.8rem 0.4rem;
+  padding: .8rem .4rem;
   border-radius: 999px;
 
   text-align: center;
@@ -315,8 +302,8 @@
   background: #f4f4f4;
   overflow: hidden;
 
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+  transition: transform .25s ease, box-shadow .25s ease;
+  box-shadow: 0 6px 14px rgba(0,0,0,.08);
 }
 
 /* Capsule halves */
@@ -341,23 +328,23 @@
   z-index: 0;
   background: linear-gradient(
     to bottom,
-    rgba(255,255,255,0.6),
-    rgba(255,255,255,0.2)
+    rgba(255,255,255,.6),
+    rgba(255,255,255,.2)
   );
 }
 
 /* Capsule states */
 
 .segment-complete::before {
-  background: linear-gradient(135deg, var(--yellow-light), var(--yellow));
+  background: linear-gradient(135deg,var(--yellow-light),var(--yellow));
 }
 
 .segment-upcoming::before {
-  background: linear-gradient(135deg, var(--muted), var(--muted));
+  background: linear-gradient(135deg,var(--muted),var(--muted));
 }
 
 .segment-missed::before {
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  background: linear-gradient(135deg,var(--primary),var(--primary-dark));
 }
 
 /* Text layer */
@@ -370,9 +357,9 @@
 }
 
 .day-name {
-  font-size: 0.7rem;
+  font-size: .7rem;
   text-transform: uppercase;
-  opacity: 0.75;
+  opacity: .75;
 }
 
 .day-number {
@@ -381,9 +368,9 @@
 }
 
 .status-label {
-  font-size: 0.65rem;
-  margin-top: 0.2rem;
-  letter-spacing: 0.5px;
+  font-size: .65rem;
+  margin-top: .2rem;
+  letter-spacing: .5px;
   text-transform: uppercase;
 }
 
@@ -395,7 +382,7 @@
 
 .day-card:hover {
   transform: rotate(-2deg) translateY(-4px);
-  box-shadow: 0 14px 28px rgba(0,0,0,0.15);
+  box-shadow: 0 14px 28px rgba(0,0,0,.15);
 }
 
 /* =========================
@@ -405,8 +392,8 @@
 .ai-title {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.75rem;
+  gap: .6rem;
+  margin-bottom: .75rem;
 }
 
 /* =========================
@@ -417,7 +404,7 @@
   background: var(--card);
   border-radius: var(--radius-lg);
   padding: 1.5rem 2rem;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
 }
 
 .progress-chart h2 {

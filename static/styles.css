@@ -1,16 +1,24 @@
+/* =========================
+   ROOT VARIABLES
+========================= */
+
 :root {
   --bg: #fdf3ec;
   --card: #fff8ee;
   --cream: #fff0e4;
+
   --primary: #c74c4c;
   --primary-dark: #a40000;
+
   --muted: #8a6f5a;
   --text-dark: #5a4a42;
+
   --input-bg: #d8c8c8;
-  --yellow:#f3a743;
+
+  --yellow: #f3a743;
   --yellow-light: #fadd7d;
 
-  --spacing-xs: 0.5rem;
+  --spacing-xs: .5rem;
   --spacing-sm: 1rem;
   --spacing-md: 1.5rem;
   --spacing-lg: 2rem;
@@ -22,7 +30,10 @@
   --radius-xl: 24px;
 }
 
-/* Reset */
+/* =========================
+   RESET
+========================= */
+
 * {
   margin: 0;
   padding: 0;
@@ -34,7 +45,10 @@ body {
   height: 100%;
 }
 
-/* Base Layout */
+/* =========================
+   BASE LAYOUT
+========================= */
+
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg);
@@ -43,58 +57,55 @@ body {
   min-height: 100vh;
 }
 
-/*bg class for non-index pages*/
-.bg-main {
-  background-image: url("/static/bg2.png");
+/* =========================
+   PAGE BACKGROUNDS
+========================= */
+
+.bg-main,
+.bg-home {
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
 }
 
+.bg-main {
+  background-image: url("/static/bg2.png");
+}
+
 .bg-home {
   background-image: url("/static/bg.png");
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
 }
 
 .no-bg {
   background: var(--bg);
 }
 
-/* Typography */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+/* =========================
+   TYPOGRAPHY
+========================= */
+
+h1,h2,h3,h4,h5,h6 {
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: var(--spacing-sm);
 }
 
-h1 {
-  font-size: 2.5rem;
-}
-
-h2 {
-  font-size: 2rem;
-}
-
-h3 {
-  font-size: 1.5rem;
-}
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
 
 p {
   margin-bottom: var(--spacing-sm);
 }
 
-/* Links */
+/* =========================
+   LINKS
+========================= */
+
 a {
   color: var(--primary);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color .2s;
 }
 
 a:hover {
@@ -102,51 +113,66 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Buttons */
+/* =========================
+   BUTTONS
+========================= */
+
 button,
 .btn {
-  background: linear-gradient(to right, var(--primary), var(--primary-dark));
-  color: var(--cream);
-  border: none;
+  display: inline-block;
+  text-align: center;
+
   padding: 12px 24px;
   border-radius: var(--radius-md);
+  border: none;
+
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-block;
-  text-align: center;
+
+  color: var(--cream);
+  background: linear-gradient(to right,var(--primary),var(--primary-dark));
+
+  transition: all .3s ease;
 }
 
 button:hover,
 .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(199, 76, 76, 0.3);
+  box-shadow: 0 4px 12px rgba(199,76,76,.3);
   text-decoration: none;
 }
 
+/* =========================
+   FORM ELEMENTS
+========================= */
 
-/* Forms */
 input,
 textarea,
 select {
+  width: 100%;
+  padding: 12px 15px;
+
   background: var(--input-bg);
   border: 2px solid transparent;
-  padding: 12px 15px;
   border-radius: var(--radius-sm);
-  width: 100%;
+
   font-size: 1rem;
   font-family: inherit;
-  transition: all 0.2s ease;
+
+  transition: all .2s ease;
 }
 
+/* =========================
+   GENERIC COMPONENTS
+========================= */
 
-/* Generic Components */
 .card {
   background: var(--card);
   border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
 }
 
 .container {
@@ -155,48 +181,34 @@ select {
   padding: var(--spacing-lg);
 }
 
-/* Utilities */
-.text-center {
-  text-align: center;
-}
+/* =========================
+   UTILITIES
+========================= */
 
-.text-muted {
-  color: var(--muted);
-}
+.text-center { text-align: center; }
+.text-muted { color: var(--muted); }
 
-.mb-sm {
-  margin-bottom: var(--spacing-sm);
-}
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mb-lg { margin-bottom: var(--spacing-lg); }
 
-.mb-md {
-  margin-bottom: var(--spacing-md);
-}
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
 
-.mb-lg {
-  margin-bottom: var(--spacing-lg);
-}
-
-.mt-sm {
-  margin-top: var(--spacing-sm);
-}
-
-.mt-md {
-  margin-top: var(--spacing-md);
-}
-
-.mt-lg {
-  margin-top: var(--spacing-lg);
-}
-
-/* TOPBAR */
+/* =========================
+   TOPBAR
+========================= */
 
 .topbar {
   height: 60px;
-  background: var(--primary);
+  padding: 0 2rem;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2rem;
+
+  background: var(--primary);
   color: white;
 }
 
@@ -206,36 +218,41 @@ select {
   gap: 1rem;
 }
 
+/* Icon buttons */
+
 .icon-btn {
-  background: transparent;
-  border-radius: 50%;
-  font-size: 1.3rem;
-  color: white;
-  cursor: pointer;
-  text-decoration: none;
+  width: 36px;
+  height: 36px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  width: 36px;
-  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+
+  color: white;
+  font-size: 1.3rem;
+  text-decoration: none;
+
+  cursor: pointer;
 }
 
 .icon-btn:hover {
   transform: scale(1.1);
-   background: rgba(255, 255, 255, 0.15);
+  background: rgba(255,255,255,.15);
 }
 
-/* Topbar PNG icons */
 .icon-btn img {
   width: 20px;
   height: 20px;
   object-fit: contain;
   display: block;
+
   filter: brightness(0) invert(1);
 }
 
+/* Logo */
 
 .topbar .logo {
   font-size: 2rem;
@@ -245,29 +262,31 @@ select {
   margin: 0;
 }
 
-.topbar .logo .medi {
-  color: var(--cream);
-}
+.logo .medi { color: var(--cream); }
+.logo .mate { color: var(--primary-dark); }
 
-.topbar .logo .mate {
-  color: var(--primary-dark);
-}
-
-/* SIDEBAR */
+/* =========================
+   SIDEBAR
+========================= */
 
 .sidebar {
   position: fixed;
   top: 60px;
   left: -260px;
+
   width: 250px;
   height: calc(100vh - 60px);
-  background: var(--primary);
-  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+
   padding: 2rem 1.5rem;
+
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: left 0.3s ease;
+
+  background: var(--primary);
+  box-shadow: 4px 0 15px rgba(0,0,0,.1);
+
+  transition: left .3s ease;
   z-index: 1000;
 }
 
@@ -282,75 +301,80 @@ select {
   gap: 1.2rem;
 }
 
-
 .sidebar-nav a {
   display: block;
   padding: 10px 14px;
-  border-radius: var(--radius-md);
 
-  font-weight: 600;
+  border-radius: var(--radius-md);
   color: var(--cream);
+  font-weight: 600;
   text-decoration: none;
 
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background .2s ease;
 }
 
 .sidebar-nav a:hover {
   background: var(--primary-dark);
-  text-decoration: none;
 }
 
+/* Logout */
 
 .logout-btn {
+  width: 100%;
+  padding: 14px 18px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
-
-  width: 100%;              
-  padding: 14px 18px;       
-  margin-top: 0.5rem;
+  gap: .6rem;
 
   border-radius: var(--radius-md);
 
   background: var(--primary-dark);
   color: white;
-  font-weight: 700;         
-  font-size: 1.05rem;       
+
+  font-weight: 700;
+  font-size: 1.05rem;
 
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all .2s ease;
 }
+
 .logout-btn:hover {
   background: var(--muted);
   color: var(--cream);
 }
 
+/* =========================
+   GLOBAL LIST RESET
+========================= */
+
 ul {
   list-style: none;
 }
 
-/* ============================================
+/* =========================
    CALENDAR PAGE
-============================================ */
+========================= */
 
 .calendar-container {
   max-width: 1000px;
   margin: var(--spacing-xl) auto;
   padding: var(--spacing-xl);
+
   background: var(--card);
   border-radius: var(--radius-xl);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
 }
 
-/* ============================================
-   HEADER
-============================================ */
+/* Calendar header */
 
 .calendar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   margin-bottom: var(--spacing-lg);
 }
 
@@ -361,10 +385,12 @@ ul {
 
 .calendar-header .arrow {
   font-size: 1.8rem;
-  color: var(--primary);
   padding: 8px 14px;
+
   border-radius: var(--radius-md);
-  transition: all 0.2s ease;
+  color: var(--primary);
+
+  transition: all .2s ease;
 }
 
 .calendar-header .arrow:hover {
@@ -373,24 +399,27 @@ ul {
   transform: translateY(-2px);
 }
 
-/* ============================================
-   WEEKDAYS
-============================================ */
+/* =========================
+   WEEKDAY LABELS
+========================= */
 
 .weekdays {
   display: grid;
   grid-template-columns: repeat(7,1fr);
+
   margin-bottom: var(--spacing-sm);
+
   text-align: center;
   font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--muted);
+  font-size: .9rem;
   letter-spacing: 1px;
+
+  color: var(--muted);
 }
 
-/* ============================================
-   GRID
-============================================ */
+/* =========================
+   CALENDAR GRID
+========================= */
 
 .calendar-grid {
   display: grid;
@@ -398,19 +427,20 @@ ul {
   gap: 1rem;
 }
 
-/* ============================================
+/* =========================
    DAY TILE
-============================================ */
+========================= */
 
 .calendar-day {
   position: relative;
   aspect-ratio: 1/1;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
 
   display: flex;
   align-items: center;
   justify-content: center;
+
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 
   background: var(--cream);
 
@@ -418,108 +448,89 @@ ul {
   text-align: center;
 
   box-shadow:
-    0 8px 18px rgba(0,0,0,0.08),
-    0 2px 6px rgba(0,0,0,0.04);
+    0 8px 18px rgba(0,0,0,.08),
+    0 2px 6px rgba(0,0,0,.04);
 
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform .2s ease, box-shadow .2s ease;
 }
 
 .calendar-day:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+  box-shadow: 0 10px 20px rgba(0,0,0,.12);
 }
 
-/* ============================================
-   TOP HALF COLOR
-============================================ */
+/* Tile halves */
 
-.calendar-day::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  height: 50%;
-  z-index: 0;
-}
-
-/* ============================================
-   BOTTOM HALF
-============================================ */
-
+.calendar-day::before,
 .calendar-day::after {
   content: "";
   position: absolute;
-  bottom: 0;
   width: 100%;
   height: 50%;
-  background: linear-gradient(
-      to bottom,
-      rgba(255,255,255,0.6),
-      rgba(255,255,255,0.2)
-  );
-  z-index: 1;
 }
 
-/* ============================================
-   DATE
-============================================ */
+.calendar-day::before {
+  inset: 0;
+  z-index: 0;
+}
+
+.calendar-day::after {
+  bottom: 0;
+  z-index: 1;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,.6),
+    rgba(255,255,255,.2)
+  );
+}
+
+/* Date */
 
 .calendar-day time {
   position: absolute;
   top: 26%;
   left: 50%;
   transform: translate(-50%,-50%);
+
   font-size: 1.45rem;
   z-index: 2;
 }
 
-/* ============================================
-   STATUS LABEL
-============================================ */
+/* Status label */
 
 .status-label {
   position: absolute;
   bottom: 18%;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.65rem;
-  letter-spacing: 0.5px;
+
+  font-size: .65rem;
+  letter-spacing: .5px;
   text-transform: uppercase;
+
   z-index: 2;
 }
 
-/* ============================================
-   STATUS COLORS
-============================================ */
-
-/* TAKEN */
+/* =========================
+   DAY STATES
+========================= */
 
 .calendar-day.taken::before {
-  background: linear-gradient(
-    135deg,
-    var(--yellow-light),
-    var(--yellow)
-  );
+  background: linear-gradient(135deg,var(--yellow-light),var(--yellow));
 }
 
 .calendar-day.taken .status-label::after {
   content: "Taken";
 }
 
-/* MISSED */
-
 .calendar-day.missed::before {
-  background: linear-gradient(
-    135deg,
-    var(--primary),
-    var(--primary-dark)
-  );
+  background: linear-gradient(135deg,var(--primary),var(--primary-dark));
 }
 
 .calendar-day.missed .status-label::after {
   content: "Missed";
 }
-
-/* NO MEDS */
 
 .calendar-day.none::before {
   background: var(--muted);
@@ -529,43 +540,40 @@ ul {
   content: "No Meds";
 }
 
-/* future */
 .calendar-day.upcoming::before {
-  background: linear-gradient(
-    135deg,
-    var(--yellow-light),
-    var(--muted)
-  );
-
+  background: linear-gradient(135deg,var(--yellow-light),var(--muted));
 }
 
 .calendar-day.upcoming .status-label::after {
   content: "Upcoming";
 }
-  /* TODAY */
+
+/* Today highlight */
 
 .calendar-day.today {
   box-shadow:
     0 0 0 2px #1d2cff,
-    0 8px 18px rgba(70, 57, 255, 0.1);
+    0 8px 18px rgba(70,57,255,.1);
 }
 
 .calendar-day.today .status-label::before {
   content: "Today";
   display: block;
-  color: #1d2cff;
+
   font-weight: 900;
-  font-size: 0.7rem;
+  font-size: .7rem;
+  color: #1d2cff;
 }
 
-/* OTHER MONTH*/
+/* Other month days */
 
 .calendar-day.faded {
-  opacity: 0.45;
+  opacity: .45;
 }
 
-
-/* Activity lists (same style as notifications) */
+/* =========================
+   ACTIVITY LIST
+========================= */
 
 .activity-list {
   display: flex;

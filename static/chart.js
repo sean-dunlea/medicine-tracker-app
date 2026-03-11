@@ -23,9 +23,12 @@ document.addEventListener("DOMContentLoaded", function () {
             datasets: [{
                 label: "Success Rate %",
                 data: values,
+                borderColor: "#c74c4c",
+                backgroundColor: "rgba(199, 76, 76, 0.15)",
+                pointBackgroundColor: "#c74c4c",
                 borderWidth: 3,
                 tension: 0.3,
-                fill: false,
+                fill: true,
                 spanGaps: false
             }]
         },
@@ -39,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     ticks: {
                         stepSize: 10,
                         autoSkip: false,
-                        callback: function(value) {
+                        callback: function (value) {
                             return value + "%";
                         }
                     },

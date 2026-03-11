@@ -1,18 +1,26 @@
+/* =========================
+   INDEX ROOT
+========================= */
+
 #index {
   min-height: 100vh;
   padding: 0;
 }
 
-/* Grid split */
+/* =========================
+   LANDING PAGE LAYOUT
+========================= */
+
 #index .landing {
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
 }
 
-/* FULL LEFT COLUMN */
+/* Left column */
+
 #index .landing-content {
-  background-color: var(--primary);
+  background: var(--primary);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -20,6 +28,7 @@
 }
 
 /* Title */
+
 #index .animated-title {
   font-size: 9rem;
   font-weight: 700;
@@ -27,22 +36,18 @@
   white-space: nowrap;
 }
 
-/* Medi */
 #index .animated-title .medi {
   color: var(--cream);
   opacity: 0;
   transform: translateX(-30px);
-  animation: mediSlide 0.5s ease forwards,
-    titlePop 0.25s ease forwards 1s;
+  animation: mediSlide 0.5s ease forwards, titlePop 0.25s ease forwards 1s;
 }
 
-/* Mate */
 #index .animated-title .mate {
   color: var(--primary-dark);
   opacity: 0;
   transform: translateX(30px);
-  animation: mateSlide 0.5s ease forwards 0.5s,
-    titlePop 0.25s ease forwards 1s;
+  animation: mateSlide 0.5s ease forwards 0.5s, titlePop 0.25s ease forwards 1s;
 }
 
 #index .subtitle {
@@ -56,9 +61,10 @@
   margin-top: 2rem;
 }
 
-/* FULL RIGHT COLUMN */
+/* Right column */
+
 #index .landing-visual {
-  background-color: var(--cream);
+  background: var(--cream);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,6 +76,7 @@
 }
 
 /* Sprite */
+
 #index .sprite {
   width: 800px;
   height: 800px;
@@ -78,12 +85,12 @@
   background-repeat: no-repeat;
   background-size: 3200px 800px;
 
-  animation:
-    playSprite 1s steps(3) forwards,
-    spritePop 0.25s ease forwards 1s;
+  animation: playSprite 1s steps(3) forwards, spritePop 0.25s ease forwards 1s;
 }
 
-/*ANIMATIONS*/
+/* =========================
+   ANIMATIONS
+========================= */
 
 @keyframes mediSlide {
   to {
@@ -100,47 +107,28 @@
 }
 
 @keyframes titlePop {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.15);
-  }
-
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 
 @keyframes playSprite {
-  from {
-    background-position: 0 0;
-  }
-
-  to {
-    background-position: -2400px 0;
-  }
+  from { background-position: 0 0; }
+  to { background-position: -2400px 0; }
 }
 
 @keyframes spritePop {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.15);
-  }
-
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 
-/*
-   RESPONSIVE */
+/* =========================
+   RESPONSIVE
+========================= */
 
 /* Tablet */
+
 @media (max-width: 1024px) {
 
   #index .landing {
@@ -158,13 +146,13 @@
   }
 
   #index .landing-visual {
-    background-color: var(--cream);
-    background-size: cover;
     min-height: 50vh;
+    background-size: cover;
   }
 }
 
 /* Mobile */
+
 @media (max-width: 600px) {
 
   #index .animated-title {
@@ -177,6 +165,10 @@
 
 }
 
+/* =========================
+   DASHBOARD LAYOUT
+========================= */
+
 .dashboard-content {
   flex: 1;
   padding: 2rem 3rem;
@@ -186,10 +178,13 @@
   overflow: hidden;
 }
 
+/* Welcome */
+
 .welcome {
   font-size: 3rem;
   font-weight: 500;
   color: var(--text-dark);
+
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -201,7 +196,10 @@
   padding: 8px 16px;
 }
 
-/*---------stats--------*/
+/* =========================
+   STATS BAR
+========================= */
+
 .stats-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -209,33 +207,63 @@
   flex-shrink: 0;
 }
 
-
-.streak h2 {
-  font-size: 1.4rem;
-  margin-bottom: 0.5rem;
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.streak-counter {
-  color: var(--primary);
-  font-weight: 600;
+.stat-icon {
+  font-size: 2rem;
+  line-height: 1;
 }
 
-.streak-message {
-  color: var(--primary-dark);
-  font-weight: 600;
+.stat-content h3 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
 }
 
-.streak-empty {
+.stat-number {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  animation: statPop 0.4s ease;
+}
+
+.stat-note {
+  font-size: 0.85rem;
+}
+
+.stat-note.muted {
   color: var(--muted);
 }
 
-/*---------week--------*/
+/* Stat animation */
+
+@keyframes statPop {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* =========================
+   WEEK SECTION
+========================= */
 
 .week-section {
   background: var(--card);
   padding: 1.5rem 2rem;
   border-radius: var(--radius-lg);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -253,7 +281,7 @@
 }
 
 .week-header h2 {
-  margin: 0; /* prevents weird spacing */
+  margin: 0;
 }
 
 .week-actions {
@@ -261,7 +289,7 @@
   gap: 0.6rem;
 }
 
-/*------week pils---------------*/
+/* Week pill strip */
 
 .week-strip {
   display: flex;
@@ -270,9 +298,9 @@
   padding: 1rem 0;
 }
 
-/* ------------------------------------
-   LONG OVAL CAPSULE
------------------------------------- */
+/* =========================
+   WEEK CAPSULE PILLS
+========================= */
 
 .day-card {
   flex: 1;
@@ -288,70 +316,51 @@
   overflow: hidden;
 
   transition: transform 0.25s ease, box-shadow 0.25s ease;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
 }
 
-/* Top half color */
-.day-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 50%;
-  width: 100%;
-  z-index: 0;
-}
+/* Capsule halves */
 
-/* Bottom half */
+.day-card::before,
 .day-card::after {
   content: "";
   position: absolute;
-  bottom: 0;
   left: 0;
-  height: 50%;
   width: 100%;
-  background: var(--cream);
-  z-index: 0;
+  height: 50%;
 }
 
-
-/* STATUS COLORS */
-
-/* Taken + Future */
-.segment-complete::before {
-  background: linear-gradient(135deg, var(--yellow-light), var(--yellow));
-}
-.segment-upcoming::before {
-  background: linear-gradient(135deg, var(--muted), var(--muted));
-}
-/* Missed */
-.segment-missed::before {
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-}
-
-/*SHINE EFFECT */
-
-.day-card .shine {
-  display: none;
-}
-
-.day-card::marker {
-  display: none;
-}
-
-/* Graphic shine */
 .day-card::before {
+  top: 0;
+  z-index: 0;
   background-size: 200% 200%;
 }
 
 .day-card::after {
-  background:
-    linear-gradient(to bottom,
-      rgba(255, 255, 255, 0.6),
-      rgba(255, 255, 255, 0.2));
+  bottom: 0;
+  z-index: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.6),
+    rgba(255,255,255,0.2)
+  );
 }
 
-/* TEXT LAYER */
+/* Capsule states */
+
+.segment-complete::before {
+  background: linear-gradient(135deg, var(--yellow-light), var(--yellow));
+}
+
+.segment-upcoming::before {
+  background: linear-gradient(135deg, var(--muted), var(--muted));
+}
+
+.segment-missed::before {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+}
+
+/* Text layer */
 
 .day-name,
 .day-number,
@@ -378,19 +387,21 @@
   text-transform: uppercase;
 }
 
-/*Red text for missed */
 .segment-missed .status-label {
   color: var(--primary-dark);
 }
 
-/* HOVER ROTATION*/
+/* Capsule hover */
 
 .day-card:hover {
   transform: rotate(-2deg) translateY(-4px);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 14px 28px rgba(0,0,0,0.15);
 }
 
-/* AI title with star */
+/* =========================
+   AI SUMMARY
+========================= */
+
 .ai-title {
   display: flex;
   align-items: center;
@@ -398,3 +409,17 @@
   margin-bottom: 0.75rem;
 }
 
+/* =========================
+   PROGRESS CHART
+========================= */
+
+.progress-chart {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.progress-chart h2 {
+  margin-bottom: 1rem;
+}

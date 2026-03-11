@@ -49,33 +49,41 @@
       </article>
     </section>
     <!-- Stats -->
-    <section class="stats-row">
+   <section class="stats-row">
 
-      <article class="card">
-        <section class="streak">
-          <h2>Current Streak: {{ streak }} 🔥</h2>
-          {% if streak > 0 %}
-          <p class="streak-counter">Keep going 💪</p>
-          {% if streak >= 7 %}
-          <p class="streak-message">You're on fire! 🔥🔥🔥</p>
-          {% endif %}
-          {% else %}
-          <p class="streak-empty">No streak yet 💔</p>
-          {% endif %}
-        </section>
-      </article>
+  <article class="card stat">
+    <span class="stat-icon">🔥</span>
+    <div class="stat-content">
+      <h3>Current Streak</h3>
+      <p class="stat-number">{{ streak }}</p>
 
-      <article class="card">
-        <h2>Adherence</h2>
-        <p class="stat-number">{{ average_adherence }}%</p>
-      </article>
+      {% if streak > 0 %}
+        <p class="stat-note">Keep going 💪</p>
+      {% else %}
+        <p class="stat-note muted">No streak yet</p>
+      {% endif %}
+    </div>
+  </article>
 
-      <article class="card">
-        <h2>Active Medications</h2>
-        <p class="stat-number">{{ active_medications }}</p>
-      </article>
+  <article class="card stat">
+    <span class="stat-icon">📊</span>
+    <div class="stat-content">
+      <h3>Adherence</h3>
+      <p class="stat-number">{{ average_adherence }}%</p>
+      <p class="stat-note muted">This month</p>
+    </div>
+  </article>
 
-    </section>
+  <article class="card stat">
+    <span class="stat-icon">💊</span>
+    <div class="stat-content">
+      <h3>Active Medications</h3>
+      <p class="stat-number">{{ active_medications }}</p>
+      <p class="stat-note muted">Currently scheduled</p>
+    </div>
+  </article>
+
+</section>
     <!-- Chart -->
     {% if chart_data %}
     <section class="progress-chart">

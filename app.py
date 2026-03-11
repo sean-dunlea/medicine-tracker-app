@@ -777,49 +777,25 @@ def index():
         "index.html", title="Home", calendar=calendar_status, streak=current_streak, chart_data=chart_data, month_name=month_name, average_adherence=average_adherence, active_medications=active_medications, weekly_summary=weekly_summary
     )
 
-# This provides the number of unread notifications to be shown in the nav bar next to
+# This provides the number of unread notifications to be shown in the nav bar next to the
 # notification centre
 @app.context_processor
 def provide_unread_notification_count():
-    unread_notification_count = 0
     if "username" not in session:
-        return dict(unread_notification_count=unread_notification_count)
+        return dict(unread_notification_count=0)
     db = get_db()
     user = db.execute("""
                       SELECT user_id
                       FROM users
                       WHERE username = ?;
                       """, (session["username"],)).fetchone()
-    if user:
-        unread_notification_count = db.execute("""
-                                               SELECT COUNT(*) as count
-                                               FROM notifications
-                                               WHERE user_id = ? AND is_read = 0;
-                                               """, (user["user_id"],)).fetchone()["count"]
-    return dict(unread_notification_count=unread_notification_count)
-
-# Provides the number of unread notifications to show in the nav bar
-@app.context_processor
-def provide_unread_notification_count():
-    if "username" not in session:
-        return dict(unread_notification_count=0)
-
-    db = get_db()
-    user = db.execute("""
-        SELECT user_id
-        FROM users
-        WHERE username = ?;
-    """, (session["username"],)).fetchone()
-
     if not user:
         return dict(unread_notification_count=0)
-
     count = db.execute("""
-        SELECT COUNT(*) as count
-        FROM notifications
-        WHERE user_id = ? AND is_read = 0;
-    """, (user["user_id"],)).fetchone()["count"]
-
+                       SELECT COUNT(*) as count
+                       FROM notifications
+                       WHERE user_id = ? AND is_read = 0;
+                       """, (user["user_id"],)).fetchone()["count"]
     return dict(unread_notification_count=count)
 
 @app.route("/notification_centre")

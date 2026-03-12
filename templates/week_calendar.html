@@ -21,7 +21,7 @@
     {% set status_class = "segment-partial" %}
     {% set status_word = "Partial" %}
 
-{% else %}
+{% elif info.status == "Missed" %}
     {% set status_class = "segment-missed" %}
     {% set status_word = "Missed" %}
 {% endif %}

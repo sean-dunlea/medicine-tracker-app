@@ -504,9 +504,15 @@ def build_week_status(user_id):
                 "all_taken": True,
                 "has_meds": True
             }
-        else:
+        elif any(med["taken"] for med in meds): #checks if any meds for that day are marked taken
             status_calendar[day] = {
                 "status": "Partial",
+                "all_taken": False,
+                "has_meds": True
+            }
+        else:
+            status_calendar[day] = {
+                "status": "Missed",
                 "all_taken": False,
                 "has_meds": True
             }

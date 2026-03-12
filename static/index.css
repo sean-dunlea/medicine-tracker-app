@@ -340,11 +340,18 @@
 }
 
 .segment-upcoming::before {
-  background: linear-gradient(135deg,var(--muted),var(--muted));
+  background: linear-gradient(135deg,var(--muted),var(--yellow-light));
 }
 
 .segment-missed::before {
   background: linear-gradient(135deg,var(--primary),var(--primary-dark));
+}
+
+.segment-partial::before {
+  background: linear-gradient(135deg,var(--yellow-light),var(--primary));
+}
+.segment-none::before {
+  background: linear-gradient(135deg,var(--muted),var(--muted));
 }
 
 /* Text layer */
@@ -369,7 +376,7 @@
 
 .status-label {
   font-size: .65rem;
-  margin-top: .2rem;
+  margin-top: 2rem;
   letter-spacing: .5px;
   text-transform: uppercase;
 }
@@ -384,6 +391,11 @@
   transform: rotate(-2deg) translateY(-4px);
   box-shadow: 0 14px 28px rgba(0,0,0,.15);
 }
+
+.day-card.today {
+  box-shadow: 0 0 0 2px #1d2cff;
+}
+
 
 /* =========================
    AI SUMMARY

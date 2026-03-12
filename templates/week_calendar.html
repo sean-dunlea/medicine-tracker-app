@@ -5,10 +5,6 @@
     {% set status_class = "segment-upcoming" %}
     {% set status_word = "Upcoming" %}
 
-{% elif info.status == "Today" %}
-    {% set status_class = "segment-today" %}
-    {% set status_word = "Today" %}
-
 {% elif info.status == "No Meds" %}
     {% set status_class = "segment-none" %}
     {% set status_word = "No Meds" %}
@@ -26,7 +22,8 @@
     {% set status_word = "Missed" %}
 {% endif %}
 
-<article class="day-card {{ status_class }}">
+<article class="day-card {{ status_class }} {% if day == today %}today{% endif %}">
+    
     <header class="day-name">
         {{ day.strftime("%a") }}
     </header>
@@ -35,9 +32,11 @@
         {{ day.day }}
     </p>
 
-    {% if status_word %}
-    <p class="status-label">{{ status_word }}</p>
-    {% endif %}
+    <p class="status-label">
+        {% if day == today %}Today • {% endif %}
+        {{ status_word }}
+    </p>
+
 </article>
 
 {% endfor %}

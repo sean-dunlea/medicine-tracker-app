@@ -486,12 +486,6 @@ def build_week_status(user_id):
             "all_taken": False,
             "has_meds": bool(meds)
             }
-        elif day == today:
-            status_calendar[day] = {
-            "status": "Today",
-            "all_taken": False,
-            "has_meds": bool(meds)
-            }
         elif not meds: #if no medications scheduled that day:
             status_calendar[day] = {
                 "status": "No Meds",
@@ -799,7 +793,7 @@ def index():
     # This generates the AI weekly summary
     weekly_summary = generate_weekly_health_summary(user_id)
     return render_template(
-        "index.html", title="Home", calendar=calendar_status, streak=current_streak, chart_data=chart_data, month_name=month_name, average_adherence=average_adherence, active_medications=active_medications, weekly_summary=weekly_summary
+        "index.html", title="Home", calendar=calendar_status, streak=current_streak, chart_data=chart_data, month_name=month_name, average_adherence=average_adherence, active_medications=active_medications, weekly_summary=weekly_summary,today=today
     )
 
 # This provides the number of unread notifications to be shown in the nav bar next to the

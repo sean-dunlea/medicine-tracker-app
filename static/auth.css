@@ -266,3 +266,29 @@ button.ghost:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(199,76,76,0.3);
 }
+
+/* =========================
+   REMEMBER ME
+========================= */
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+
+  margin-top: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Checkbox */
+
+.remember-me input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+
+  accent-color: var(--primary);
+
+  cursor: pointer;
+}

@@ -1,4 +1,4 @@
-# Medimate
+# MediMate
 
 ## Setup Instructions
 

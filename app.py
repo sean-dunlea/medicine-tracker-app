@@ -478,18 +478,39 @@ It shows whether the user has any meds scheduled/ marked as taken or not'''
 def build_week_status(user_id):
     detailed_calendar = build_week_calendar(user_id)
     status_calendar = {}
+    today = date.today()
     for day, meds in detailed_calendar.items():
-        if not meds: #if no medications scheduled that day:
+        if day > today:
             status_calendar[day] = {
+            "status": "Upcoming",
+            "all_taken": False,
+            "has_meds": bool(meds)
+            }
+        elif day == today:
+            status_calendar[day] = {
+            "status": "Today",
+            "all_taken": False,
+            "has_meds": bool(meds)
+            }
+        elif not meds: #if no medications scheduled that day:
+            status_calendar[day] = {
+                "status": "No Meds",
                 "all_taken": False, #no meds taken
                 "has_meds": False #no meds scheduled
             }
-        else:
-            all_taken = all(med["taken"] for med in meds) #checks if all meds for that day are marked taken
+        elif all(med["taken"] for med in meds): #checks if all meds for that day are marked taken
             status_calendar[day] = {
-                "all_taken": all_taken,
+                "status": "All Taken",
+                "all_taken": True,
                 "has_meds": True
             }
+        else:
+            status_calendar[day] = {
+                "status": "Partial",
+                "all_taken": False,
+                "has_meds": True
+            }
+
     return status_calendar
 
 '''this is a build of a proper month-style grid. Needs more work done for this part - maybe put as an option to view whole month in log medication'''

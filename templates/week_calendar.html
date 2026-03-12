@@ -1,27 +1,44 @@
 <section class="week-strip">
 {% for day, info in calendar.items() %}
-    
-    {% if info.has_meds and not info.all_taken %}
-      {% set status_class = "segment-missed" %}
-      {% set status_word = "Missed" %}
-    {% else %}
-      {% set status_class = "segment-complete" %}
-      {% set status_word = "Taken" if info.has_meds else "" %}
+
+{% if info.status == "Upcoming" %}
+    {% set status_class = "segment-upcoming" %}
+    {% set status_word = "Upcoming" %}
+
+{% elif info.status == "Today" %}
+    {% set status_class = "segment-today" %}
+    {% set status_word = "Today" %}
+
+{% elif info.status == "No Meds" %}
+    {% set status_class = "segment-none" %}
+    {% set status_word = "No Meds" %}
+
+{% elif info.status == "All Taken" %}
+    {% set status_class = "segment-complete" %}
+    {% set status_word = "Taken" %}
+
+{% elif info.status == "Partial" %}
+    {% set status_class = "segment-partial" %}
+    {% set status_word = "Partial" %}
+
+{% else %}
+    {% set status_class = "segment-missed" %}
+    {% set status_word = "Missed" %}
+{% endif %}
+
+<article class="day-card {{ status_class }}">
+    <header class="day-name">
+        {{ day.strftime("%a") }}
+    </header>
+
+    <p class="day-number">
+        {{ day.day }}
+    </p>
+
+    {% if status_word %}
+    <p class="status-label">{{ status_word }}</p>
     {% endif %}
-
-    <article class="day-card {{ status_class }}">
-        <header class="day-name">
-            {{ day.strftime("%a") }}
-        </header>
-
-        <p class="day-number">
-            {{ day.day }}
-        </p>
-
-        {% if status_word %}
-        <p class="status-label">{{ status_word }}</p>
-        {% endif %}
-    </article>
+</article>
 
 {% endfor %}
 </section>

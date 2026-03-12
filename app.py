@@ -299,11 +299,17 @@ def check_if_overdue_and_notify_medimates(medication, user_current_time):
                        SET weekly_summary_outdated = 1
                        WHERE user_id = ?
                        """, (medication["user_id"],))
+            privacy = db.execute("""
+                       SELECT allow_mates_activity
+                       FROM users
+                       WHERE user_id = ?
+                       """, (medication["user_id"],)).fetchone()
             db.commit()
-            # This notifies MediMates only after successful insert
-            title = "Medication Missed! 💊"
-            body = f"{medication['username']} hasn’t marked their medication as taken yet."
-            notify_medimates(medication["username"], title, body, medication["user_medication_id"])
+            if privacy[0] == 1:
+                # This notifies MediMates only after successful insert
+                title = "Medication Missed! 💊"
+                body = f"{medication['username']} hasn’t marked their medication as taken yet."
+                notify_medimates(medication["username"], title, body, medication["user_medication_id"])
         except IntegrityError:
             # This skips the notification if it was already sent
             pass
@@ -899,7 +905,7 @@ def log_medication(user_medication_id):
                 """, (user_medication_id, scheduled_date, time_of_day))
         # This notifies the user's MediMates that they have taken their medication
         user = db.execute("""
-                          SELECT u.user_id, u.username
+                          SELECT u.user_id, u.username, u.allow_mates_activity
                           FROM users u JOIN medications m ON m.user_id = u.user_id
                           WHERE m.user_medication_id = ?
                           """, (user_medication_id,)).fetchone()
@@ -910,9 +916,10 @@ def log_medication(user_medication_id):
                     SET weekly_summary_outdated = 1
                     WHERE user_id = ?;
                     """, (user["user_id"],))
-            title = "Medication Taken! 💊"
-            body = f"{user['username']} has just taken their medication!"
-            notify_medimates(user["username"], title, body, user_medication_id)
+            if user["allow_mates_activity"]:
+                title = "Medication Taken! 💊"
+                body = f"{user['username']} has just taken their medication!"
+                notify_medimates(user["username"], title, body, user_medication_id)
         db.commit()
     return redirect( url_for("log_medication_week") )
 

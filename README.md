@@ -20,7 +20,7 @@ To enable push notifications:
 
 ### Environment Variables
 
-This project uses uses python-dotenv to store sensitive credentials in environment variables.
+This project uses python-dotenv to store sensitive credentials in environment variables.
 
 1. Copy the example environment file:
 `cp .env.example .env`
@@ -37,7 +37,7 @@ To enable autocomplete functionality:
     2. Request the DrugBank full database XML file.
     3. Place the file in the project root and rename it to `full_database.xml`
 2. Initialise the Database Tables:
-    1. Run `python initialise_drugbank_tables.py`or `python3 initialise_drugbank_tables.py`.
+    1. Run `python initialise_drugbank_tables.py` or `python3 initialise_drugbank_tables.py`.
     2. This creates two tables: `drugbank_drugs` and `drugbank_products`.
 3. Parse and Import DrugBank Data:
     1. Run `python parse_and_insert_drugbank_data.py` or `python3 parse_and_insert_drugbank_data.py`.

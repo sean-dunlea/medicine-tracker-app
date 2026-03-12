@@ -16,7 +16,7 @@ from sqlite3 import IntegrityError
 
 app = Flask(__name__)
 # Secret key for signing sessions to protect against CSRF attacks.
-app.config["SECRET_KEY"] = "this-is-my-secret-key"
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 

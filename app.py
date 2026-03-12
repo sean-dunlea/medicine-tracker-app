@@ -411,7 +411,7 @@ def month_calendar(year, month):
         next_year = year
     return render_template("month_calendar.html", calendar=calendar_year, year=year, month=month, month_name=month_name, today=today, prev_month=prev_month, prev_year=prev_year, next_month=next_month, next_year=next_year)
 
-#monthly calendar view - to be improved
+#monthly calendar view 
 @app.route("/month_calendar")
 @login_required
 def calendar():

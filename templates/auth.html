@@ -60,6 +60,7 @@ no-bg
       {% for error in login_form.password.errors %}
         {{ error }}
       {% endfor %}
+      <label class="remember-me">{{ login_form.remember() }} Remember Me </label>
       {{ login_form.submit() }}
     </form>
   </section>

@@ -24,7 +24,7 @@ We declare that this report and the project work are our own original work. All 
     - [User Authentication & Management](#user_authentication_and_management)
     - [Dashboard & User Analytics](#dashboard_and_user_analytics)
     - [Medication Management](#medication_management)
-    - [MediMates Management](#medimates_management)
+    - [MediMate Management with Privacy Controls](#medimate_management_with_privacy_controls)
     - [Symptom Logging](#symptom_logging)
     - [Notification System](#notification_system)
     - [Background Scheduler](#background_scheduler)
@@ -364,7 +364,7 @@ Overall, MediMate shows how a software solution can help support healthier habit
 ## 10. Use of Generative AI <a id="use_of_generative_ai"></a>
 Generative AI tools such as ChatGPT were used during the development process for debugging purposes, when all team members did not know the issue. All final code, comments, and report were written and reviewed by the team.
 
-## 11. References <a id="reference"></a>
+## 11. References <a id="references"></a>
 
 ### Competitors <a id="competitors"></a>
 **MyTherapy** https://www.mytherapyapp.com/

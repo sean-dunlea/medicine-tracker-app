@@ -83,7 +83,7 @@ To prepare for the presentation we had a meeting to see what were the most impor
 
 ### High-Level System Architecture
 
-![High-Level System Architecture Diagram](https://hackmd.io/_uploads/S1Eb2F6Kbe.png)
+![High-Level System Architecture Diagram](images/high_level_system_architecture_diagram.png)
 
 As outlined in the High-Level System Architecture Diagram, our MediMate system uses a layered web application architecture, consisting of a user interface, a backend application server and a persistent database.
 
@@ -97,7 +97,7 @@ This layered approach enhances modularity, resulting in a more maintainable and 
 
 ### System Data Flow
 
-![System Data Flow Diagram](https://hackmd.io/_uploads/r1R7otatbe.png)
+![System Data Flow Diagram](images/system_data_flow_diagram.png)
 
 This diagram illustrates the primary data flows between users, the backend application modules, the database layer and the notification infrastrcture within our MediMate system.
 
@@ -121,7 +121,7 @@ Each backend component interacts with the database layer, which functions as the
 
 ### Database Schema
 
-![Database Schema Diagram](https://hackmd.io/_uploads/H1YSoY6F-g.png)
+![Database Schema Diagram](images/database_schema_diagram.png)
 
 As demonstrated in the Database Schema Diagram, our application utilises a relational database to store all persistent data.
 
@@ -155,77 +155,77 @@ These tables form a relational schema that supports the core functionality of Me
 Our system provides secure user registration and login with username or email and password. Emails are authenticated before registration, ensuring only valid addresses are accepted. The application maintains user sessions through a "Remember Me" option, allowing users to stay logged in across several browser sessions.
 
 **Registration Interface**
-![Registration Interface](https://hackmd.io/_uploads/SJ_TmBe5Wl.jpg)
+![Registration Interface](images/registration_interface.jpg)
 
 **Login Interface**
-![Login Interface](https://hackmd.io/_uploads/SylNMESgc-l.jpg)
+![Login Interface](images/login_interface.jpg)
 
 ### Dashboard & User Analytics
 
 The dashboard provides a central overview of recent user activity, with key insights into their medication routine. Users can quickly view upcoming medication events and adherence analytics, including streak tracking for consecutive days where medications were taken as scheduled. These streaks aim to encourage consistency and reinforce positive self-care habits. By visualising adherence patterns and recent activity through the dashboard, users can quickly assess how well they are maintaining their medication schedule.
 
 **Dashboard & User Analytics Interface (1/2)**
-![Dashboard & User Analytics Interface (1:2)](https://hackmd.io/_uploads/By9fRDec-e.png)
+![Dashboard & User Analytics Interface (1:2)](images/dashboard.jpg)
 
 **Dashboard & User Analytics Interface (2/2)**
-![Dashboard & User  Analytics Interface (2:2)](https://hackmd.io/_uploads/B15aaDgcbl.png)
+![Dashboard & User  Analytics Interface (2:2)](images/dashboard2.jpg)
 
 ### Medication Management
 Users can add and log medications with customisable schedules, including daily, weekly, monthly or as-needed reminders. Our system supports specifying dosage, timing and duration for each medication, as well as dynamic field adjustments based on the selected frequency type. A smart medication entry system, powered by the DrugBank database, provides autocomplete suggestions with generic names, brand names and synonyms for reliable searching. Validation logic prevents erroneous entries. The calendar provides an intuitive interface through which users can view scheduled medications in upcoming months. Users may also view past and current medications, with the ability to print or save this information for quick reference.
 
 **Add Medication Form (1/4)**
-![Add Medication Form (1:4)](https://hackmd.io/_uploads/BJd_BBg5Zl.jpg)
+![Add Medication Form (1:4)](images/add_medication_form1.jpg)
 
 **Add Medication Form (2/4)**
-![Add Medication Form (2:4)](https://hackmd.io/_uploads/rkJYSBlcWx.jpg)
+![Add Medication Form (2:4)](images/add_medication_form2.jpg)
 
 **Add Medication Form (3/4)**
-![Add Medication Form (3:4)](https://hackmd.io/_uploads/SkMtSSx9bx.jpg)
+![Add Medication Form (3:4)](images/add_medication_form3.jpg)
 
 **Add Medication Form (4/4)**
-![Add Medication Form (4:4)](https://hackmd.io/_uploads/HkKKrHgqZg.jpg)
+![Add Medication Form (4:4)](images/add_medication_form4.jpg)
 
 **Calendar Interface**
-![Calendar Interface](https://hackmd.io/_uploads/BkAQOHe9bg.jpg)
+![Calendar Interface](images/calendar_interface.jpg)
 
 **Medication Management Interface (1/2)**
-![Medication Management Interface (1:2)](https://hackmd.io/_uploads/Hk9mFrgcWx.jpg)
+![Medication Management Interface (1:2)](images/medication_management_interface1.jpg)
 
 **Medication Management Interface (2/2)**
-![Medication Management Interface (2:2)](https://hackmd.io/_uploads/BkgFjSx5-g.jpg)
+![Medication Management Interface (2:2)](images/medication_management_interface2.jpg)
 
 ### MediMate Management with Privacy Controls
 This is the key feature that distinguishes our application from similar medication trackers. Users may add other users as MediMates to provide support and accountability. If user settings permit, MediMates may view each other's medications, logged symptoms and receive notification if a dosage is missed, allowing for gentle re-reminders. Users can manage their MediMates list, adding or removing friends as needed to maintain a supportive network.
 
 **MediMates Interface**
-![MediMates Interface](https://hackmd.io/_uploads/ryUmcre5Wl.jpg)
+![MediMates Interface](images/medimates_interface.jpg)
 
 **MediMate's Activity Interface**
-![MediMate's Activity Interface](https://hackmd.io/_uploads/rJ5NqBx5Zx.jpg)
+![MediMate's Activity Interface](images/medimates_activity_interface.jpg)
 
 **Privacy Control Settings**
-![Privacy Control Settings](https://hackmd.io/_uploads/HyjAStgcbx.jpg)
+![Privacy Control Settings](images/privacy_control_settings.jpg)
 
 ### Symptom Logging
 Users can log symptoms they experience alongside their medications. The symptom logging system allows users to track patterns overtime and provides input for generating personalised AI health summaries. Logged symptoms are stored securely and can be viewed and managed through the user dashboard.
 
 **Symptom Log Interface**
-![Symptom Log Interface](https://hackmd.io/_uploads/H1WU2Bg5Zg.jpg)
+![Symptom Log Interface](images/log_symptom_interface.jpg)
 
 ### Notification System
 Our system implements multiple notification channels, ensuring users never miss their medications. Browser push notifications are delivered via Firebase Cloud Messaging, and email reminders are sent through the integrated email system. Users can also view all notifications through our in-application notification centre, and if a medication is missed by one hour, their designated MediMates are notified to provide a gentle reminder.
 
 **Friend Request Notification**
-![Friend Request Notification](https://hackmd.io/_uploads/BJFMFIx5Zl.jpg)
+![Friend Request Notification](images/friend_request_notification.jpg)
 
 **Medication Reminder**
-![Medication Reminder](https://hackmd.io/_uploads/HkRlK8xcbg.jpg)
+![Medication Reminder](images/medication_reminder.jpg)
 
 **Notification Centre Interface**
-![Notification Centre Interface](https://hackmd.io/_uploads/B1NItUe5bx.jpg)
+![Notification Centre Interface](images/notification_centre_interface.jpg)
 
 **Overdue Alert**
-![Overdue Alert](https://hackmd.io/_uploads/B1a7KIx5Ze.jpg)
+![Overdue Alert](images/overdue_alert.jpg)
 
 ### Background Scheduler
 The background scheduler triggers reminders at the precise time for each user at their local timezone. The scheduler checks all medication schedules with minute-level precision to ensure reliable alerts. It also detects overdue medications and automatically sends MediMate reminders, as needed.
@@ -234,18 +234,17 @@ The background scheduler triggers reminders at the precise time for each user at
 Our system generates personalised health summaries based on logged medications and symptoms. The AI provides friendly and encouraging messages for users who follow their medication schedule and gentle reminders for missed doses. Data privacy is ensured, as no personally identifiable information is included in the summaries.
 
 **AI Summary Output**
-![AI Summary Output](https://hackmd.io/_uploads/H1AhpSl5-l.jpg)
+![AI Summary Output](images/summary_output.jpg)
 
 ### User Profile & Settings
 
 The system provides users with a dedicated profile and setting section where they can manage personal information. Users can change the email or password associated with their account, enhancing user agency. They can also opt-in for push notification reminders, or control the visibility of their activity to MediMates.
 
 **User Settings Interface (1/2)**
-![User Settings Interface (1:2)](https://hackmd.io/_uploads/rymy_Yl5bx.jpg)
+![User Settings Interface (1:2)](images/user_settings_interface1.jpg)
 
 **User Settings Interface (2/2)**
-![User Settings Interface (2:2)](https://hackmd.io/_uploads/ByQydFx9Wx.jpg)
-
+![User Settings Interface (2:2)](images/user_settings_interface2.jpg)
 
 ### User Interface & Experience
 The application offers a responsive interface with intuitive navigation across pages. Notifications and reminders are supported across multiple devices, enhancing accessibility and convenience.
@@ -285,12 +284,10 @@ In addition to the weekly tracking system, I created a full monthly view of the 
 
 Finally I worked on the profile and settings section of the app. The section allows users to view their account information such as the number of Medimates they have, and they can select a profile avatar. In settings, I added a functionality to allow users to change their email address and password, as well as update their privacy settings that allow users to pick whether they want their mates to see their activity or not.
 
-
 ### Amina Baig (123482946)
 
 
 ## 6. Table of Contributions
-
 
 | Name  | Contribution |
 |:-----:|:-------------|
